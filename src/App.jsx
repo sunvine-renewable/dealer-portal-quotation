@@ -90,7 +90,7 @@ function MainApp() {
       <Navigation />
 
       {/* Main Content Area */}
-      <main className="md:pl-64 transition-all">
+      <main className="md:pl-64 pt-16 transition-all">
         <div className="p-4 md:p-8 max-w-7xl mx-auto">
           {renderView()}
         </div>

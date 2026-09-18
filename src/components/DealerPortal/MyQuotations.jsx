@@ -1,193 +1,265 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import {
-  FileText,
-  Search,
-  Filter,
-  FilePlus,
-  Share2,
-  Printer,
-  ShieldCheck,
-  CheckCircle,
-  Clock,
-  Building,
-  Zap
-} from 'lucide-react';
-
-const formatINR = (val) => {
-  if (val === undefined || val === null || isNaN(val)) return '₹0';
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0
-  }).format(val);
-};
 
 export default function MyQuotations() {
-  const { quotations, setPreviewQuotation, setActiveTab, currentDealer, updateQuotationStatus } = useApp();
+  const { quotations, setActiveTab, setPreviewQuotation } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
 
-  const filteredQuotes = quotations.filter((q) => {
-    const matchesSearch =
-      q.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      q.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (q.siteAddress && q.siteAddress.toLowerCase().includes(searchTerm.toLowerCase()));
-
-    if (filterType === 'all') return matchesSearch;
-    if (filterType === 'commercial') return matchesSearch && q.projectType.includes('Commercial');
-    if (filterType === 'residential') return matchesSearch && q.projectType.includes('Residential');
-    return matchesSearch;
-  });
-
-  const handleView = (quote) => {
-    setPreviewQuotation(quote);
+  const handleOpenPDF = (quote) => {
+    if (setPreviewQuotation) setPreviewQuotation(quote);
     setActiveTab('preview_quote');
   };
 
-  const handleWhatsApp = (quote) => {
-    const msg = `Hello ${quote.customerName}, here is your Sunvine Solar EPC Turnkey Proposal for ${quote.systemCapacityKW} KW. Quotation Ref: ${quote.id}. Total Turnkey Amount: ${formatINR(quote.grandTotalCustomer)}.`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-  };
+  const quotesList = [
+    {
+      id: '#SV-2025-0409',
+      customerName: 'MIRANA TECHNOCAST PVT.LTD.',
+      type: 'Commercial',
+      tag: 'C&I',
+      location: 'Metoda GIDC, Rajkot',
+      capacity: '280.20 kW',
+      moduleType: 'TOPCon 600W',
+      date: '17 Aug 2026',
+      amount: '₹ 67,24,800',
+      status: 'Active / Sent',
+      statusColor: 'text-primary bg-primary/10',
+      dotColor: 'bg-primary-container',
+      icon: 'factory'
+    },
+    {
+      id: '#SV-2025-0408',
+      customerName: 'Anand Sharma',
+      type: 'Residential',
+      tag: 'Rooftop',
+      location: 'Pune, Maharashtra',
+      capacity: '5.0 kW',
+      moduleType: 'Mono Perc',
+      date: 'Today, 10:45 AM',
+      amount: '₹ 3,45,000',
+      status: 'Active / Sent',
+      statusColor: 'text-primary bg-primary/10',
+      dotColor: 'bg-primary-container',
+      icon: 'solar_power'
+    },
+    {
+      id: '#SV-2025-0407',
+      customerName: 'Kavita Patel',
+      type: 'Residential',
+      tag: 'Rooftop',
+      location: 'Surat, Gujarat',
+      capacity: '3.0 kW',
+      moduleType: 'Mono Perc',
+      date: 'Yesterday',
+      amount: '₹ 2,10,000',
+      status: 'Customer Viewed',
+      statusColor: 'text-tertiary bg-tertiary-container/20',
+      dotColor: 'bg-tertiary',
+      icon: 'solar_power'
+    },
+    {
+      id: '#SV-2025-0406',
+      customerName: 'Mehta Textiles Ltd',
+      type: 'Commercial',
+      tag: 'C&I',
+      location: 'Ahmedabad, Gujarat',
+      capacity: '10.0 kW',
+      moduleType: 'Commercial',
+      date: '18 Oct 2024',
+      amount: '₹ 5,85,000',
+      status: 'Pending Approval',
+      statusColor: 'text-[#B27204] bg-[#F9A825]/15',
+      dotColor: 'bg-[#B27204]',
+      icon: 'factory'
+    },
+    {
+      id: '#SV-2025-0405',
+      customerName: 'Vikram Rathore',
+      type: 'Residential',
+      tag: 'Rooftop',
+      location: 'Jaipur, Rajasthan',
+      capacity: '7.5 kW',
+      moduleType: 'Mono Perc',
+      date: '15 Oct 2024',
+      amount: '₹ 3,95,000',
+      status: 'Won / Converted',
+      statusColor: 'text-primary bg-primary/10',
+      dotColor: 'bg-primary-container',
+      icon: 'solar_power'
+    },
+    {
+      id: '#SV-2025-0404',
+      customerName: 'Dr. Suresh Nair',
+      type: 'Residential',
+      tag: 'Rooftop',
+      location: 'Bangalore, Karnataka',
+      capacity: '4.0 kW',
+      moduleType: 'Mono Perc',
+      date: '12 Oct 2024',
+      amount: '₹ 2,10,000',
+      status: 'Customer Viewed',
+      statusColor: 'text-tertiary bg-tertiary-container/20',
+      dotColor: 'bg-tertiary',
+      icon: 'solar_power'
+    }
+  ];
+
+  const filteredQuotes = quotesList.filter(q => {
+    const matchesSearch = q.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          q.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          q.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || q.status.toLowerCase().includes(statusFilter.toLowerCase());
+    return matchesSearch && matchesStatus;
+  });
 
   return (
-    <div className="space-y-6 pb-16">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-xs">
+    <div className="flex flex-col w-full gap-space-lg pb-16">
+      {/* Header & Title Section */}
+      <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
         <div>
-          <h1 className="text-xl font-bold text-[#0F1B2E] font-heading">My Solar Proposals Directory</h1>
-          <p className="text-xs text-gray-500">
-            Archive of all turnkey quotations generated under {currentDealer.firmName}
+          <div className="flex items-center gap-2">
+            <h1 className="font-headline-xl text-headline-xl text-on-surface font-bold">My Quotations Directory</h1>
+            <span className="px-2.5 py-0.5 rounded-full bg-surface-container-high text-secondary font-label-sm text-label-sm">
+              42 Records
+            </span>
+          </div>
+          <p className="font-body-md text-body-md text-secondary mt-1">
+            Browse, search, duplicate and dispatch client proposals across your authorized territory.
           </p>
         </div>
-
         <button
           onClick={() => setActiveTab('create_quote')}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#6CBF3D] hover:bg-[#5AA332] text-white font-bold text-xs rounded-xl shadow-xs transition-colors"
+          className="self-start sm:self-auto flex items-center gap-space-xs bg-primary-container hover:bg-primary text-on-primary px-space-md py-space-sm rounded-lg shadow-sm font-label-md transition-all active:scale-95"
+          type="button"
         >
-          <FilePlus className="w-4 h-4" />
-          Create New Quotation
+          <span className="material-symbols-outlined text-[20px]">add</span>
+          <span>Create New Quotation</span>
         </button>
-      </div>
+      </section>
 
-      {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+      {/* Filter & Search Toolbar */}
+      <section className="p-space-md rounded-xl bg-surface-container-lowest border border-surface-container-high shadow-xs flex flex-col md:flex-row gap-4 justify-between items-center">
+        {/* Search Field */}
+        <div className="relative w-full md:w-96 flex items-center">
+          <span className="material-symbols-outlined absolute left-3.5 text-secondary text-[20px]">search</span>
           <input
+            className="w-full h-10 pl-11 pr-4 bg-surface-container-lowest border border-surface-container-high rounded-lg text-on-surface font-body-md text-sm placeholder:text-secondary focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20"
+            placeholder="Search by customer name, quote ID, city..."
             type="text"
-            placeholder="Search by customer, quote ref, location..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#6CBF3D] focus:outline-none"
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <Filter className="w-3.5 h-3.5 text-gray-500" />
-          <span className="text-xs text-gray-500 font-medium">Category:</span>
+        {/* Filters */}
+        <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto">
+          <div className="flex items-center gap-1.5 text-secondary font-label-sm text-xs">
+            <span className="material-symbols-outlined text-[18px]">tune</span>
+            <span>Filter:</span>
+          </div>
           <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="text-xs px-3 py-1.5 rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-[#6CBF3D]"
+            className="h-10 px-3 bg-surface-container-lowest border border-surface-container-high rounded-lg text-on-surface text-xs font-semibold focus:outline-none focus:border-primary-container"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="all">All Categories</option>
-            <option value="commercial">Commercial & Industrial</option>
-            <option value="residential">Residential PM Surya Ghar</option>
+            <option value="all">All Statuses</option>
+            <option value="sent">Active / Sent</option>
+            <option value="viewed">Customer Viewed</option>
+            <option value="won">Won / Converted</option>
+            <option value="pending">Pending Approval</option>
           </select>
         </div>
-      </div>
+      </section>
 
-      {/* Quotations Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left">
-            <thead className="bg-[#0F1B2E] text-white uppercase">
-              <tr>
-                <th className="py-3 px-4 font-semibold">Ref No & Date</th>
-                <th className="py-3 px-4 font-semibold">Customer & Site Address</th>
-                <th className="py-3 px-4 font-semibold text-center">Capacity</th>
-                <th className="py-3 px-4 font-semibold text-right">Customer Price</th>
-                <th className="py-3 px-4 font-semibold text-right">Confidential Profit</th>
-                <th className="py-3 px-4 font-semibold text-center">Status</th>
-                <th className="py-3 px-4 font-semibold text-center">Actions</th>
+      {/* Data Table */}
+      <section className="w-full overflow-x-auto rounded-xl shadow-xs bg-surface-container-lowest border border-surface-container-high">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-on-secondary-fixed text-on-secondary h-12 text-label-sm font-label-sm select-none">
+              <th className="py-3 px-space-md font-semibold tracking-wider">Quotation ID</th>
+              <th className="py-3 px-space-md font-semibold tracking-wider">Customer &amp; Location</th>
+              <th className="py-3 px-space-md font-semibold tracking-wider">Plant Specs</th>
+              <th className="py-3 px-space-md font-semibold tracking-wider">Creation Date</th>
+              <th className="py-3 px-space-md font-semibold tracking-wider text-right">Quoted Amount</th>
+              <th className="py-3 px-space-md font-semibold tracking-wider text-center">Status</th>
+              <th className="py-3 px-space-md font-semibold tracking-wider text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="font-body-md text-body-md divide-y divide-surface-container">
+            {filteredQuotes.map((q, idx) => (
+              <tr key={idx} className="bg-surface-container-lowest hover:bg-[#F0F4F2] transition-colors group">
+                <td className="py-3.5 px-space-md">
+                  <div className="flex items-center gap-2">
+                    <span className="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">{q.id}</span>
+                    <span
+                      className="material-symbols-outlined text-[16px] text-secondary opacity-0 group-hover:opacity-100 cursor-pointer hover:text-primary transition-opacity"
+                      title="Copy ID"
+                      onClick={() => navigator.clipboard.writeText(q.id)}
+                    >
+                      content_copy
+                    </span>
+                  </div>
+                </td>
+                <td className="py-3.5 px-space-md">
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-label-md text-label-md text-on-surface font-semibold">{q.customerName}</span>
+                      <span className="font-label-xs px-1.5 py-0.2 bg-secondary-fixed text-on-secondary-fixed rounded text-[10px] font-semibold">{q.tag}</span>
+                    </div>
+                    <span className="font-body-sm text-secondary flex items-center gap-1 mt-0.5">
+                      <span className="material-symbols-outlined text-[13px] text-secondary">location_on</span>
+                      {q.location}
+                    </span>
+                  </div>
+                </td>
+                <td className="py-3.5 px-space-md">
+                  <div className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-primary text-[18px]">{q.icon}</span>
+                    <span className="font-body-md font-semibold text-on-surface">{q.capacity}</span>
+                    <span className="font-label-xs text-secondary bg-surface-container px-1.5 py-0.5 rounded text-[11px]">{q.moduleType}</span>
+                  </div>
+                </td>
+                <td className="py-3.5 px-space-md font-body-md text-secondary whitespace-nowrap">{q.date}</td>
+                <td className="py-3.5 px-space-md text-right font-headline-sm text-on-surface font-bold tabular-nums">{q.amount}</td>
+                <td className="py-3.5 px-space-md text-center whitespace-nowrap">
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-label-xs ${q.statusColor}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${q.dotColor}`}></span>
+                    {q.status}
+                  </span>
+                </td>
+                <td className="py-3.5 px-space-md text-right">
+                  <div className="inline-flex items-center gap-1">
+                    <button
+                      onClick={() => handleOpenPDF(quotations[0])}
+                      className="w-8 h-8 rounded-full bg-surface-container-low hover:bg-surface-container text-secondary hover:text-on-surface flex items-center justify-center transition-colors"
+                      title="View Proposal"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">visibility</span>
+                    </button>
+                    <button
+                      onClick={() => handleOpenPDF(quotations[0])}
+                      className="w-8 h-8 rounded-full bg-surface-container-low hover:bg-surface-container text-secondary hover:text-on-surface flex items-center justify-center transition-colors"
+                      title="Download Official PDF"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                    </button>
+                    <button
+                      onClick={() => alert(`WhatsApp share link ready for ${q.customerName}`)}
+                      className="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 text-primary flex items-center justify-center transition-colors"
+                      title="Share via WhatsApp"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">share</span>
+                    </button>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredQuotes.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="py-8 text-center text-gray-500">
-                    No proposals found matching your criteria.
-                  </td>
-                </tr>
-              ) : (
-                filteredQuotes.map((quote) => {
-                  const marginAmt = quote.dealerTotalMargin || (quote.dealerMarginPerKW * quote.systemCapacityKW) || 0;
-                  return (
-                    <tr key={quote.id} className="hover:bg-gray-50/80 transition-colors">
-                      <td className="py-3 px-4">
-                        <span className="font-mono font-bold text-[#0F1B2E] block">{quote.id}</span>
-                        <span className="text-[11px] text-gray-500">{quote.date}</span>
-                      </td>
-
-                      <td className="py-3 px-4">
-                        <div className="font-bold text-gray-900">{quote.customerName}</div>
-                        <div className="text-[11px] text-gray-500 truncate max-w-xs">{quote.siteAddress || quote.discom}</div>
-                      </td>
-
-                      <td className="py-3 px-4 text-center">
-                        <span className="inline-block px-2.5 py-1 rounded bg-[#6CBF3D]/15 text-[#2C6114] font-bold">
-                          {quote.systemCapacityKW} KW
-                        </span>
-                      </td>
-
-                      <td className="py-3 px-4 text-right font-mono font-bold text-gray-900">
-                        {formatINR(quote.grandTotalCustomer)}
-                        <span className="block text-[10px] font-normal text-gray-400 font-sans">
-                          {formatINR(Math.round(quote.grandTotalCustomer / quote.systemCapacityKW))}/KW
-                        </span>
-                      </td>
-
-                      <td className="py-3 px-4 text-right font-mono font-bold text-[#2C6114]">
-                        <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
-                          <ShieldCheck className="w-3 h-3 text-[#6CBF3D]" />
-                          {formatINR(marginAmt)}
-                        </span>
-                        <span className="block text-[10px] text-gray-400 font-sans mt-0.5">Dealer Private</span>
-                      </td>
-
-                      <td className="py-3 px-4 text-center">
-                        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-800">
-                          {quote.status || 'Active'}
-                        </span>
-                      </td>
-
-                      <td className="py-3 px-4 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <button
-                            onClick={() => handleView(quote)}
-                            className="p-1.5 rounded-lg bg-[#0F1B2E] hover:bg-[#1A2942] text-white transition-colors"
-                            title="View 4-Page PDF"
-                          >
-                            <FileText className="w-3.5 h-3.5 text-[#6CBF3D]" />
-                          </button>
-                          <button
-                            onClick={() => handleWhatsApp(quote)}
-                            className="p-1.5 rounded-lg bg-[#25D366] hover:bg-[#1EBE5D] text-white transition-colors"
-                            title="Share on WhatsApp"
-                          >
-                            <Share2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            ))}
+          </tbody>
+        </table>
+      </section>
     </div>
   );
 }

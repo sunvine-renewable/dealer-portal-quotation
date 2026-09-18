@@ -1,301 +1,522 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import {
-  FilePlus,
-  FileText,
-  TrendingUp,
-  Zap,
-  ShieldCheck,
-  Building2,
-  Calendar,
-  DollarSign,
-  ArrowUpRight,
-  Calculator,
-  ChevronRight,
-  ExternalLink,
-  Printer
-} from 'lucide-react';
-
-const formatINR = (val) => {
-  if (val === undefined || val === null || isNaN(val)) return '₹0';
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0
-  }).format(val);
-};
 
 export default function DealerDashboard() {
-  const { currentDealer, quotations, setActiveTab, setPreviewQuotation, pricingMaster } = useApp();
+  const { currentDealer, quotations, setActiveTab, setPreviewQuotation } = useApp();
+  const [selectedTimeRange, setSelectedTimeRange] = useState('Last 30 Days');
 
-  // Filter quotations for current dealer (or show all in demo if dealerId matches)
-  const dealerQuotes = quotations.filter(q => !q.dealerId || q.dealerId === currentDealer.id || true);
-
-  // Compute metrics
-  const totalKw = dealerQuotes.reduce((acc, q) => acc + (Number(q.systemCapacityKW) || 0), 0);
-  const totalMargin = dealerQuotes.reduce((acc, q) => acc + (Number(q.dealerTotalMargin) || (Number(q.dealerMarginPerKW || 0) * (q.systemCapacityKW || 0))), 0);
-  const totalContractVal = dealerQuotes.reduce((acc, q) => acc + (Number(q.grandTotalCustomer) || 0), 0);
-
-  // PM Surya Ghar Quick Calculator state
-  const [calcKw, setCalcKw] = useState(3);
-  const getSubsidy = (kw) => {
-    if (kw <= 0) return 0;
-    if (kw === 1) return 30000;
-    if (kw === 2) return 60000;
-    return 78000; // >= 3kW
-  };
-
-  const handleViewQuote = (quote) => {
-    setPreviewQuotation(quote);
+  const handleOpenPDF = (quote) => {
+    if (setPreviewQuotation) {
+      setPreviewQuotation(quote || quotations[0]);
+    }
     setActiveTab('preview_quote');
   };
 
   return (
-    <div className="space-y-6 pb-16">
-      {/* Welcome & Primary Actions Banner */}
-      <div className="bg-gradient-to-r from-[#0F1B2E] via-[#162742] to-[#0A1322] rounded-2xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-[#6CBF3D]/10 to-transparent pointer-events-none"></div>
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#6CBF3D]/20 text-[#6CBF3D] text-xs font-semibold uppercase tracking-wider">
-              <span className="w-2 h-2 rounded-full bg-[#6CBF3D]"></span>
-              {currentDealer.tier || 'Authorized EPC Channel Partner'}
+    <div className="flex flex-col w-full gap-space-lg">
+      {/* Top Operational Control & Profile Header */}
+      <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md pb-space-sm">
+        <div className="flex items-start md:items-center gap-space-md">
+          <div className="relative shrink-0">
+            <img
+              alt="Rajesh Kumar Profile"
+              className="w-16 h-16 rounded-xl object-cover shadow-md shadow-secondary/10"
+              src={currentDealer.avatar || '/dealer_avatar.jpg'}
+            />
+            <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary-container rounded-full ring-2 ring-surface"></span>
+          </div>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-space-xs text-secondary font-label-xs tracking-wider uppercase">
+              <span className="inline-block w-2 h-2 rounded-full bg-primary-container"></span>
+              <span>{currentDealer.firmName || 'Surya Solar Tech'} • {currentDealer.city || 'Pune West Hub'}</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold font-heading tracking-tight">
-              Welcome back, {currentDealer.contactPerson}
+            <h1 className="font-headline-xl text-headline-xl text-on-secondary-fixed tracking-tight">
+              Welcome back, {currentDealer.contactPerson || 'Rajesh Kumar'}
             </h1>
-            <p className="text-gray-300 text-sm max-w-xl">
-              {currentDealer.firmName} • Authorized Territory: {currentDealer.city}, {currentDealer.state} ({currentDealer.discom})
+            <p className="font-body-md text-body-md text-secondary">
+              Here's an overview of your quotation activity and solar installations pipeline.
             </p>
           </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => setActiveTab('create_quote')}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#6CBF3D] hover:bg-[#5AA332] text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all"
-            >
-              <FilePlus className="w-4 h-4" />
-              Generate Quotation
-            </button>
-            <button
-              onClick={() => setActiveTab('preview_quote')}
-              className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm border border-white/15 transition-all"
-            >
-              <FileText className="w-4 h-4 text-[#6CBF3D]" />
-              Latest 4-Page PDF
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Quotes */}
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-xs">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Proposals</span>
-            <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
-              <FileText className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-[#0F1B2E]">{dealerQuotes.length}</div>
-          <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-            <span className="text-emerald-600 font-semibold">100% Verified</span>
-            <span>Sunvine Standards</span>
-          </div>
         </div>
 
-        {/* Quoted Capacity */}
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-xs">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Quoted Capacity</span>
-            <div className="p-2 rounded-lg bg-amber-50 text-amber-600">
-              <Zap className="w-4 h-4" />
-            </div>
+        {/* Quick Actions Toolbar */}
+        <div className="flex items-center gap-space-sm self-start lg:self-center">
+          <div className="flex items-center gap-space-xs bg-surface-container-lowest px-space-md py-space-sm rounded-lg shadow-sm text-secondary font-label-sm hover:text-on-surface cursor-pointer">
+            <span className="material-symbols-outlined text-[18px]">calendar_today</span>
+            <span>{selectedTimeRange}</span>
+            <span className="material-symbols-outlined text-[18px]">expand_more</span>
           </div>
-          <div className="text-2xl font-bold text-[#0F1B2E]">
-            {totalKw.toFixed(1)} <span className="text-sm font-medium text-gray-500">KW</span>
-          </div>
-          <div className="text-xs text-gray-500 mt-1">
-            Commercial, Ind. & Rooftop
-          </div>
-        </div>
-
-        {/* Confidential Dealer Profit Margin */}
-        <div className="bg-white p-5 rounded-xl border-2 border-[#6CBF3D]/40 shadow-xs relative">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-bold text-[#2C6114] uppercase tracking-wider flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#6CBF3D]" />
-              Confidential Margin
-            </span>
-            <div className="p-2 rounded-lg bg-emerald-50 text-[#6CBF3D]">
-              <DollarSign className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-extrabold text-[#2C6114] font-mono">
-            {formatINR(totalMargin)}
-          </div>
-          <div className="text-[11px] text-emerald-800 font-medium mt-1">
-            🔒 Strictly hidden from customer proposals
-          </div>
-        </div>
-
-        {/* Total Contract Value */}
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-xs">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Contract Volume</span>
-            <div className="p-2 rounded-lg bg-purple-50 text-purple-600">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-[#0F1B2E] font-mono">
-            {formatINR(totalContractVal)}
-          </div>
-          <div className="text-xs text-gray-500 mt-1">
-            Turnkey Supply & Installation
-          </div>
-        </div>
-      </div>
-
-      {/* Two Column Layout: Recent Proposals & PM Surya Ghar Calculator */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Recent Proposals (2/3 width) */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
-          <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-            <div>
-              <h2 className="text-base font-bold text-[#0F1B2E]">Recent Solar Quotations</h2>
-              <p className="text-xs text-gray-500">Official 4-page turnkey proposals generated</p>
-            </div>
-            <button
-              onClick={() => setActiveTab('my_quotes')}
-              className="text-xs font-semibold text-[#6CBF3D] hover:text-[#5AA332] flex items-center gap-1"
-            >
-              View All <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left">
-              <thead className="bg-[#F8FAFC] text-gray-600 uppercase border-b border-gray-200">
-                <tr>
-                  <th className="py-3 px-4 font-semibold">Proposal Ref & Client</th>
-                  <th className="py-3 px-4 font-semibold text-center">Capacity</th>
-                  <th className="py-3 px-4 font-semibold text-right">Customer Price</th>
-                  <th className="py-3 px-4 font-semibold text-right">Your Margin</th>
-                  <th className="py-3 px-4 font-semibold text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {dealerQuotes.map((quote) => {
-                  const quoteMargin = quote.dealerTotalMargin || (quote.dealerMarginPerKW * quote.systemCapacityKW) || 0;
-                  return (
-                    <tr key={quote.id} className="hover:bg-gray-50/80 transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="font-bold text-gray-900">{quote.customerName}</div>
-                        <div className="text-[11px] text-gray-500 font-mono flex items-center gap-2">
-                          <span>{quote.id}</span>
-                          <span>•</span>
-                          <span>{quote.date}</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className="inline-block px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-bold">
-                          {quote.systemCapacityKW} KW
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono font-semibold text-gray-900">
-                        {formatINR(quote.grandTotalCustomer)}
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono font-bold text-[#2C6114]">
-                        <span className="inline-flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                          <ShieldCheck className="w-3 h-3 text-[#6CBF3D]" />
-                          {formatINR(quoteMargin)}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <button
-                          onClick={() => handleViewQuote(quote)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-[#0F1B2E] hover:bg-[#1A2942] text-white text-[11px] font-semibold rounded-md shadow-xs transition-colors"
-                        >
-                          <FileText className="w-3 h-3 text-[#6CBF3D]" />
-                          View PDF
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Right Column: PM Surya Ghar Muft Bijli Quick Calculator (1/3 width) */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-xs p-5 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="p-2 rounded-lg bg-orange-100 text-orange-600">
-                <Calculator className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-[#0F1B2E]">PM Surya Ghar Calculator</h3>
-                <p className="text-[11px] text-gray-500">Muft Bijli Yojana Central DBT Subsidy</p>
-              </div>
-            </div>
-
-            <div className="space-y-4 pt-2">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Residential System Size ({calcKw} KW)
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  step="1"
-                  value={calcKw}
-                  onChange={(e) => setCalcKw(Number(e.target.value))}
-                  className="w-full accent-[#6CBF3D]"
-                />
-                <div className="flex justify-between text-[10px] text-gray-400">
-                  <span>1 KW</span>
-                  <span>3 KW</span>
-                  <span>5 KW</span>
-                  <span>10 KW</span>
-                </div>
-              </div>
-
-              {/* Subsidy Calculation Breakdown */}
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 space-y-2 text-xs">
-                <div className="flex justify-between items-center text-gray-600">
-                  <span>Gross Project Cost (~₹58k/kW):</span>
-                  <span className="font-mono font-semibold">{formatINR(calcKw * 58000)}</span>
-                </div>
-                <div className="flex justify-between items-center text-emerald-700 font-semibold">
-                  <span>PM Surya Ghar Direct Subsidy:</span>
-                  <span className="font-mono font-bold">- {formatINR(getSubsidy(calcKw))}</span>
-                </div>
-                <div className="border-t border-gray-200 pt-2 flex justify-between items-center font-bold text-[#0F1B2E]">
-                  <span>Net Customer Outlay:</span>
-                  <span className="font-mono text-sm text-[#2C6114]">
-                    {formatINR((calcKw * 58000) - getSubsidy(calcKw))}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-[11px] text-blue-900 leading-snug">
-                <strong>Subsidy Slab Note:</strong> ₹30,000 for 1kW; ₹60,000 for 2kW; ₹78,000 max for 3kW & above credited to customer bank directly.
-              </div>
-            </div>
-          </div>
-
           <button
             onClick={() => setActiveTab('create_quote')}
-            className="w-full mt-4 py-2.5 bg-[#0F1B2E] hover:bg-[#1A2942] text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+            className="flex items-center gap-space-xs bg-primary-container hover:bg-primary text-on-primary px-space-md py-space-sm rounded-lg shadow-sm font-label-md transition-all active:scale-95"
+            type="button"
           >
-            Create Proposal With Subsidy <ChevronRight className="w-3.5 h-3.5 text-[#6CBF3D]" />
+            <span className="material-symbols-outlined text-[20px]">add</span>
+            <span>Create New Quotation</span>
           </button>
         </div>
-      </div>
+      </section>
+
+      {/* Telemetry & Performance KPI Row */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+        {/* Card 1: Total Quotations */}
+        <div className="relative overflow-hidden bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-space-md">
+            <div className="w-12 h-12 rounded-full bg-[#E8F5E9] flex items-center justify-center text-primary">
+              <span className="material-symbols-outlined text-[24px]">description</span>
+            </div>
+            <span className="px-space-sm py-0.5 rounded-full text-label-xs font-label-xs bg-primary-container/15 text-primary">
+              +8 this month (↑ 24%)
+            </span>
+          </div>
+          <div>
+            <div className="flex items-baseline gap-space-xs">
+              <span className="font-headline-xl text-headline-xl text-on-surface font-bold">42</span>
+              <span className="font-label-sm text-label-sm text-secondary">proposals</span>
+            </div>
+            <div className="font-label-sm text-label-sm text-secondary mt-1">Total Quotations</div>
+          </div>
+          {/* Mini Sparkline Representation */}
+          <div className="mt-space-md pt-space-xs flex items-end gap-1.5 h-8">
+            <div className="w-full bg-surface-container rounded-t h-2"></div>
+            <div className="w-full bg-surface-container rounded-t h-3"></div>
+            <div className="w-full bg-surface-container rounded-t h-3"></div>
+            <div className="w-full bg-surface-container rounded-t h-5"></div>
+            <div className="w-full bg-surface-container rounded-t h-4"></div>
+            <div className="w-full bg-primary-container/60 rounded-t h-6"></div>
+            <div className="w-full bg-primary-container rounded-t h-8"></div>
+          </div>
+        </div>
+
+        {/* Card 2: This Month Quotations */}
+        <div className="relative overflow-hidden bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-space-md">
+            <div className="w-12 h-12 rounded-full bg-tertiary-fixed/40 flex items-center justify-center text-tertiary">
+              <span className="material-symbols-outlined text-[24px]">wb_sunny</span>
+            </div>
+            <span className="px-space-sm py-0.5 rounded-full text-label-xs font-label-xs bg-tertiary/10 text-tertiary">
+              ₹18.4 Lakhs quoted
+            </span>
+          </div>
+          <div>
+            <div className="flex items-baseline gap-space-xs">
+              <span className="font-headline-xl text-headline-xl text-on-surface font-bold">14</span>
+              <span className="font-label-sm text-label-sm text-secondary">in October</span>
+            </div>
+            <div className="font-label-sm text-label-sm text-secondary mt-1">This Month Quotations</div>
+          </div>
+          {/* Capacity Yield Bar Visual */}
+          <div className="mt-space-md flex flex-col gap-1">
+            <div className="flex justify-between text-label-xs font-label-xs text-secondary">
+              <span>Target Progress</span>
+              <span className="text-on-surface font-semibold">70 kW / 100 kW</span>
+            </div>
+            <div className="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+              <div className="h-full bg-tertiary rounded-full" style={{ width: '70%' }}></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Total Business Value */}
+        <div className="relative overflow-hidden bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-space-md">
+            <div className="w-12 h-12 rounded-full bg-secondary-fixed/50 flex items-center justify-center text-on-secondary-fixed">
+              <span className="material-symbols-outlined text-[24px]">currency_rupee</span>
+            </div>
+            <span className="px-space-sm py-0.5 rounded-full text-label-xs font-label-xs bg-secondary-fixed text-on-secondary-fixed-variant">
+              8 Approved • 4 Commissioned
+            </span>
+          </div>
+          <div>
+            <div className="flex items-baseline gap-space-xs">
+              <span className="font-headline-xl text-headline-xl text-on-surface font-bold">₹ 58.20 L</span>
+            </div>
+            <div className="font-label-sm text-label-sm text-secondary mt-1">Total Business Value</div>
+          </div>
+          {/* Conversion Split */}
+          <div className="mt-space-md flex items-center justify-between text-label-xs font-label-xs text-secondary pt-2">
+            <div className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-primary-container"></span>
+              <span>₹34.8L Approved</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-secondary-fixed-dim"></span>
+              <span>₹23.4L In Pipeline</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Interactive Solar Estimator Banner Action Card */}
+      <section className="relative overflow-hidden rounded-xl bg-gradient-to-r from-primary-container to-primary text-on-primary p-space-lg md:p-space-xl shadow-md">
+        {/* Subtle Geometric SVG Watermark Pattern */}
+        <svg className="absolute right-0 top-0 bottom-0 h-full opacity-10 pointer-events-none transform translate-x-12" fill="none" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+          <polygon fill="currentColor" points="40,20 180,20 140,180 0,180"></polygon>
+          <polygon fill="currentColor" points="190,20 330,20 290,180 150,180"></polygon>
+          <polygon fill="currentColor" points="340,20 480,20 440,180 300,180"></polygon>
+          <line stroke="currentColor" strokeWidth="6" x1="20" x2="460" y1="100" y2="100"></line>
+          <line stroke="currentColor" strokeWidth="4" x1="10" x2="450" y1="60" y2="60"></line>
+          <line stroke="currentColor" strokeWidth="4" x1="0" x2="440" y1="140" y2="140"></line>
+        </svg>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-space-lg">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-space-xs text-primary-fixed font-label-sm uppercase tracking-wider mb-space-xs">
+              <span className="material-symbols-outlined text-[18px]">bolt</span>
+              <span>Fast EPC Engine • Instant DISCOM Rates</span>
+            </div>
+            <h2 className="font-headline-lg text-headline-lg text-on-primary font-bold">
+              Need a quick quotation for a customer?
+            </h2>
+            <p className="font-body-md text-body-md text-on-primary/90 mt-1 max-w-xl">
+              Generate customized solar EPC quotations with instant subsidy calculations in under 2 minutes.
+            </p>
+          </div>
+          <button
+            onClick={() => setActiveTab('create_quote')}
+            className="shrink-0 flex items-center justify-center gap-space-sm bg-surface-container-lowest text-primary hover:bg-surface-container hover:text-on-primary-container px-space-lg py-3 rounded-lg font-label-md transition-all shadow-sm active:scale-95"
+            type="button"
+          >
+            <span>+ Create New Quotation</span>
+            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </button>
+        </div>
+      </section>
+
+      {/* Recent Quotations Data Section */}
+      <section className="flex flex-col gap-space-md">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-space-sm">
+            <h2 className="font-headline-md text-headline-md text-on-surface">Recent Quotations</h2>
+            <span className="px-space-xs py-0.5 rounded text-label-xs font-label-xs bg-surface-container-high text-secondary">
+              5 Recent
+            </span>
+          </div>
+          <button
+            onClick={() => setActiveTab('my_quotes')}
+            className="flex items-center gap-space-xs font-label-sm text-label-sm text-primary hover:text-on-primary-container font-semibold transition-colors"
+          >
+            <span>View All (42)</span>
+            <span className="material-symbols-outlined text-[16px]">east</span>
+          </button>
+        </div>
+
+        {/* Data Table Container */}
+        <div className="w-full overflow-x-auto rounded-xl shadow-sm bg-surface-container-lowest">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-on-secondary-fixed text-on-secondary h-12 text-label-sm font-label-sm select-none">
+                <th className="px-space-lg py-space-sm font-semibold tracking-wider">Customer Name</th>
+                <th className="px-space-lg py-space-sm font-semibold tracking-wider">System Capacity</th>
+                <th className="px-space-lg py-space-sm font-semibold tracking-wider">Date</th>
+                <th className="px-space-lg py-space-sm font-semibold tracking-wider text-right">Amount</th>
+                <th className="px-space-lg py-space-sm font-semibold tracking-wider text-center">Status</th>
+                <th className="px-space-lg py-space-sm font-semibold tracking-wider text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="font-body-md text-body-md divide-y divide-surface-container">
+              {/* Row 1 */}
+              <tr className="bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
+                <td className="px-space-lg py-3.5">
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-on-surface">Anand Sharma</span>
+                    <span className="text-label-xs text-secondary">Pune, Maharashtra</span>
+                  </div>
+                </td>
+                <td className="px-space-lg py-3.5">
+                  <div className="flex items-center gap-1.5 font-semibold text-on-surface">
+                    <span className="material-symbols-outlined text-primary text-[18px]">solar_power</span>
+                    <span>5.0 kW</span>
+                  </div>
+                </td>
+                <td className="px-space-lg py-3.5 text-secondary font-label-xs whitespace-nowrap">
+                  Today, 10:45 AM
+                </td>
+                <td className="px-space-lg py-3.5 text-right font-bold text-on-surface tabular-nums">
+                  ₹ 3,45,000
+                </td>
+                <td className="px-space-lg py-3.5 text-center whitespace-nowrap">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-xs font-label-xs bg-primary-container/15 text-primary">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                    Active / Sent
+                  </span>
+                </td>
+                <td className="px-space-lg py-3.5 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      onClick={() => handleOpenPDF()}
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
+                      title="View Quotation"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">visibility</span>
+                    </button>
+                    <button
+                      onClick={() => handleOpenPDF()}
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
+                      title="Download PDF"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                    </button>
+                    <button
+                      onClick={() => alert('WhatsApp sharing link generated for Anand Sharma!')}
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-primary transition-colors"
+                      title="Share via WhatsApp"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">share</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              {/* Row 2 */}
+              <tr className="bg-surface-container-low hover:bg-surface-container transition-colors">
+                <td className="px-space-lg py-3.5">
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-on-surface">Kavita Patel</span>
+                    <span className="text-label-xs text-secondary">Surat, Gujarat</span>
+                  </div>
+                </td>
+                <td className="px-space-lg py-3.5">
+                  <div className="flex items-center gap-1.5 font-semibold text-on-surface">
+                    <span className="material-symbols-outlined text-primary text-[18px]">solar_power</span>
+                    <span>3.0 kW</span>
+                  </div>
+                </td>
+                <td className="px-space-lg py-3.5 text-secondary font-label-xs whitespace-nowrap">
+                  Yesterday
+                </td>
+                <td className="px-space-lg py-3.5 text-right font-bold text-on-surface tabular-nums">
+                  ₹ 2,10,000
+                </td>
+                <td className="px-space-lg py-3.5 text-center whitespace-nowrap">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-xs font-label-xs bg-tertiary-container/30 text-on-tertiary-container">
+                    <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                    Customer Viewed
+                  </span>
+                </td>
+                <td className="px-space-lg py-3.5 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      onClick={() => handleOpenPDF()}
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
+                      title="View Quotation"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">visibility</span>
+                    </button>
+                    <button
+                      onClick={() => handleOpenPDF()}
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
+                      title="Download PDF"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                    </button>
+                    <button
+                      onClick={() => alert('WhatsApp sharing link generated for Kavita Patel!')}
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-primary transition-colors"
+                      title="Share via WhatsApp"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">share</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              {/* Row 3 */}
+              <tr className="bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
+                <td className="px-space-lg py-3.5">
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-on-surface">MIRANA TECHNOCAST PVT.LTD.</span>
+                      <span className="text-label-xs px-1.5 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed-variant">Commercial</span>
+                    </div>
+                    <span className="text-label-xs text-secondary">Metoda GIDC, Rajkot</span>
+                  </div>
+                </td>
+                <td className="px-space-lg py-3.5">
+                  <div className="flex items-center gap-1.5 font-semibold text-on-surface">
+                    <span className="material-symbols-outlined text-primary text-[18px]">factory</span>
+                    <span>280.20 kW</span>
+                  </div>
+                </td>
+                <td className="px-space-lg py-3.5 text-secondary font-label-xs whitespace-nowrap">
+                  17 Aug 2026
+                </td>
+                <td className="px-space-lg py-3.5 text-right font-bold text-on-surface tabular-nums">
+                  ₹ 67,24,800
+                </td>
+                <td className="px-space-lg py-3.5 text-center whitespace-nowrap">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-xs font-label-xs bg-amber-500/15 text-amber-800">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                    Verified Proposal
+                  </span>
+                </td>
+                <td className="px-space-lg py-3.5 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      onClick={() => handleOpenPDF()}
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
+                      title="View Quotation"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">visibility</span>
+                    </button>
+                    <button
+                      onClick={() => handleOpenPDF()}
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
+                      title="Download PDF"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                    </button>
+                    <button
+                      onClick={() => alert('WhatsApp sharing link generated for Mirana Technocast!')}
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-primary transition-colors"
+                      title="Share via WhatsApp"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">share</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              {/* Row 4 */}
+              <tr className="bg-surface-container-low hover:bg-surface-container transition-colors">
+                <td className="px-space-lg py-3.5">
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-on-surface">Vikram Rathore</span>
+                    <span className="text-label-xs text-secondary">Jaipur, Rajasthan</span>
+                  </div>
+                </td>
+                <td className="px-space-lg py-3.5">
+                  <div className="flex items-center gap-1.5 font-semibold text-on-surface">
+                    <span className="material-symbols-outlined text-primary text-[18px]">solar_power</span>
+                    <span>7.5 kW</span>
+                  </div>
+                </td>
+                <td className="px-space-lg py-3.5 text-secondary font-label-xs whitespace-nowrap">
+                  15 Oct 2024
+                </td>
+                <td className="px-space-lg py-3.5 text-right font-bold text-on-surface tabular-nums">
+                  ₹ 5,15,000
+                </td>
+                <td className="px-space-lg py-3.5 text-center whitespace-nowrap">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-xs font-label-xs bg-primary-container/15 text-primary">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                    Active / Sent
+                  </span>
+                </td>
+                <td className="px-space-lg py-3.5 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      onClick={() => handleOpenPDF()}
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
+                      title="View Quotation"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">visibility</span>
+                    </button>
+                    <button
+                      onClick={() => handleOpenPDF()}
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
+                      title="Download PDF"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                    </button>
+                    <button
+                      onClick={() => alert('WhatsApp sharing link generated for Vikram Rathore!')}
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-primary transition-colors"
+                      title="Share via WhatsApp"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">share</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              {/* Row 5 */}
+              <tr className="bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
+                <td className="px-space-lg py-3.5">
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-on-surface">Dr. Suresh Nair</span>
+                    <span className="text-label-xs text-secondary">Bangalore, Karnataka</span>
+                  </div>
+                </td>
+                <td className="px-space-lg py-3.5">
+                  <div className="flex items-center gap-1.5 font-semibold text-on-surface">
+                    <span className="material-symbols-outlined text-primary text-[18px]">solar_power</span>
+                    <span>4.0 kW</span>
+                  </div>
+                </td>
+                <td className="px-space-lg py-3.5 text-secondary font-label-xs whitespace-nowrap">
+                  12 Oct 2024
+                </td>
+                <td className="px-space-lg py-3.5 text-right font-bold text-on-surface tabular-nums">
+                  ₹ 2,75,000
+                </td>
+                <td className="px-space-lg py-3.5 text-center whitespace-nowrap">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-xs font-label-xs bg-tertiary-container/30 text-on-tertiary-container">
+                    <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                    Customer Viewed
+                  </span>
+                </td>
+                <td className="px-space-lg py-3.5 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      onClick={() => handleOpenPDF()}
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
+                      title="View Quotation"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">visibility</span>
+                    </button>
+                    <button
+                      onClick={() => handleOpenPDF()}
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
+                      title="Download PDF"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                    </button>
+                    <button
+                      onClick={() => alert('WhatsApp sharing link generated for Dr. Suresh Nair!')}
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-primary transition-colors"
+                      title="Share via WhatsApp"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">share</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Notification Banner / Channel Support Quick Tip */}
+      <footer className="mt-space-sm p-space-md bg-surface-container-low rounded-xl flex items-center justify-between flex-wrap gap-space-sm">
+        <div className="flex items-center gap-space-sm text-secondary font-body-sm">
+          <span className="material-symbols-outlined text-tertiary text-[20px]">info</span>
+          <span>DISCOM subsidy slabs for PM Surya Ghar: Muft Bijli Yojana have been refreshed for Maharashtra &amp; Gujarat circles.</span>
+        </div>
+        <div className="flex items-center gap-space-md text-label-xs font-label-xs">
+          <a className="text-primary hover:underline cursor-pointer" onClick={() => setActiveTab('create_quote')}>
+            Download Revised Rate Matrix
+          </a>
+          <span className="text-secondary">•</span>
+          <a className="text-secondary hover:text-on-surface cursor-pointer" onClick={() => setActiveTab('profile')}>
+            Contact EPC Territory Manager
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }

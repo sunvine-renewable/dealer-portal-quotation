@@ -1,440 +1,467 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import {
-  User,
-  Building2,
-  ShieldCheck,
-  Award,
-  Phone,
-  Mail,
-  MapPin,
-  Lock,
-  Calendar,
-  CheckCircle,
-  Save,
-  Key,
-  Eye,
-  EyeOff,
-  Camera,
-  Check,
-  AlertCircle,
-  Zap,
-  FileCheck
-} from 'lucide-react';
 
 export default function DealerProfile() {
   const { currentDealer, updateDealerProfile } = useApp();
 
-  // Form states initialized with current dealer
-  const [dealerName, setDealerName] = useState(currentDealer.contactPerson || 'Rajesh Kumar');
-  const [companyName, setCompanyName] = useState(currentDealer.firmName || 'Surya Solar Tech Private Limited');
-  const [email, setEmail] = useState(currentDealer.email || 'rajesh@suryasolartech.in');
-  const [gstin, setGstin] = useState('24AABCS1429B1Z8');
-  const [address, setAddress] = useState('Shop No. 12, Aditya Commercial Complex, Kalawad Road, Rajkot, Gujarat - 360021');
+  const [dealerName, setDealerName] = useState(currentDealer?.contactPerson || 'Rajesh Kumar');
+  const [companyName, setCompanyName] = useState(currentDealer?.firmName || 'Surya Solar Tech Private Limited');
+  const [email, setEmail] = useState(currentDealer?.email || 'rajesh@suryasolartech.in');
+  const [gstin, setGstin] = useState(currentDealer?.gstin || '27AABCS1429B1Z8');
+  const [address, setAddress] = useState(currentDealer?.address || 'Shop No. 12, Aditya Commercial Complex, Baner Road, Pune, Maharashtra - 411045');
 
-  // Password management states
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Toast feedback
   const [toastMessage, setToastMessage] = useState('');
 
-  const showToast = (msg) => {
+  const triggerToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(''), 3000);
+    setTimeout(() => {
+      setToastMessage('');
+    }, 3500);
   };
 
   const handleSaveProfile = (e) => {
     e.preventDefault();
-    updateDealerProfile({
-      contactPerson: dealerName,
-      firmName: companyName,
-      email: email
-    });
-    showToast('Personal & Business profile updated successfully!');
+    if (updateDealerProfile) {
+      updateDealerProfile({
+        contactPerson: dealerName,
+        firmName: companyName,
+        email: email,
+        gstin: gstin,
+        address: address,
+      });
+    }
+    triggerToast('Profile details updated successfully');
   };
 
   const handleUpdatePassword = (e) => {
     e.preventDefault();
-    if (!newPassword || newPassword !== confirmPassword) {
-      alert('New password and confirm password do not match!');
+    if (!newPassword) {
+      triggerToast('Please enter a new password');
       return;
     }
-    showToast('Password updated securely!');
+    if (newPassword !== confirmPassword) {
+      triggerToast('Passwords do not match');
+      return;
+    }
+    triggerToast('Password updated successfully');
     setCurrentPassword('');
     setNewPassword('');
     setConfirmPassword('');
   };
 
-  // Password rules validation
-  const hasMinLength = newPassword.length >= 8;
-  const hasCase = /[a-z]/.test(newPassword) && /[A-Z]/.test(newPassword);
-  const hasSymbol = /[0-9!@#$%^&*]/.test(newPassword);
+  const ruleLength = newPassword.length >= 8;
+  const ruleCasing = /[a-z]/.test(newPassword) && /[A-Z]/.test(newPassword);
+  const ruleSymbol = /[0-9!@#$%^&*(),.?":{}|<>]/.test(newPassword);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-20 font-sans">
-      {/* Toast Alert */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#0F1B2E] text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-[#6CBF3D]">
-          <CheckCircle className="w-5 h-5 text-[#6CBF3D]" />
-          <span className="text-xs font-semibold">{toastMessage}</span>
-        </div>
-      )}
+    <div className="flex flex-col w-full">
+      {/* Toast Notification */}
+      <div
+        className={`fixed bottom-6 right-6 z-50 transition-all duration-300 pointer-events-none flex items-center gap-2 px-4 py-3 rounded-lg bg-on-secondary-fixed text-on-secondary shadow-xl font-label-sm ${
+          toastMessage ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+        }`}
+      >
+        <span className="material-symbols-outlined text-[20px] text-primary-fixed">check_circle</span>
+        <span>{toastMessage}</span>
+      </div>
 
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-space-sm mb-space-lg">
         <div>
-          <div className="flex items-center gap-1.5 text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">
-            <ShieldCheck className="w-4 h-4 text-[#2C6C00]" />
+          <div className="flex items-center gap-space-xs text-secondary font-label-xs uppercase tracking-wider mb-space-xs">
+            <span className="material-symbols-outlined text-[16px] text-primary">verified_user</span>
             <span>Account • Partner Credentials</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#0F1B2E] font-heading">My Profile</h1>
-          <p className="text-xs text-gray-500 mt-0.5">Manage your dealer credentials, business information, and account security.</p>
+          <h1 className="font-headline-xl text-headline-xl text-on-surface">My Profile</h1>
+          <p className="font-body-md text-secondary mt-1">Manage your dealer credentials, business information, and account security.</p>
         </div>
-
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#6CBF3D]/15 text-[#2C6C00] text-xs font-semibold">
-            <span className="w-2 h-2 rounded-full bg-[#6CBF3D] animate-pulse"></span>
-            Active Node • GJ-RAJKOT-01
+        <div className="flex items-center gap-space-sm">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container/15 text-primary font-label-xs">
+            <span className="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+            Active Node • MH-WEST-04
           </span>
-          <div className="px-3 py-1 rounded-lg bg-gray-100 text-gray-500 text-xs font-medium">
-            DISCOM: {currentDealer.discom || 'PGVCL'}
+          <div className="px-3 py-1 rounded-lg bg-surface-container-high text-secondary font-label-xs">
+            Last synced: Today, 14:32 IST
           </div>
         </div>
       </div>
 
-      {/* Hero Partner Card (Matching Stitch Screen 1262d4f6...) */}
-      <div className="relative w-full rounded-2xl bg-white border border-gray-200 shadow-sm p-6 sm:p-8 overflow-hidden">
-        <div className="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-[#6CBF3D]/10 blur-3xl pointer-events-none"></div>
-        <div className="absolute right-32 -bottom-20 w-64 h-64 rounded-full bg-sky-500/10 blur-2xl pointer-events-none"></div>
-
-        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            {/* Avatar with Camera Overlay */}
-            <div className="relative group shrink-0">
-              <div className="w-24 h-24 rounded-2xl overflow-hidden shadow-md border-2 border-[#6CBF3D]">
+      {/* Profile Overview Card */}
+      <div className="relative w-full rounded-xl bg-surface-container-lowest shadow-sm p-space-lg mb-space-xl overflow-hidden">
+        <div className="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-primary-container/10 blur-3xl pointer-events-none"></div>
+        <div className="absolute right-32 -bottom-20 w-64 h-64 rounded-full bg-tertiary-container/15 blur-2xl pointer-events-none"></div>
+        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-lg">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-space-lg">
+            <div className="relative group">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-surface-container-high shadow-md">
                 <img
-                  src="/dealer_avatar.jpg"
-                  alt={dealerName}
+                  alt="Rajesh Kumar Profile"
                   className="w-full h-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPrXHZs-qW_IfxFB32q6OMBxh9-Q8lbGsGBMHtdkNUgY_4yuNIKjzl9IouO3S3aNB09wnjzip9MP60dQxzL4kQPmGopeAc3FhmzSe-rn5i-NJoa8LROkq6pxtArBvBH1gOf32o8gNlXRFqVCbs_ran3kYrMxI68PMiaTNELo-PNmGam_oiuZjvHaBAalOT1KVsAA0nMIY8TkaF5V5g5bstz4lf60C_guBjH_ZJgQWwByqwwd7bZd8y"
                 />
               </div>
               <button
-                type="button"
-                className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-[#0F1B2E] text-white flex items-center justify-center shadow-md hover:bg-[#6CBF3D] transition-colors"
+                className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-on-secondary-fixed text-on-secondary flex items-center justify-center shadow-md hover:bg-primary transition-colors"
                 title="Change Avatar"
+                type="button"
               >
-                <Camera className="w-4 h-4" />
+                <span className="material-symbols-outlined text-[16px]">photo_camera</span>
               </button>
             </div>
-
             <div className="flex flex-col">
-              <div className="flex flex-wrap items-center gap-2 mb-1">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 font-heading">{dealerName}</h2>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#6CBF3D]/20 text-[#2C6C00] text-xs font-bold">
-                  <CheckCircle className="w-3.5 h-3.5" />
+              <div className="flex flex-wrap items-center gap-space-sm mb-1">
+                <h2 className="font-headline-lg text-headline-lg text-on-surface">{dealerName}</h2>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary-container/15 text-primary font-label-xs">
+                  <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                   Authorized Tier-1 EPC Dealer
                 </span>
               </div>
-              <div className="text-sm font-semibold text-gray-600">{companyName}</div>
-
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-3 text-xs text-gray-500">
+              <div className="font-body-lg text-secondary font-medium">{companyName}</div>
+              <div className="flex flex-wrap items-center gap-x-space-lg gap-y-1 mt-space-sm text-secondary font-label-sm">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-gray-800">Partner ID:</span>
-                  <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-gray-700 font-bold">{currentDealer.id}</span>
+                  <span className="material-symbols-outlined text-[18px] text-tertiary">badge</span>
+                  <span className="text-on-surface font-semibold">SV-DLR-MH-0842</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                  <span>Territory: <strong className="text-gray-800">{currentDealer.city}, {currentDealer.state}</strong></span>
+                  <span className="material-symbols-outlined text-[18px] text-tertiary">pin_drop</span>
+                  <span>Territory: <strong className="text-on-surface font-semibold">Pune &amp; Western Maharashtra</strong></span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-[#6CBF3D]" />
-                  <span>Allocated Quota: <strong className="text-gray-800">1.5 MW / Quarter</strong></span>
+                  <span className="material-symbols-outlined text-[18px] text-primary">bolt</span>
+                  <span>Allocated Quota: <strong className="text-on-surface font-semibold">1.2 MW / Quarter</strong></span>
                 </div>
               </div>
             </div>
           </div>
-
-          <div className="flex lg:flex-col items-end gap-2 self-stretch lg:self-auto justify-between pt-2 lg:pt-0">
+          <div className="flex lg:flex-col items-end gap-space-sm self-stretch lg:self-auto justify-between pt-space-sm lg:pt-0">
             <div className="text-left lg:text-right">
-              <span className="text-[11px] text-gray-400 uppercase tracking-wider block font-semibold">Channel Standing</span>
-              <span className="text-lg font-bold text-[#2C6C00] font-heading">Top 5% Partner</span>
+              <span className="font-label-xs text-secondary uppercase tracking-wider block">Channel Standing</span>
+              <span className="font-headline-md text-headline-md text-primary font-bold">Top 5% Partner</span>
             </div>
-            <div className="px-3 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-[#2C6C00] text-xs font-bold flex items-center gap-1.5">
-              <Award className="w-4 h-4 text-[#6CBF3D]" />
-              Gold Tier EPC
+            <div className="flex items-center gap-2">
+              <div className="px-3 py-1.5 rounded-lg bg-surface-container-low text-secondary font-label-xs flex items-center gap-1">
+                <span className="material-symbols-outlined text-[16px] text-primary">military_tech</span>
+                Gold Tier EPC
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Grid: Details Form & Security */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column (7 cols): Personal & Business Details & Certifications */}
-        <div className="lg:col-span-7 space-y-6">
+      {/* Form and Side Info Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-xl">
+        {/* Left Column (7 cols) */}
+        <div className="lg:col-span-7 flex flex-col gap-space-lg">
           {/* Personal & Business Details */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-1">
-                <Building2 className="w-5 h-5 text-[#2C6C00]" />
-                <h2 className="text-base font-bold text-gray-900 font-heading">Personal &amp; Business Details</h2>
+          <div className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
+            <div className="mb-space-lg">
+              <div className="flex items-center gap-space-xs mb-1">
+                <span className="material-symbols-outlined text-primary text-[22px]">corporate_fare</span>
+                <h2 className="font-headline-md text-headline-md text-on-secondary-fixed">Personal &amp; Business Details</h2>
               </div>
-              <p className="text-xs text-gray-500">Information reflected on your official quotation PDFs and proposals.</p>
+              <p className="font-body-sm text-secondary">Information reflected on your customer estimation decks and quotations.</p>
             </div>
-
-            <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Dealer / Contact Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={dealerName}
-                    onChange={(e) => setDealerName(e.target.value)}
-                    className="w-full h-10 px-3 bg-gray-50 rounded-lg text-gray-900 font-medium border border-gray-300 focus:bg-white focus:ring-2 focus:ring-[#6CBF3D] outline-none transition-all text-xs"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="font-semibold text-gray-700">Mobile Number</label>
-                    <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
-                      <Lock className="w-3 h-3" /> Locked
-                    </span>
-                  </div>
+            <form className="flex flex-col gap-space-md" onSubmit={handleSaveProfile}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-label-sm text-on-surface" htmlFor="dealer-name">Dealer / Contact Name</label>
                   <div className="relative">
                     <input
+                      className="w-full h-10 px-3 bg-surface-container-low rounded-lg font-body-md text-on-surface focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container outline-none transition-all"
+                      id="dealer-name"
                       type="text"
-                      readOnly
-                      value={`+91 ${currentDealer.mobile}`}
-                      className="w-full h-10 px-3 pl-8 bg-gray-100 rounded-lg text-gray-500 cursor-not-allowed border border-gray-200 text-xs font-mono font-medium outline-none"
+                      value={dealerName}
+                      onChange={(e) => setDealerName(e.target.value)}
                     />
-                    <Lock className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-3.5" />
                   </div>
-                  <span className="text-[10px] text-gray-400 mt-1 block">Registered login number – contact Admin to update</span>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-label-sm text-on-surface flex items-center justify-between" htmlFor="mobile-number">
+                    <span>Mobile Number</span>
+                    <span className="text-secondary font-label-xs flex items-center gap-0.5">
+                      <span className="material-symbols-outlined text-[12px]">lock</span>
+                      Locked
+                    </span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      className="w-full h-10 px-3 pl-8 bg-surface-container-high/60 rounded-lg font-body-md text-secondary cursor-not-allowed outline-none"
+                      id="mobile-number"
+                      readOnly
+                      type="text"
+                      value={currentDealer?.mobile || "+91 98765 43210"}
+                    />
+                    <span className="material-symbols-outlined text-[16px] text-secondary absolute left-2.5 top-3">lock</span>
+                  </div>
+                  <span className="font-label-xs text-secondary-fixed-dim text-on-secondary-container text-[11px]">(Registered login number – contact Admin to update)</span>
                 </div>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Company / Firm Name</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-label-sm text-on-surface" htmlFor="company-name">Company / Shop Name</label>
                   <input
+                    className="w-full h-10 px-3 bg-surface-container-low rounded-lg font-body-md text-on-surface focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container outline-none transition-all"
+                    id="company-name"
                     type="text"
-                    required
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
-                    className="w-full h-10 px-3 bg-gray-50 rounded-lg text-gray-900 font-medium border border-gray-300 focus:bg-white focus:ring-2 focus:ring-[#6CBF3D] outline-none text-xs"
                   />
                 </div>
-
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">GSTIN / Business Registration</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-label-sm text-on-surface" htmlFor="gstin">GSTIN / Business Registration</label>
                   <div className="relative">
                     <input
+                      className="w-full h-10 px-3 uppercase bg-surface-container-low rounded-lg font-body-md text-on-surface font-mono focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container outline-none transition-all"
+                      id="gstin"
                       type="text"
                       value={gstin}
                       onChange={(e) => setGstin(e.target.value.toUpperCase())}
-                      className="w-full h-10 px-3 uppercase bg-gray-50 rounded-lg text-gray-900 font-mono font-bold border border-gray-300 focus:bg-white focus:ring-2 focus:ring-[#6CBF3D] outline-none text-xs"
                     />
-                    <CheckCircle className="w-4 h-4 text-[#6CBF3D] absolute right-3 top-3" />
+                    <span className="material-symbols-outlined text-primary text-[18px] absolute right-3 top-2.5" title="GST Verified">check_circle</span>
                   </div>
                 </div>
               </div>
-
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">Email Address</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="font-label-sm text-on-surface" htmlFor="email-address">Email Address</label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
                   <input
+                    className="w-full h-10 px-3 pl-9 bg-surface-container-low rounded-lg font-body-md text-on-surface focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container outline-none transition-all"
+                    id="email-address"
                     type="email"
-                    required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full h-10 pl-9 pr-3 bg-gray-50 rounded-lg text-gray-900 border border-gray-300 focus:bg-white focus:ring-2 focus:ring-[#6CBF3D] outline-none text-xs"
                   />
+                  <span className="material-symbols-outlined text-[18px] text-secondary absolute left-2.5 top-2.5">mail</span>
                 </div>
               </div>
-
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">Registered Shop / Office Address</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="font-label-sm text-on-surface" htmlFor="office-address">Registered Shop / Office Address</label>
                 <textarea
+                  className="w-full p-3 bg-surface-container-low rounded-lg font-body-md text-on-surface focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container outline-none transition-all resize-none"
+                  id="office-address"
                   rows={3}
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  className="w-full p-3 bg-gray-50 rounded-lg text-gray-900 border border-gray-300 focus:bg-white focus:ring-2 focus:ring-[#6CBF3D] outline-none resize-none text-xs"
                 />
               </div>
-
-              <div className="flex items-center justify-between pt-2">
-                <span className="text-[11px] text-gray-400">Printed on generated customer proposals</span>
+              <div className="flex items-center justify-between pt-space-sm mt-space-xs">
+                <div className="hidden sm:flex items-center gap-2 text-secondary font-label-xs">
+                  <span className="material-symbols-outlined text-[16px] text-primary">info</span>
+                  Appears on generated PDF proposals
+                </div>
                 <button
+                  className="h-10 px-space-lg bg-primary-container hover:bg-primary text-on-primary rounded-lg font-label-md transition-colors shadow-sm flex items-center gap-2"
                   type="submit"
-                  className="px-5 py-2.5 bg-[#6CBF3D] hover:bg-[#5AA332] text-white font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all text-xs"
                 >
-                  <Save className="w-4 h-4" />
+                  <span className="material-symbols-outlined text-[18px]">save</span>
                   <span>Save Changes</span>
                 </button>
               </div>
             </form>
           </div>
 
-          {/* Dealer Certifications & Licenses */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <FileCheck className="w-5 h-5 text-[#256676]" />
-                <h3 className="text-sm font-bold text-gray-900 font-heading">Dealer Certifications &amp; Licenses</h3>
+          {/* Certifications & Licenses */}
+          <div className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
+            <div className="flex items-center justify-between mb-space-md">
+              <div className="flex items-center gap-space-xs">
+                <span className="material-symbols-outlined text-tertiary text-[20px]">verified</span>
+                <h3 className="font-headline-sm text-headline-sm text-on-secondary-fixed">Dealer Certifications &amp; Licenses</h3>
               </div>
-              <span className="text-xs font-bold text-[#2C6C00]">All Active &amp; Verified</span>
+              <span className="text-primary font-label-xs font-semibold">All Active</span>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-              <div className="p-3 rounded-xl bg-gray-50 border border-gray-200 flex flex-col justify-between">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-sm">
+              <div className="p-space-sm rounded-lg bg-surface-container-low flex flex-col justify-between">
                 <div>
-                  <span className="text-[11px] text-gray-500 block">MNRE Channel Registration</span>
-                  <span className="font-bold text-gray-900 block mt-1">MNRE/2024/GJ/8412</span>
+                  <span className="font-label-xs text-secondary block">MNRE Channel Registration</span>
+                  <span className="font-label-sm text-on-surface block mt-1">MNRE/2023/MH/4412</span>
                 </div>
-                <span className="text-[11px] text-[#2C6C00] font-semibold mt-2 flex items-center gap-1">
-                  <Check className="w-3.5 h-3.5" /> Valid till Dec 2027
+                <span className="font-label-xs text-primary mt-2 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[14px]">check</span> Valid till Dec 2026
                 </span>
               </div>
-
-              <div className="p-3 rounded-xl bg-gray-50 border border-gray-200 flex flex-col justify-between">
+              <div className="p-space-sm rounded-lg bg-surface-container-low flex flex-col justify-between">
                 <div>
-                  <span className="text-[11px] text-gray-500 block">PGVCL Grid-Tie Empanelment</span>
-                  <span className="font-bold text-gray-900 block mt-1">Class-A Rooftop</span>
+                  <span className="font-label-xs text-secondary block">MSEDCL Grid-Tie Empanelment</span>
+                  <span className="font-label-sm text-on-surface block mt-1">Class-A Rooftop</span>
                 </div>
-                <span className="text-[11px] text-[#2C6C00] font-semibold mt-2 flex items-center gap-1">
-                  <Check className="w-3.5 h-3.5" /> Active &amp; Empaneled
+                <span className="font-label-xs text-primary mt-2 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[14px]">check</span> Active
                 </span>
               </div>
-
-              <div className="p-3 rounded-xl bg-gray-50 border border-gray-200 flex flex-col justify-between">
+              <div className="p-space-sm rounded-lg bg-surface-container-low flex flex-col justify-between">
                 <div>
-                  <span className="text-[11px] text-gray-500 block">Sunvine Master Installer</span>
-                  <span className="font-bold text-gray-900 block mt-1">TOPCon &amp; String Inverter</span>
+                  <span className="font-label-xs text-secondary block">Sunvine Master Installer</span>
+                  <span className="font-label-sm text-on-surface block mt-1">Inverter &amp; Microgrid</span>
                 </div>
-                <span className="text-[11px] text-[#2C6C00] font-semibold mt-2 flex items-center gap-1">
-                  <CheckCircle className="w-3.5 h-3.5 text-[#6CBF3D]" /> Certified
+                <span className="font-label-xs text-primary mt-2 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[14px]">verified</span> Certified
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Column (5 cols): Security & Password Management */}
-        <div className="lg:col-span-5 space-y-6">
-          {/* Security & Password Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-1">
-                <Lock className="w-5 h-5 text-[#2C6C00]" />
-                <h2 className="text-base font-bold text-gray-900 font-heading">Security &amp; Password Management</h2>
+        {/* Right Column (5 cols) */}
+        <div className="lg:col-span-5 flex flex-col gap-space-lg">
+          {/* Security & Password */}
+          <div className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
+            <div className="mb-space-lg">
+              <div className="flex items-center gap-space-xs mb-1">
+                <span className="material-symbols-outlined text-primary text-[22px]">security</span>
+                <h2 className="font-headline-md text-headline-md text-on-secondary-fixed">Security &amp; Password Management</h2>
               </div>
-              <p className="text-xs text-gray-500">Keep your portal login credentials and quotes protected.</p>
+              <p className="font-body-sm text-secondary">Keep your Sunvine portal login credentials and quotes protected.</p>
             </div>
-
-            <form onSubmit={handleUpdatePassword} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">Current Password</label>
+            <form className="flex flex-col gap-space-md" onSubmit={handleUpdatePassword}>
+              <div className="flex flex-col gap-1.5">
+                <label className="font-label-sm text-on-surface" htmlFor="current-password">Current Password</label>
                 <div className="relative">
                   <input
-                    type={showCurrentPassword ? 'text' : 'password'}
-                    required
+                    className="w-full h-10 px-3 pr-10 bg-surface-container-low rounded-lg font-body-md text-on-surface focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container outline-none transition-all"
+                    id="current-password"
+                    placeholder="••••••••••••"
+                    type={showCurrentPassword ? "text" : "password"}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    className="w-full h-10 px-3 pr-9 bg-gray-50 rounded-lg text-gray-900 border border-gray-300 focus:bg-white focus:ring-2 focus:ring-[#6CBF3D] outline-none text-xs"
                   />
                   <button
-                    type="button"
+                    className="absolute right-3 top-2.5 text-secondary hover:text-on-surface"
                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                    type="button"
                   >
-                    {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    <span className="material-symbols-outlined text-[20px]">
+                      {showCurrentPassword ? "visibility_off" : "visibility"}
+                    </span>
                   </button>
                 </div>
               </div>
-
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">New Password</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="font-label-sm text-on-surface" htmlFor="new-password">New Password</label>
                 <div className="relative">
                   <input
-                    type={showNewPassword ? 'text' : 'password'}
-                    required
+                    className="w-full h-10 px-3 pr-10 bg-surface-container-low rounded-lg font-body-md text-on-surface focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container outline-none transition-all"
+                    id="new-password"
+                    placeholder="Enter new secure password"
+                    type={showNewPassword ? "text" : "password"}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Enter new secure password"
-                    className="w-full h-10 px-3 pr-9 bg-gray-50 rounded-lg text-gray-900 border border-gray-300 focus:bg-white focus:ring-2 focus:ring-[#6CBF3D] outline-none text-xs"
                   />
                   <button
-                    type="button"
+                    className="absolute right-3 top-2.5 text-secondary hover:text-on-surface"
                     onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                    type="button"
                   >
-                    {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    <span className="material-symbols-outlined text-[20px]">
+                      {showNewPassword ? "visibility_off" : "visibility"}
+                    </span>
                   </button>
                 </div>
               </div>
-
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">Confirm New Password</label>
-                <input
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Re-enter new secure password"
-                  className="w-full h-10 px-3 bg-gray-50 rounded-lg text-gray-900 border border-gray-300 focus:bg-white focus:ring-2 focus:ring-[#6CBF3D] outline-none text-xs"
-                />
-              </div>
-
-              {/* Password Requirements Checklist */}
-              <div className="p-3 rounded-lg bg-gray-50 border border-gray-200 space-y-1 text-[11px]">
-                <span className="text-gray-400 font-semibold uppercase tracking-wider block text-[10px]">
-                  Password Requirements
-                </span>
-                <div className={`flex items-center gap-1.5 ${hasMinLength ? 'text-emerald-700 font-semibold' : 'text-gray-500'}`}>
-                  {hasMinLength ? <Check className="w-3.5 h-3.5 text-[#6CBF3D]" /> : <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>}
-                  <span>Minimum 8+ characters</span>
-                </div>
-                <div className={`flex items-center gap-1.5 ${hasCase ? 'text-emerald-700 font-semibold' : 'text-gray-500'}`}>
-                  {hasCase ? <Check className="w-3.5 h-3.5 text-[#6CBF3D]" /> : <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>}
-                  <span>Uppercase &amp; lowercase letters</span>
-                </div>
-                <div className={`flex items-center gap-1.5 ${hasSymbol ? 'text-emerald-700 font-semibold' : 'text-gray-500'}`}>
-                  {hasSymbol ? <Check className="w-3.5 h-3.5 text-[#6CBF3D]" /> : <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>}
-                  <span>At least one number or symbol</span>
+              <div className="flex flex-col gap-1.5">
+                <label className="font-label-sm text-on-surface" htmlFor="confirm-password">Confirm New Password</label>
+                <div className="relative">
+                  <input
+                    className="w-full h-10 px-3 pr-10 bg-surface-container-low rounded-lg font-body-md text-on-surface focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container outline-none transition-all"
+                    id="confirm-password"
+                    placeholder="Re-enter new secure password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                  <button
+                    className="absolute right-3 top-2.5 text-secondary hover:text-on-surface"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    type="button"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">
+                      {showConfirmPassword ? "visibility_off" : "visibility"}
+                    </span>
+                  </button>
                 </div>
               </div>
-
-              <button
-                type="submit"
-                className="w-full h-10 bg-[#0F1B2E] hover:bg-[#1A2942] text-white font-bold rounded-lg shadow-sm flex items-center justify-center gap-2 transition-all text-xs"
-              >
-                <Key className="w-4 h-4 text-[#6CBF3D]" />
-                <span>Update Password</span>
-              </button>
+              <div className="p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-1.5">
+                <span className="font-label-xs text-secondary uppercase tracking-wider">Password Requirements</span>
+                <div className="grid grid-cols-1 gap-1 text-label-xs font-label-xs">
+                  <div className={`flex items-center gap-1.5 ${ruleLength ? 'text-primary' : 'text-secondary'}`}>
+                    <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: ruleLength ? "'FILL' 1" : "'FILL' 0" }}>
+                      {ruleLength ? 'check_circle' : 'radio_button_unchecked'}
+                    </span>
+                    <span>Minimum 8+ characters</span>
+                  </div>
+                  <div className={`flex items-center gap-1.5 ${ruleCasing ? 'text-primary' : 'text-secondary'}`}>
+                    <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: ruleCasing ? "'FILL' 1" : "'FILL' 0" }}>
+                      {ruleCasing ? 'check_circle' : 'radio_button_unchecked'}
+                    </span>
+                    <span>Uppercase &amp; lowercase letters</span>
+                  </div>
+                  <div className={`flex items-center gap-1.5 ${ruleSymbol ? 'text-primary' : 'text-secondary'}`}>
+                    <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: ruleSymbol ? "'FILL' 1" : "'FILL' 0" }}>
+                      {ruleSymbol ? 'check_circle' : 'radio_button_unchecked'}
+                    </span>
+                    <span>At least one number or special symbol (@, #, $)</span>
+                  </div>
+                </div>
+              </div>
+              <div className="pt-space-xs">
+                <button
+                  className="w-full h-10 bg-primary-container hover:bg-primary text-on-primary rounded-lg font-label-md transition-colors shadow-sm flex items-center justify-center gap-2"
+                  type="submit"
+                >
+                  <span className="material-symbols-outlined text-[18px]">key</span>
+                  <span>Update Password</span>
+                </button>
+              </div>
             </form>
           </div>
 
-          {/* Preferences Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 text-xs space-y-3">
-            <h3 className="font-bold text-gray-900 font-heading">Proposal &amp; Workflow Preferences</h3>
-            <div className="flex items-center justify-between p-2 rounded-lg bg-gray-50">
-              <span className="text-gray-700">WhatsApp Instant PDF Dispatch</span>
-              <span className="text-[#2C6C00] font-bold">Enabled</span>
-            </div>
-            <div className="flex items-center justify-between p-2 rounded-lg bg-gray-50">
-              <span className="text-gray-700">Confidential Margin Security</span>
-              <span className="text-[#2C6C00] font-bold">Encrypted</span>
-            </div>
-            <div className="flex items-center justify-between p-2 rounded-lg bg-gray-50">
-              <span className="text-gray-700">Daily Quotation Audit Digest</span>
-              <span className="text-gray-500 font-medium">9:00 AM</span>
+          {/* Partner Support */}
+          <div className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg relative overflow-hidden">
+            <div className="w-1.5 h-full bg-primary absolute left-0 top-0"></div>
+            <div className="flex items-start gap-space-sm">
+              <div className="w-10 h-10 rounded-lg bg-tertiary-container/30 text-on-tertiary-container flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[22px]">contact_support</span>
+              </div>
+              <div className="flex flex-col">
+                <h3 className="font-headline-sm text-headline-sm text-on-surface">Sunvine Channel Partner Support</h3>
+                <p className="font-body-sm text-secondary mt-1">Get fast-track resolution for regional approvals, equipment dispatch, or warranty claims.</p>
+                <div className="mt-space-md flex flex-col gap-2 font-body-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[18px] text-primary shrink-0">support_agent</span>
+                    <span className="text-secondary">Dedicated Dealer Desk:</span>
+                    <a className="text-on-surface font-semibold hover:text-primary transition-colors" href="tel:18007868463">
+                      1800-SUN-VINE (Toll Free)
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[18px] text-primary shrink-0">mail</span>
+                    <span className="text-secondary">Email:</span>
+                    <a className="text-on-surface font-semibold hover:text-primary transition-colors" href="mailto:dealers@sunvine.in">
+                      dealers@sunvine.in
+                    </a>
+                  </div>
+                  <div className="flex items-start gap-2 pt-1">
+                    <span className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">person_pin</span>
+                    <div>
+                      <span className="text-secondary">Territory Manager:</span>
+                      <div className="text-on-surface font-semibold">Amit Deshmukh • <a className="text-tertiary hover:underline" href="tel:+919822011223">+91 98220 11223</a></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-space-md pt-space-sm flex items-center justify-between text-secondary font-label-xs">
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-primary-container"></span>
+                    Regional Hub: Pune Central
+                  </span>
+                  <span>Mon–Sat • 9 AM – 7 PM</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
