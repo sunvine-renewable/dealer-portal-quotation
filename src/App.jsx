@@ -3,6 +3,10 @@ import { AppProvider, useApp } from './context/AppContext';
 import SplashScreen from './components/SplashScreen';
 import Navigation from './components/Navigation';
 
+// Authentication Views
+import DealerLogin from './components/Auth/DealerLogin';
+import AdminLogin from './components/Auth/AdminLogin';
+
 // Dealer Portal Views
 import DealerDashboard from './components/DealerPortal/DealerDashboard';
 import CreateQuotation from './components/DealerPortal/CreateQuotation';
@@ -18,7 +22,7 @@ import HardwareMaster from './components/AdminPortal/HardwareMaster';
 import AllQuotations from './components/AdminPortal/AllQuotations';
 
 function MainApp() {
-  const { role, activeTab } = useApp();
+  const { isAuthenticated, authView, role, activeTab } = useApp();
   const [splashFinished, setSplashFinished] = useState(() => {
     return sessionStorage.getItem('sunvine_splash_shown') === 'true';
   });
@@ -28,9 +32,19 @@ function MainApp() {
     setSplashFinished(true);
   };
 
-  // Render view corresponding to current active tab and role
+  // 1. Unauthenticated Gateway
+  if (!isAuthenticated) {
+    return (
+      <>
+        {!splashFinished && <SplashScreen onFinish={handleSplashFinish} />}
+        {authView === 'admin_login' ? <AdminLogin /> : <DealerLogin />}
+      </>
+    );
+  }
+
+  // 2. Authenticated Portal Views
   const renderView = () => {
-    // Shared preview tab for both dealer & admin
+    // Shared 4-Page PDF proposal preview
     if (activeTab === 'preview_quote') {
       return <QuotationPreview />;
     }
@@ -69,7 +83,7 @@ function MainApp() {
 
   return (
     <div className="min-h-screen bg-[#F6F8F7] text-[#0F1B2E] font-sans antialiased">
-      {/* 1-Second Minimalist Brand Splash Screen on Initial Load */}
+      {/* 1-Second Splash on first arrival */}
       {!splashFinished && <SplashScreen onFinish={handleSplashFinish} />}
 
       {/* Navigation Layout */}

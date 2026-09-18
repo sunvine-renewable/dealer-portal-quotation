@@ -10,7 +10,15 @@ import {
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  // Session / Role Management: 'dealer' or 'admin'
+  // Authentication & Session State
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('sunvine_auth') === 'true';
+  });
+
+  // Auth screen toggle when not authenticated ('dealer_login' or 'admin_login')
+  const [authView, setAuthView] = useState('dealer_login');
+
+  // Role: 'dealer' or 'admin'
   const [role, setRole] = useState(() => localStorage.getItem('sunvine_role') || 'dealer');
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('sunvine_tab') || 'dashboard');
   
@@ -57,12 +65,20 @@ export const AppProvider = ({ children }) => {
 
   // Synchronize state with localStorage
   useEffect(() => {
+    localStorage.setItem('sunvine_auth', isAuthenticated ? 'true' : 'false');
+  }, [isAuthenticated]);
+
+  useEffect(() => {
     localStorage.setItem('sunvine_role', role);
   }, [role]);
 
   useEffect(() => {
     localStorage.setItem('sunvine_tab', activeTab);
   }, [activeTab]);
+
+  useEffect(() => {
+    localStorage.setItem('sunvine_current_dealer', JSON.stringify(currentDealer));
+  }, [currentDealer]);
 
   useEffect(() => {
     localStorage.setItem('sunvine_pricing_master', JSON.stringify(pricingMaster));
@@ -90,7 +106,31 @@ export const AppProvider = ({ children }) => {
     }
   }, [previewQuotation]);
 
-  // Actions
+  // Auth Actions
+  const login = (userRole, userProfile = null) => {
+    setIsAuthenticated(true);
+    setRole(userRole);
+    if (userRole === 'admin') {
+      setActiveTab('admin_dashboard');
+    } else {
+      setActiveTab('dashboard');
+      if (userProfile) setCurrentDealer(userProfile);
+    }
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    setAuthView('dealer_login');
+    localStorage.removeItem('sunvine_auth');
+  };
+
+  const updateDealerProfile = (updatedFields) => {
+    const updated = { ...currentDealer, ...updatedFields };
+    setCurrentDealer(updated);
+    setDealers(prev => prev.map(d => d.id === currentDealer.id ? updated : d));
+  };
+
+  // Quotation Actions
   const addQuotation = (newQuote) => {
     const updated = [newQuote, ...quotations];
     setQuotations(updated);
@@ -120,12 +160,18 @@ export const AppProvider = ({ children }) => {
   return (
     <AppContext.Provider
       value={{
+        isAuthenticated,
+        authView,
+        setAuthView,
+        login,
+        logout,
         role,
         setRole,
         activeTab,
         setActiveTab,
         currentDealer,
         setCurrentDealer,
+        updateDealerProfile,
         pricingMaster,
         updatePricingMaster,
         modulesList,

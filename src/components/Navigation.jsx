@@ -10,24 +10,23 @@ import {
   Sliders,
   Cpu,
   FolderArchive,
-  Download,
   Menu,
   X,
   ShieldCheck,
   Building2,
-  Lock
+  LogOut
 } from 'lucide-react';
 
 export default function Navigation() {
-  const { role, setRole, activeTab, setActiveTab, currentDealer } = useApp();
+  const { role, activeTab, setActiveTab, currentDealer, logout } = useApp();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const dealerMenu = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'create_quote', label: 'Create Quotation', icon: FilePlus },
+    { id: 'create_quote', label: 'New Quotation', icon: FilePlus },
     { id: 'preview_quote', label: 'Quotation Preview (PDF)', icon: FileText },
     { id: 'my_quotes', label: 'My Quotations', icon: History },
-    { id: 'profile', label: 'Dealer Profile', icon: User },
+    { id: 'profile', label: 'Profile', icon: User },
   ];
 
   const adminMenu = [
@@ -42,10 +41,10 @@ export default function Navigation() {
 
   return (
     <>
-      {/* Persistent Desktop Sidebar */}
+      {/* Desktop Sidebar (Matching Stitch Navigation) */}
       <aside className="no-print hidden md:flex flex-col w-64 bg-[#0F1B2E] border-r border-[#1E2E48] fixed inset-y-0 left-0 z-30 select-none">
-        {/* Logo Container */}
-        <div className="h-20 px-5 flex items-center justify-between border-b border-white/10 bg-[#0A1322]">
+        {/* Brand Container */}
+        <div className="h-20 px-6 flex items-center justify-between border-b border-white/10 bg-[#0A1322]">
           <img
             src="/sunvine_logo_white.png"
             alt="Sunvine Renewable Energy"
@@ -54,44 +53,19 @@ export default function Navigation() {
           />
         </div>
 
-        {/* Role Switcher Pill */}
-        <div className="p-4 border-b border-white/5 bg-[#122036]">
-          <div className="flex items-center justify-between p-1 bg-[#09101C] rounded-lg border border-white/10">
-            <button
-              onClick={() => {
-                setRole('dealer');
-                setActiveTab('dashboard');
-              }}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                role === 'dealer'
-                  ? 'bg-[#6CBF3D] text-white shadow-sm'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              <Building2 className="w-3.5 h-3.5" />
-              Dealer
-            </button>
-            <button
-              onClick={() => {
-                setRole('admin');
-                setActiveTab('admin_dashboard');
-              }}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                role === 'admin'
-                  ? 'bg-[#6CBF3D] text-white shadow-sm'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              Admin
-            </button>
-          </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-gray-400 px-1">
-            <span>Current Workspace:</span>
-            <span className="font-semibold text-white uppercase tracking-wider text-[10px] bg-white/10 px-1.5 py-0.5 rounded">
-              {role === 'admin' ? 'Super Admin' : 'EPC Dealer'}
+        {/* Workspace Tag */}
+        <div className="px-6 py-3 border-b border-white/5 bg-[#122036] flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {role === 'admin' ? (
+              <ShieldCheck className="w-4 h-4 text-[#6CBF3D]" />
+            ) : (
+              <Building2 className="w-4 h-4 text-[#6CBF3D]" />
+            )}
+            <span className="text-xs font-bold text-white uppercase tracking-wider">
+              {role === 'admin' ? 'Super Admin Portal' : 'EPC Dealer Portal'}
             </span>
           </div>
+          <span className="w-2 h-2 rounded-full bg-[#6CBF3D] animate-pulse"></span>
         </div>
 
         {/* Navigation Items */}
@@ -105,7 +79,7 @@ export default function Navigation() {
                 onClick={() => setActiveTab(item.id)}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   isActive
-                    ? 'bg-[#6CBF3D] text-white shadow-md'
+                    ? 'bg-[#6CBF3D] text-white font-semibold shadow-md'
                     : 'text-gray-300 hover:bg-white/5 hover:text-white'
                 }`}
               >
@@ -123,25 +97,34 @@ export default function Navigation() {
           })}
         </nav>
 
-        {/* User Card at Bottom */}
-        <div className="p-4 border-t border-white/10 bg-[#09101C]">
+        {/* User Card & Logout Button at Bottom */}
+        <div className="p-4 border-t border-white/10 bg-[#0A1322] space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#6CBF3D]/20 border border-[#6CBF3D]/40 flex items-center justify-center text-[#6CBF3D] font-bold text-sm">
+            <div className="w-9 h-9 rounded-full bg-[#6CBF3D]/20 border border-[#6CBF3D]/40 flex items-center justify-center text-[#6CBF3D] font-bold text-sm shrink-0">
               {role === 'admin' ? 'SA' : currentDealer.contactPerson.charAt(0)}
             </div>
             <div className="flex flex-col truncate">
               <span className="text-xs font-semibold text-white truncate">
-                {role === 'admin' ? 'Sunvine Admin Desk' : currentDealer.contactPerson}
+                {role === 'admin' ? 'National Admin Desk' : currentDealer.contactPerson}
               </span>
               <span className="text-[11px] text-gray-400 truncate">
-                {role === 'admin' ? 'national@sunvinerenewable.com' : currentDealer.firmName}
+                {role === 'admin' ? 'superadmin@sunvine.in' : currentDealer.firmName}
               </span>
             </div>
           </div>
+
+          {/* Official Logout CTA */}
+          <button
+            onClick={logout}
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-white/5 hover:bg-red-500/20 text-gray-300 hover:text-red-300 text-xs font-semibold border border-white/10 hover:border-red-500/30 transition-all"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Sign Out</span>
+          </button>
         </div>
       </aside>
 
-      {/* Top Mobile/Desktop Header */}
+      {/* Top Header */}
       <header className="no-print sticky top-0 z-20 md:pl-64 bg-white border-b border-[#E4E7EB] shadow-xs">
         <div className="h-16 px-4 md:px-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -163,18 +146,16 @@ export default function Navigation() {
 
           {/* Quick Header Actions */}
           <div className="flex items-center gap-3">
-            {/* Direct Switch to Create Quote */}
             {role === 'dealer' && activeTab !== 'create_quote' && (
               <button
                 onClick={() => setActiveTab('create_quote')}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#6CBF3D] hover:bg-[#4F9A2C] text-white text-xs font-semibold rounded-lg shadow-xs transition-colors"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#6CBF3D] hover:bg-[#5AA332] text-white text-xs font-semibold rounded-lg shadow-xs transition-colors"
               >
                 <FilePlus className="w-3.5 h-3.5" />
                 New Quote
               </button>
             )}
 
-            {/* Direct Switch to Preview */}
             <button
               onClick={() => setActiveTab('preview_quote')}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F1F4F9] hover:bg-[#E4E7EB] text-[#0F1B2E] text-xs font-medium rounded-lg border border-[#E4E7EB] transition-colors"
@@ -183,11 +164,13 @@ export default function Navigation() {
               <span className="hidden sm:inline">View</span> 4-Page PDF
             </button>
 
-            {/* PWA Install Trigger / Status Pill */}
-            <div className="hidden lg:flex items-center gap-1.5 text-xs text-gray-500 bg-[#F6F8F7] px-2.5 py-1 rounded-full border border-gray-200">
-              <span className="w-2 h-2 rounded-full bg-[#6CBF3D]"></span>
-              <span>PWA Ready</span>
-            </div>
+            <button
+              onClick={logout}
+              className="md:hidden p-1.5 text-gray-500 hover:text-red-600 rounded-lg"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </header>
@@ -202,27 +185,8 @@ export default function Navigation() {
             </button>
           </div>
 
-          <div className="my-4 p-1 bg-[#09101C] rounded-lg flex">
-            <button
-              onClick={() => {
-                setRole('dealer');
-                setActiveTab('dashboard');
-                setMobileOpen(false);
-              }}
-              className={`flex-1 py-2 text-xs font-bold rounded ${role === 'dealer' ? 'bg-[#6CBF3D]' : 'text-gray-400'}`}
-            >
-              Dealer Mode
-            </button>
-            <button
-              onClick={() => {
-                setRole('admin');
-                setActiveTab('admin_dashboard');
-                setMobileOpen(false);
-              }}
-              className={`flex-1 py-2 text-xs font-bold rounded ${role === 'admin' ? 'bg-[#6CBF3D]' : 'text-gray-400'}`}
-            >
-              Admin Mode
-            </button>
+          <div className="py-3 px-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+            {role === 'admin' ? 'Super Admin Mode' : 'Dealer Mode'}
           </div>
 
           <nav className="flex-1 space-y-2 py-4">
@@ -242,6 +206,19 @@ export default function Navigation() {
               </button>
             ))}
           </nav>
+
+          <div className="pt-4 border-t border-white/10">
+            <button
+              onClick={() => {
+                setMobileOpen(false);
+                logout();
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-600/20 text-red-300 rounded-lg font-semibold text-xs"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </button>
+          </div>
         </div>
       )}
     </>
