@@ -7,28 +7,42 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'sunvine_logo_transparent.png', 'sunvine_logo_white.png'],
+      includeAssets: ['favicon.ico', 'sunvine_logo_transparent.png', 'sunvine_logo_white.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'Sunvine Solar EPC Portal',
-        short_name: 'Sunvine Solar',
+        name: 'Sunvine Solar EPC Dealer Portal',
+        short_name: 'Sunvine EPC',
         description: 'Sunvine Renewable Energy - Solar EPC Dealer & Admin Quotation Portal',
         theme_color: '#0F1B2E',
         background_color: '#0F1B2E',
         display: 'standalone',
-        orientation: 'any',
+        orientation: 'portrait-primary',
         start_url: '/',
+        id: '/',
+        scope: '/',
         icons: [
           {
-            src: '/sunvine_logo_transparent.png',
-            sizes: '250x54',
+            src: '/pwa-192x192.png',
+            sizes: '192x192',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: '/sunvine_logo_transparent.png',
+            src: '/pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable'
+          },
+          {
+            src: '/pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'any'
+          },
+          {
+            src: '/pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ]
       }

@@ -1,17 +1,39 @@
 {
   "short_name": "Sunvine EPC",
-  "name": "Sunvine Renewable Energy - Dealer Portal",
+  "name": "Sunvine Solar EPC Dealer Portal",
+  "description": "Sunvine Renewable Energy - Solar EPC Dealer Quotation & Sizing Portal",
   "icons": [
     {
-      "src": "/sunvine_logo_transparent.png",
+      "src": "/pwa-192x192.png",
       "type": "image/png",
-      "sizes": "192x192 512x512",
-      "purpose": "any maskable"
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ],
   "start_url": "/",
+  "id": "/",
+  "scope": "/",
   "background_color": "#0F1B2E",
   "theme_color": "#0F1B2E",
   "display": "standalone",
-  "orientation": "any"
+  "orientation": "portrait-primary"
 }
+
