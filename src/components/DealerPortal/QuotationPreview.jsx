@@ -1,9 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import PDFTemplate from './PDFTemplate';
-import { openWhatsAppChat, buildProposalWhatsAppMessage, cleanCustomerPhone } from '../../utils/quotationShare';
+import { 
+  openWhatsAppChat, 
+  shareQuotationPdfViaWhatsApp, 
+  buildProposalWhatsAppMessage, 
+  cleanCustomerPhone 
+} from '../../utils/quotationShare';
 
-export default function QuotationPreview() {
+export default function QuotationPreview({ isPublicView = false }) {
   const { previewQuotation, pricingMaster, setActiveTab, role } = useApp();
   const [activePage, setActivePage] = useState('all'); // 'all' | 1 | 2 | 3 | 4
   const [zoomMode, setZoomMode] = useState('fit'); // 'fit' | '100'
@@ -11,7 +16,10 @@ export default function QuotationPreview() {
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [targetPhone, setTargetPhone] = useState('');
   const [copiedFeedback, setCopiedFeedback] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [statusNotice, setStatusNotice] = useState('');
   const previewWrapperRef = useRef(null);
+  const pdfExportRef = useRef(null);
 
   // Initialize phone when quotation changes
   useEffect(() => {
@@ -43,9 +51,33 @@ export default function QuotationPreview() {
     window.print();
   };
 
-  const handleDirectWhatsApp = () => {
+  const handleDirectWhatsAppFast = () => {
     if (!previewQuotation) return;
     openWhatsAppChat(previewQuotation, targetPhone);
+  };
+
+  const handleShareWhatsAppWithPDF = async () => {
+    if (!previewQuotation) return;
+    setIsGeneratingPdf(true);
+    setStatusNotice('Generating official 4-Page PDF proposal...');
+    try {
+      const res = await shareQuotationPdfViaWhatsApp(
+        previewQuotation,
+        pdfExportRef.current,
+        targetPhone
+      );
+      if (res?.method === 'native_file_share') {
+        setStatusNotice('Official PDF shared to WhatsApp!');
+      } else if (res?.method === 'download_and_chat') {
+        setStatusNotice(`PDF downloaded (${res.fileName}) & WhatsApp chat opened!`);
+      }
+    } catch (err) {
+      console.error(err);
+      openWhatsAppChat(previewQuotation, targetPhone);
+    } finally {
+      setIsGeneratingPdf(false);
+      setTimeout(() => setStatusNotice(''), 6000);
+    }
   };
 
   const handleCopyMessage = () => {
@@ -81,13 +113,15 @@ export default function QuotationPreview() {
       {/* Top Control Bar (Hidden on print) */}
       <div className="no-print sticky top-16 z-20 bg-surface-container-lowest/95 backdrop-blur border-b border-surface-container-high py-3 px-3 sm:px-6 shadow-sm flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            onClick={() => setActiveTab(role === 'admin' ? 'all_quotes' : 'dashboard')}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-surface-container-high text-xs font-semibold text-secondary hover:text-on-surface hover:bg-surface-container-low transition-colors"
-          >
-            <span className="material-symbols-outlined text-[16px]">arrow_back</span>
-            <span>Back</span>
-          </button>
+          {!isPublicView && (
+            <button
+              onClick={() => setActiveTab(role === 'admin' ? 'all_quotes' : 'dashboard')}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-surface-container-high text-xs font-semibold text-secondary hover:text-on-surface hover:bg-surface-container-low transition-colors"
+            >
+              <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+              <span>Back</span>
+            </button>
+          )}
           <div>
             <div className="flex items-center gap-1.5">
               <h2 className="font-label-md text-xs sm:text-sm font-bold text-on-surface truncate max-w-[160px] sm:max-w-xs">
@@ -105,22 +139,29 @@ export default function QuotationPreview() {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
-          {/* Dealer Private Profit Notice Pill */}
-          <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-xs">
-            <span className="material-symbols-outlined text-[16px] text-amber-600">lock</span>
-            <span>
-              Your Margin: <strong className="font-semibold">₹{(previewQuotation.dealerTotalMargin || (previewQuotation.dealerMarginPerKW * previewQuotation.systemCapacityKW) || 0).toLocaleString('en-IN')}</strong> (Hidden from PDF)
-            </span>
-          </div>
+          {/* Dealer Private Profit Notice Pill (Strictly hidden from customer public view) */}
+          {!isPublicView && (
+            <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+              <span className="material-symbols-outlined text-[16px] text-amber-600">lock</span>
+              <span>
+                Your Margin: <strong className="font-semibold">₹{(previewQuotation.dealerTotalMargin || (previewQuotation.dealerMarginPerKW * previewQuotation.systemCapacityKW) || 0).toLocaleString('en-IN')}</strong> (Hidden from PDF)
+              </span>
+            </div>
+          )}
 
-          <button
-            onClick={() => setShowWhatsAppModal(true)}
-            className="inline-flex items-center gap-1 px-2.5 sm:px-3.5 py-2 rounded-lg bg-[#25D366] hover:bg-[#1EBE5B] text-white font-label-md text-xs font-semibold shadow-sm transition-all active:scale-95"
-            title="Open WhatsApp chat with customer"
-          >
-            <span className="material-symbols-outlined text-[18px]">chat</span>
-            <span>WhatsApp</span>
-          </button>
+          {!isPublicView && (
+            <button
+              onClick={() => setShowWhatsAppModal(true)}
+              disabled={isGeneratingPdf}
+              className="inline-flex items-center gap-1 px-2.5 sm:px-3.5 py-2 rounded-lg bg-[#25D366] hover:bg-[#1EBE5B] text-white font-label-md text-xs font-semibold shadow-sm transition-all active:scale-95 disabled:opacity-60"
+              title="Share proposal on WhatsApp (sends actual PDF file)"
+            >
+              <span className={`material-symbols-outlined text-[18px] ${isGeneratingPdf ? 'animate-spin' : ''}`}>
+                {isGeneratingPdf ? 'sync' : 'chat'}
+              </span>
+              <span>{isGeneratingPdf ? 'Preparing PDF...' : 'Share WhatsApp'}</span>
+            </button>
+          )}
 
           <button
             onClick={handlePrint}
@@ -128,10 +169,25 @@ export default function QuotationPreview() {
             title="Print or Save as 4-Page PDF"
           >
             <span className="material-symbols-outlined text-[18px]">print</span>
-            <span>Print / Save PDF</span>
+            <span>{isPublicView ? 'Download Official PDF' : 'Print / Save PDF'}</span>
           </button>
         </div>
       </div>
+
+      {/* Status Notice Banner (e.g., PDF downloaded / WhatsApp opened) */}
+      {statusNotice && (
+        <div className="no-print max-w-4xl mx-auto mt-2 px-3">
+          <div className="p-3 bg-emerald-50 border border-emerald-300 text-emerald-900 rounded-xl flex items-center justify-between text-xs font-semibold shadow-xs animate-in fade-in">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-emerald-600 text-[20px]">check_circle</span>
+              <span>{statusNotice}</span>
+            </div>
+            <button onClick={() => setStatusNotice('')} className="text-emerald-700 hover:text-emerald-950">
+              <span className="material-symbols-outlined text-[16px]">close</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Mobile PDF Viewer Controls (< md) */}
       <div className="no-print mt-3 px-3 max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-2 bg-surface-container-lowest p-2 rounded-xl border border-surface-container-high shadow-xs">
@@ -188,6 +244,23 @@ export default function QuotationPreview() {
         </div>
       </div>
 
+      {/* Off-Screen Full 4-Page Template for PDF file generation (Hidden on print) */}
+      <div
+        className="no-print"
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          top: 0,
+          width: '794px',
+          background: '#ffffff',
+          pointerEvents: 'none'
+        }}
+      >
+        <div ref={pdfExportRef}>
+          <PDFTemplate quotation={previewQuotation} pricingMaster={pricingMaster} activePage="all" />
+        </div>
+      </div>
+
       {/* WhatsApp Share Modal */}
       {showWhatsAppModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
@@ -195,7 +268,7 @@ export default function QuotationPreview() {
             <div className="flex items-center justify-between pb-3 border-b border-surface-container">
               <div className="flex items-center gap-2 text-[#25D366]">
                 <span className="material-symbols-outlined text-[26px]">chat</span>
-                <h3 className="font-headline-sm text-base font-bold text-on-surface">Share Proposal on WhatsApp</h3>
+                <h3 className="font-headline-sm text-base font-bold text-on-surface">Share Proposal with PDF on WhatsApp</h3>
               </div>
               <button
                 onClick={() => setShowWhatsAppModal(false)}
@@ -224,7 +297,7 @@ export default function QuotationPreview() {
                   />
                 </div>
                 <p className="text-[11px] text-secondary mt-1">
-                  Clicking "Open Chat & Send" will open WhatsApp directly in the chat with this number, with the proposal pre-filled. You only have to press Enter!
+                  On mobile: WhatsApp will open with the official PDF file attached! On desktop: PDF is downloaded automatically and chat opens with message pre-filled.
                 </p>
               </div>
 
@@ -251,23 +324,38 @@ export default function QuotationPreview() {
             </div>
 
             {/* Modal Actions */}
-            <div className="pt-3 border-t border-surface-container flex items-center justify-end gap-2.5">
-              <button
-                onClick={() => setShowWhatsAppModal(false)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-secondary hover:bg-surface-container-high"
-              >
-                Cancel
-              </button>
+            <div className="pt-3 border-t border-surface-container flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
               <button
                 onClick={() => {
-                  handleDirectWhatsApp();
+                  handleDirectWhatsAppFast();
                   setShowWhatsAppModal(false);
                 }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#1EBE5B] text-white font-label-md text-xs font-bold shadow-md active:scale-95 transition-all"
+                className="text-xs font-semibold text-secondary hover:text-on-surface px-2 py-1 text-left sm:text-center"
               >
-                <span className="material-symbols-outlined text-[18px]">send</span>
-                <span>Open Chat &amp; Send</span>
+                Fast Link (Text Only)
               </button>
+
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  onClick={() => setShowWhatsAppModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-secondary hover:bg-surface-container-high"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    handleShareWhatsAppWithPDF();
+                    setShowWhatsAppModal(false);
+                  }}
+                  disabled={isGeneratingPdf}
+                  className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#1EBE5B] text-white font-label-md text-xs font-bold shadow-md active:scale-95 transition-all disabled:opacity-50"
+                >
+                  <span className={`material-symbols-outlined text-[18px] ${isGeneratingPdf ? 'animate-spin' : ''}`}>
+                    {isGeneratingPdf ? 'sync' : 'send'}
+                  </span>
+                  <span>{isGeneratingPdf ? 'Generating PDF...' : 'Share PDF & Message'}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -34,6 +34,20 @@ function MainApp() {
     setSplashFinished(true);
   };
 
+  // 0. Public Proposal Viewer (Accessible by customer via WhatsApp link)
+  const urlParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+  const isPublicProposalView = urlParams.get('view') === 'quote';
+
+  if (isPublicProposalView) {
+    return (
+      <div className="min-h-screen bg-[#F6F8F7] text-[#0F1B2E] font-sans antialiased py-4 px-2 sm:px-6">
+        <main className="max-w-5xl mx-auto">
+          <QuotationPreview isPublicView={true} />
+        </main>
+      </div>
+    );
+  }
+
   // 1. Unauthenticated Gateway
   if (!isAuthenticated) {
     return (

@@ -1,3 +1,5 @@
+import html2pdf from 'html2pdf.js';
+
 // Clean customer phone number to Indian 10-digit format with country code 91
 export function cleanCustomerPhone(phoneStr) {
   if (!phoneStr) return '919825012345';
@@ -21,6 +23,7 @@ export function buildProposalWhatsAppMessage(quote) {
   const moduleInfo = quote.solarModule || quote.moduleType || '600 WP TOPCon Mono Bifacial Panel';
   const invInfo = quote.inverterCapacity || '125 KW Grid-Tied Inverter';
   const date = quote.date || new Date().toLocaleDateString('en-GB');
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://dealer-portal-mz91.onrender.com';
 
   return `*☀️ SUNVINE RENEWABLE ENERGY - SOLAR EPC PROPOSAL*
 
@@ -40,7 +43,10 @@ Greetings from *Sunvine Renewable Energy*! We are pleased to share your customiz
 • *Inverter Warranty:* 8 Years Manufacturing Warranty
 
 📄 *OFFICIAL 4-PAGE PROPOSAL PDF*
-Your official 4-page turnkey proposal document with Bill of Materials (BOM), Technical System Specifications, and Commercial Terms has been generated.
+Your official 4-page turnkey proposal document with Bill of Materials (BOM), Technical Specifications, and Commercial Terms has been generated.
+
+🔗 *View / Download Proposal Online:*
+${origin}/?view=quote&id=${encodeURIComponent(quoteId)}
 
 📞 *Sunvine Helpline:* +91 80000 50580
 📧 *Email:* sunvinerenewable@gmail.com
@@ -49,7 +55,7 @@ Your official 4-page turnkey proposal document with Bill of Materials (BOM), Tec
 _Empowering The Future with Solar Energy_`;
 }
 
-// Open WhatsApp chat directly with pre-filled message
+// Open WhatsApp chat directly with pre-filled message (fast link)
 export function openWhatsAppChat(quote, customPhone = null) {
   const phone = customPhone 
     ? cleanCustomerPhone(customPhone) 
@@ -58,3 +64,88 @@ export function openWhatsAppChat(quote, customPhone = null) {
   const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
   window.open(url, '_blank');
 }
+
+// Generate actual PDF Blob from element using html2pdf
+export async function generateQuotationPdfBlob(element, quoteId = 'SV-2026-Q801') {
+  if (!element) return null;
+
+  try {
+    const opt = {
+      margin: 0,
+      filename: `Sunvine_Proposal_${quoteId}.pdf`,
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: {
+        scale: 1.5,
+        useCORS: true,
+        logging: false
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'] }
+    };
+
+    const worker = html2pdf().set(opt).from(element);
+    const blob = await worker.output('blob');
+    return blob;
+  } catch (err) {
+    console.warn('PDF generation notice:', err);
+    return null;
+  }
+}
+
+// Share actual PDF file to WhatsApp (Web Share API on mobile, auto-download + chat on desktop)
+export async function shareQuotationPdfViaWhatsApp(quote, exportElement, customPhone = null) {
+  const phone = customPhone 
+    ? cleanCustomerPhone(customPhone) 
+    : cleanCustomerPhone(quote.customerPhone || quote.mobile || quote.phone);
+  const text = buildProposalWhatsAppMessage(quote);
+  const quoteId = (quote.id || 'SV-2026-Q801').replace(/[^a-zA-Z0-9-_]/g, '_');
+  const fileName = `Sunvine_Proposal_${quoteId}.pdf`;
+
+  let pdfBlob = null;
+  if (exportElement) {
+    try {
+      pdfBlob = await generateQuotationPdfBlob(exportElement, quoteId);
+    } catch (err) {
+      console.warn('PDF generation error:', err);
+    }
+  }
+
+  // 1. If Mobile device supports native File Sharing via Web Share API
+  if (pdfBlob && typeof navigator !== 'undefined' && navigator.canShare) {
+    try {
+      const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+      if (navigator.canShare({ files: [pdfFile] })) {
+        await navigator.share({
+          title: `Sunvine Proposal - ${quote.customerName}`,
+          text: text,
+          files: [pdfFile]
+        });
+        return { success: true, method: 'native_file_share' };
+      }
+    } catch (shareErr) {
+      if (shareErr.name === 'AbortError') {
+        return { success: false, aborted: true };
+      }
+      console.warn('Native share failed, falling back:', shareErr);
+    }
+  }
+
+  // 2. Fallback: Download actual PDF directly to user's device
+  if (pdfBlob) {
+    const blobUrl = URL.createObjectURL(pdfBlob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+  }
+
+  // 3. Open WhatsApp chat directly with customer number and pre-filled message
+  const waUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
+  window.open(waUrl, '_blank');
+
+  return { success: true, method: 'download_and_chat', fileName };
+}
+
