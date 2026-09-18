@@ -11,6 +11,7 @@ export default function Navigation() {
     { id: 'create_quote', label: 'New Quotation', icon: 'note_add' },
     { id: 'my_quotes', label: 'My Quotations', icon: 'folder_open' },
     { id: 'profile', label: 'Profile', icon: 'person' },
+    { id: 'dealer_settings', label: 'Settings', icon: 'settings' },
   ];
 
   const adminMenu = [
@@ -19,6 +20,7 @@ export default function Navigation() {
     { id: 'pricing_master', label: 'Pricing & Presets', icon: 'tune' },
     { id: 'hardware_master', label: 'Hardware Catalog', icon: 'memory' },
     { id: 'all_quotes', label: 'All Quotations Audit', icon: 'inventory_2' },
+    { id: 'admin_settings', label: 'Master Governance', icon: 'settings' },
   ];
 
   const menuItems = role === 'admin' ? adminMenu : dealerMenu;

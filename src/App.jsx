@@ -13,6 +13,7 @@ import CreateQuotation from './components/DealerPortal/CreateQuotation';
 import QuotationPreview from './components/DealerPortal/QuotationPreview';
 import MyQuotations from './components/DealerPortal/MyQuotations';
 import DealerProfile from './components/DealerPortal/DealerProfile';
+import DealerSettings from './components/DealerPortal/DealerSettings';
 
 // Admin Portal Views
 import AdminDashboard from './components/AdminPortal/AdminDashboard';
@@ -20,6 +21,7 @@ import DealerManagement from './components/AdminPortal/DealerManagement';
 import PricingMaster from './components/AdminPortal/PricingMaster';
 import HardwareMaster from './components/AdminPortal/HardwareMaster';
 import AllQuotations from './components/AdminPortal/AllQuotations';
+import AdminSettings from './components/AdminPortal/AdminSettings';
 
 function MainApp() {
   const { isAuthenticated, authView, role, activeTab } = useApp();
@@ -61,6 +63,8 @@ function MainApp() {
           return <HardwareMaster />;
         case 'all_quotes':
           return <AllQuotations />;
+        case 'admin_settings':
+          return <AdminSettings />;
         default:
           return <AdminDashboard />;
       }
@@ -76,6 +80,8 @@ function MainApp() {
         return <MyQuotations />;
       case 'profile':
         return <DealerProfile />;
+      case 'dealer_settings':
+        return <DealerSettings />;
       default:
         return <DealerDashboard />;
     }
