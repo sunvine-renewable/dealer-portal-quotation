@@ -171,8 +171,76 @@ export default function MyQuotations() {
         </div>
       </section>
 
-      {/* Data Table */}
-      <section className="w-full overflow-x-auto rounded-xl shadow-xs bg-surface-container-lowest border border-surface-container-high">
+      {/* Mobile Card Feed (Exact Stitch Design: 23_292ed563ed264e6fabb0adbb328d3f5f_6__My_Quotations__Mobile_.html) */}
+      <div className="md:hidden flex flex-col gap-3">
+        {filteredQuotes.map((q, idx) => (
+          <div key={idx} className="bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-surface-container-high/60 flex flex-col gap-3">
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-headline-sm text-sm font-bold text-on-surface">{q.customerName}</span>
+                  <span className={`px-2 py-0.5 rounded-full font-label-xs text-[10px] flex items-center gap-1 font-semibold ${q.statusColor}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${q.dotColor}`}></span>
+                    {q.status}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 mt-0.5 text-secondary font-body-sm text-xs">
+                  <span className="material-symbols-outlined text-[13px]">location_on</span>
+                  <span>{q.location}</span>
+                  <span className="text-outline-variant">•</span>
+                  <span className="text-on-surface font-semibold">{q.id}</span>
+                </div>
+              </div>
+              <span className="font-label-xs text-[10px] text-secondary bg-surface-container-low px-2 py-1 rounded-md shrink-0">
+                {q.date.split(',')[0]}
+              </span>
+            </div>
+
+            <div className="bg-surface-container-low rounded-lg p-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary">
+                  <span className="material-symbols-outlined text-[18px]">solar_power</span>
+                </div>
+                <div>
+                  <div className="font-label-sm text-xs font-semibold text-on-surface">{q.capacity} {q.moduleType}</div>
+                  <div className="font-body-sm text-[11px] text-secondary">{q.type} • {q.tag}</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="font-headline-sm text-sm font-bold text-on-surface">{q.amount}</div>
+                <div className="font-label-xs text-[10px] text-primary font-semibold">Net Payable</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 pt-0.5">
+              <button
+                onClick={() => handleOpenPDF(quotations[0])}
+                className="h-8 px-2 rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant font-label-xs text-xs font-medium flex items-center justify-center gap-1 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[15px]">visibility</span>
+                <span>View</span>
+              </button>
+              <button
+                onClick={() => handleOpenPDF(quotations[0])}
+                className="h-8 px-2 rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant font-label-xs text-xs font-medium flex items-center justify-center gap-1 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[15px]">picture_as_pdf</span>
+                <span>PDF</span>
+              </button>
+              <button
+                onClick={() => alert(`WhatsApp share link ready for ${q.customerName}`)}
+                className="h-8 px-2 rounded-lg bg-primary-container text-on-primary font-label-xs text-xs font-semibold flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm"
+              >
+                <span className="material-symbols-outlined text-[15px]">chat</span>
+                <span>WhatsApp</span>
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Data Table */}
+      <section className="hidden md:block w-full overflow-x-auto rounded-xl shadow-xs bg-surface-container-lowest border border-surface-container-high">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-on-secondary-fixed text-on-secondary h-12 text-label-sm font-label-sm select-none">

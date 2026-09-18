@@ -80,21 +80,10 @@ export default function Navigation() {
         </div>
       </aside>
 
-      {/* Top Header (Exact Stitch Design) */}
-      <header className="no-print fixed top-0 left-0 md:left-64 right-0 h-16 bg-surface-container-lowest border-b border-surface-container-high z-40 flex items-center justify-between px-space-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+      {/* Desktop Top Header (Exact Stitch Design) */}
+      <header className="no-print hidden md:flex fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest border-b border-surface-container-high z-40 items-center justify-between px-space-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
         {/* Left Status Bar */}
         <div className="flex items-center gap-space-md">
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-space-xs text-secondary hover:text-on-surface rounded-lg"
-          >
-            <span className="material-symbols-outlined text-[24px]">menu</span>
-          </button>
-          <img
-            alt="Sunvine Renewable Energy Logo"
-            className="h-8 w-auto object-contain md:hidden"
-            src="/sunvine_logo_transparent.png"
-          />
           <div className="flex items-center gap-space-xs text-secondary font-label-sm">
             <span className="material-symbols-outlined text-[18px]">solar_power</span>
             <span>Channel Network • Dealer Operations</span>
@@ -127,7 +116,7 @@ export default function Navigation() {
                 alt="Dealer Avatar"
                 className="w-8 h-8 rounded-full object-cover shadow-sm border border-surface-container-high"
               />
-              <div className="hidden md:flex flex-col text-left">
+              <div className="flex flex-col text-left">
                 <span className="font-label-md text-label-md text-on-surface leading-tight">
                   {role === 'admin' ? 'Super Admin Desk' : currentDealer.firmName || 'Rajesh Solar Solutions'}
                 </span>
@@ -179,53 +168,81 @@ export default function Navigation() {
         </div>
       </header>
 
-      {/* Mobile Drawer */}
-      {mobileOpen && (
-        <div className="no-print fixed inset-0 z-50 md:hidden flex flex-col bg-on-secondary-fixed text-white p-6">
-          <div className="flex items-center justify-between pb-6 border-b border-white/10">
-            <div className="flex items-center gap-2">
-              <img src="/sunvine_logo_white.png" alt="Sunvine" className="h-7" />
-              <span className="text-xs font-bold uppercase tracking-wider text-secondary-fixed-dim">
-                {role === 'admin' ? 'Admin Mode' : 'Dealer Portal'}
-              </span>
-            </div>
-            <button onClick={() => setMobileOpen(false)} className="p-2">
-              <span className="material-symbols-outlined text-[24px]">close</span>
-            </button>
-          </div>
-
-          <nav className="flex-1 space-y-2 py-6">
-            {menuItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setMobileOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold ${
-                  activeTab === item.id ? 'bg-primary-container text-on-primary' : 'text-secondary-fixed-dim'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </nav>
-
-          <div className="pt-4 border-t border-white/10">
-            <button
-              onClick={() => {
-                setMobileOpen(false);
-                logout();
-              }}
-              className="w-full flex items-center justify-center gap-2 py-2.5 bg-error/20 text-error-container rounded-lg font-semibold text-xs"
-            >
-              <span className="material-symbols-outlined text-[18px]">logout</span>
-              Sign Out
-            </button>
+      {/* ========================================================
+          MOBILE TOP BAR: Exact Stitch Design (26_78314a1fb43e40518984de1bee26f24b_3__Dealer_Dashboard__Mobile_.html)
+          ======================================================== */}
+      <header className="no-print fixed top-0 left-0 right-0 w-full z-40 bg-surface/90 backdrop-blur-xl border-b border-surface-container-high md:hidden h-16 px-4 flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+        <div className="flex items-center gap-2">
+          <img
+            alt="Brand logo"
+            className="h-8 w-auto object-contain"
+            src="/sunvine_logo_transparent.png"
+            onClick={() => setActiveTab(role === 'admin' ? 'admin_dashboard' : 'dashboard')}
+          />
+          <div className="flex flex-col">
+            <span className="font-headline-sm text-sm font-bold text-on-surface leading-tight tracking-tight">
+              Sunvine
+            </span>
+            <span className="font-label-xs text-[10px] text-secondary leading-tight tracking-wider uppercase font-semibold">
+              {role === 'admin' ? 'Admin Console' : 'Dealer Portal'}
+            </span>
           </div>
         </div>
-      )}
+        <div className="flex items-center gap-2">
+          <button
+            aria-label="Notifications"
+            className="w-9 h-9 flex items-center justify-center rounded-full text-secondary hover:bg-surface-container-high transition-colors"
+            onClick={() => alert('All systems normal. 0 unread alerts.')}
+          >
+            <span className="material-symbols-outlined text-[20px]">notifications</span>
+          </button>
+          <div
+            onClick={() => setActiveTab(role === 'admin' ? 'admin_settings' : 'profile')}
+            className="relative flex items-center justify-center p-0.5 rounded-full ring-1 ring-primary/40 cursor-pointer"
+          >
+            <img
+              alt="Profile"
+              className="w-7 h-7 rounded-full object-cover"
+              src={currentDealer.avatar || '/dealer_avatar.jpg'}
+            />
+          </div>
+          <button
+            aria-label="Logout"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-secondary hover:text-error transition-colors"
+            onClick={logout}
+            title="Sign Out"
+          >
+            <span className="material-symbols-outlined text-[18px]">logout</span>
+          </button>
+        </div>
+      </header>
+
+      {/* ========================================================
+          MOBILE BOTTOM TAB BAR: Exact Stitch Design (26_78314a1fb43e40518984de1bee26f24b_3__Dealer_Dashboard__Mobile_.html)
+          ======================================================== */}
+      <nav className="no-print fixed bottom-0 left-0 right-0 w-full z-50 bg-surface/95 backdrop-blur-xl border-t border-surface-container-high shadow-[0_-2px_12px_rgba(0,0,0,0.05)] md:hidden">
+        <div className="flex items-center justify-around h-16 px-1">
+          {menuItems.slice(0, 5).map((item) => {
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`flex flex-col items-center justify-center min-w-[58px] min-h-[44px] py-1 px-1 gap-0.5 rounded-lg transition-colors ${
+                  isActive ? 'text-primary font-semibold' : 'text-secondary hover:text-on-surface'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>
+                  {item.icon}
+                </span>
+                <span className="text-[10px] font-medium leading-none truncate max-w-[62px]">
+                  {item.label.split(' ')[0]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
     </>
   );
 }

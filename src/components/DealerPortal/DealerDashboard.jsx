@@ -12,6 +12,64 @@ export default function DealerDashboard() {
     setActiveTab('preview_quote');
   };
 
+  const recentQuotes = [
+    {
+      customerName: 'Anand Sharma',
+      location: 'Pune, Maharashtra',
+      capacity: '5.0 kW',
+      type: 'Mono Perc • Residential',
+      date: 'Today, 10:45 AM',
+      amount: '₹ 3,45,000',
+      subsidy: '₹ 78,000 Subsidy',
+      status: 'Active / Sent',
+      statusClass: 'bg-primary-fixed text-on-primary-fixed'
+    },
+    {
+      customerName: 'Kavita Patel',
+      location: 'Surat, Gujarat',
+      capacity: '3.0 kW',
+      type: 'Mono Perc • Residential',
+      date: 'Yesterday',
+      amount: '₹ 2,10,000',
+      subsidy: '₹ 78,000 Subsidy',
+      status: 'Customer Viewed',
+      statusClass: 'bg-tertiary-container/30 text-on-tertiary-container'
+    },
+    {
+      customerName: 'Mehta Textiles Ltd',
+      location: 'Ahmedabad, Gujarat',
+      capacity: '10.0 kW',
+      type: 'Commercial • C&I',
+      date: '18 Oct 2024',
+      amount: '₹ 5,85,000',
+      subsidy: 'Commercial BOQ',
+      status: 'Pending Approval',
+      statusClass: 'bg-[#F9A825]/20 text-[#B27204]'
+    },
+    {
+      customerName: 'Vikram Rathore',
+      location: 'Jaipur, Rajasthan',
+      capacity: '7.5 kW',
+      type: 'Mono Perc • Residential',
+      date: '15 Oct 2024',
+      amount: '₹ 5,15,000',
+      subsidy: '₹ 78,000 Subsidy',
+      status: 'Won / Converted',
+      statusClass: 'bg-primary-fixed text-on-primary-fixed'
+    },
+    {
+      customerName: 'Dr. Suresh Nair',
+      location: 'Bangalore, Karnataka',
+      capacity: '4.0 kW',
+      type: 'Mono Perc • Residential',
+      date: '12 Oct 2024',
+      amount: '₹ 2,75,000',
+      subsidy: '₹ 78,000 Subsidy',
+      status: 'Customer Viewed',
+      statusClass: 'bg-tertiary-container/30 text-on-tertiary-container'
+    }
+  ];
+
   return (
     <div className="flex flex-col w-full gap-space-lg">
       {/* Top Operational Control & Profile Header */}
@@ -200,8 +258,62 @@ export default function DealerDashboard() {
           </button>
         </div>
 
-        {/* Data Table Container */}
-        <div className="w-full overflow-x-auto rounded-xl shadow-sm bg-surface-container-lowest">
+        {/* Mobile View: Exact Stitch Card Items (<md) */}
+        <div className="md:hidden flex flex-col gap-3">
+          {recentQuotes.map((q, idx) => (
+            <div key={idx} className="bg-surface-container-lowest p-4 rounded-xl shadow-sm flex flex-col gap-2.5 border border-surface-container-high/60">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-label-md text-sm text-on-surface font-bold truncate">{q.customerName}</span>
+                    <span className={`px-2 py-0.5 rounded-full font-label-xs text-[10px] shrink-0 font-semibold ${q.statusClass}`}>
+                      {q.status}
+                    </span>
+                  </div>
+                  <p className="font-body-sm text-xs text-secondary mt-0.5">{q.capacity} • {q.type}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="font-headline-sm text-sm font-bold text-on-surface block">{q.amount}</span>
+                  <span className="font-label-xs text-[10px] text-secondary">{q.subsidy}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between pt-1 bg-surface-container-low px-2.5 py-1.5 rounded-lg text-xs">
+                <div className="flex items-center gap-1 text-secondary">
+                  <span className="material-symbols-outlined text-[15px] text-tertiary">location_on</span>
+                  <span className="font-label-xs text-[11px] truncate max-w-[120px]">{q.location.split(',')[0]}</span>
+                  <span className="text-outline-variant">•</span>
+                  <span className="font-label-xs text-[11px]">{q.date}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleOpenPDF(quotations[0])}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-secondary hover:bg-surface-container-high transition-colors"
+                    title="View Proposal"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">visibility</span>
+                  </button>
+                  <button
+                    onClick={() => handleOpenPDF(quotations[0])}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-secondary hover:bg-surface-container-high transition-colors"
+                    title="Download PDF"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+                  </button>
+                  <button
+                    onClick={() => alert(`WhatsApp sharing link generated for ${q.customerName}`)}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-primary hover:bg-primary-fixed transition-colors"
+                    title="WhatsApp Customer"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">chat</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop View: Full Data Table (>=md) */}
+        <div className="hidden md:block w-full overflow-x-auto rounded-xl shadow-sm bg-surface-container-lowest">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-on-secondary-fixed text-on-secondary h-12 text-label-sm font-label-sm select-none">

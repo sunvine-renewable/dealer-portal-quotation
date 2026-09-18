@@ -28,8 +28,223 @@ export default function DealerLogin() {
 
   return (
     <main className="w-full">
-      <div className="flex flex-col w-full">
-        <div className="w-full min-h-screen lg:h-screen lg:overflow-hidden flex flex-col lg:flex-row bg-surface">
+      {/* ========================================================
+          MOBILE VIEW: Exact Stitch Screen (21_8e1cdf0c51eb423ca1679a96360fbdda_1__Dealer_Login__Mobile_.html)
+          ======================================================== */}
+      <div className="lg:hidden min-h-screen flex flex-col bg-surface text-on-surface font-body-md text-body-md antialiased p-4 pb-8">
+        {/* Brand Top Bar */}
+        <header className="flex items-center justify-between py-2 mb-4">
+          <div className="flex items-center gap-2">
+            <img
+              alt="Sunvine Renewable Logo"
+              className="h-8 w-auto object-contain"
+              src="/sunvine_logo_transparent.png"
+            />
+          </div>
+          <div className="flex items-center gap-1.5 bg-secondary-container/60 px-2.5 py-1 rounded-full">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            <span className="font-label-xs text-[11px] text-on-secondary-fixed uppercase tracking-wider font-semibold">
+              Grid Online
+            </span>
+          </div>
+        </header>
+
+        {/* Technical Solar Hero Banner */}
+        <section className="relative overflow-hidden rounded-xl bg-on-secondary-fixed text-on-secondary p-5 shadow-md mb-4">
+          {/* Grid overlay decor */}
+          <div className="absolute -right-10 -bottom-10 w-44 h-44 rounded-full bg-primary-container/15 blur-2xl pointer-events-none"></div>
+          <div className="absolute right-3 top-3 opacity-15 pointer-events-none">
+            <svg fill="none" height="90" viewBox="0 0 80 80" width="90">
+              <path d="M40 0L80 40L40 80L0 40Z" stroke="#6CBF3D" strokeDasharray="4 2" strokeWidth="1.5"></path>
+              <path d="M40 16L64 40L40 64L16 40Z" stroke="#6CBF3D" strokeWidth="1"></path>
+              <circle cx="40" cy="40" fill="#6CBF3D" r="6"></circle>
+            </svg>
+          </div>
+          <div className="relative z-10 flex flex-col gap-1">
+            <div className="inline-flex items-center gap-1.5 w-fit px-2 py-0.5 rounded-full bg-surface-container-lowest/10 backdrop-blur-sm text-primary-fixed font-label-xs text-[11px] tracking-wider uppercase font-semibold">
+              <span className="material-symbols-outlined text-[14px]">verified</span>
+              <span>Authorised Dealer Network</span>
+            </div>
+            <h2 className="font-headline-md text-xl font-bold text-white mt-1 leading-tight">
+              Powering Today.<br />
+              <span className="text-primary-container">Protecting Tomorrow.</span>
+            </h2>
+            <p className="font-body-sm text-xs text-secondary-fixed-dim max-w-[270px] mt-0.5">
+              High-precision solar telemetry &amp; dealer quotation engine.
+            </p>
+          </div>
+        </section>
+
+        {/* Login Form Card */}
+        <div className="bg-surface-container-lowest rounded-xl shadow-md p-5 flex flex-col">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-label-xs text-[11px] uppercase tracking-widest text-primary font-semibold px-2 py-0.5 rounded bg-primary-fixed/30">
+              Channel Console
+            </span>
+            <span className="font-label-xs text-[11px] text-secondary flex items-center gap-1">
+              <span className="material-symbols-outlined text-[14px] text-tertiary">lock</span> SSL 256-bit
+            </span>
+          </div>
+          <h1 className="font-headline-lg text-2xl font-bold text-on-surface mt-1">
+            Dealer Login
+          </h1>
+          <p className="font-body-sm text-xs text-secondary mb-5 mt-0.5">
+            Login to create and manage your solar quotations
+          </p>
+
+          <form className="flex flex-col gap-4" onSubmit={handleLogin}>
+            {/* Phone Field */}
+            <div className="flex flex-col gap-1.5">
+              <label className="font-label-sm text-xs font-semibold text-on-surface" htmlFor="mobile-number-mob">
+                Mobile Number
+              </label>
+              <div className="flex rounded-lg bg-surface-container-low shadow-sm transition-all focus-within:bg-surface-container-lowest focus-within:shadow-md border border-surface-container-high">
+                <div className="flex items-center gap-1.5 px-3 py-2.5 bg-surface-container rounded-l-lg select-none border-r border-surface-container-high">
+                  <span className="text-[14px] leading-none">🇮🇳</span>
+                  <span className="font-label-md text-xs text-on-surface font-medium">+91</span>
+                </div>
+                <input
+                  className="w-full bg-transparent px-3 py-2.5 font-body-md text-sm text-on-surface placeholder:text-secondary focus:outline-none min-w-0"
+                  id="mobile-number-mob"
+                  inputMode="numeric"
+                  maxLength={10}
+                  placeholder="Enter registered mobile"
+                  required
+                  type="tel"
+                  value={mobileNumber}
+                  onChange={(e) => setMobileNumber(e.target.value)}
+                />
+              </div>
+              {error && (
+                <p className="mt-1 font-body-xs text-error flex items-center gap-1 text-xs">
+                  <span className="material-symbols-outlined text-xs">error</span>
+                  {error}
+                </p>
+              )}
+            </div>
+
+            {/* Password Field */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <label className="font-label-sm text-xs font-semibold text-on-surface" htmlFor="dealer-password-mob">
+                  Password
+                </label>
+                <a
+                  className="font-label-xs text-[11px] text-primary hover:underline cursor-pointer"
+                  onClick={() => alert('Password reset link sent to your registered phone.')}
+                >
+                  Forgot Password?
+                </a>
+              </div>
+              <div className="relative flex items-center rounded-lg bg-surface-container-low shadow-sm transition-all focus-within:bg-surface-container-lowest focus-within:shadow-md border border-surface-container-high">
+                <input
+                  className="w-full bg-transparent px-3 py-2.5 pr-10 font-body-md text-sm text-on-surface placeholder:text-secondary focus:outline-none min-w-0"
+                  id="dealer-password-mob"
+                  placeholder="Enter account password"
+                  required
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  aria-label="Toggle password visibility"
+                  className="absolute right-2 p-1.5 text-secondary hover:text-on-surface rounded-full flex items-center justify-center"
+                  onClick={() => setShowPassword(!showPassword)}
+                  type="button"
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    {showPassword ? 'visibility_off' : 'visibility'}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Remember station checkbox */}
+            <div className="flex items-center justify-between pt-0.5">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  className="w-4 h-4 rounded text-primary focus:ring-0 cursor-pointer"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                <span className="font-body-sm text-xs text-on-surface">Remember my station</span>
+              </label>
+              <span className="font-label-xs text-[11px] text-secondary bg-surface-container px-2 py-0.5 rounded">v2.4.8</span>
+            </div>
+
+            {/* Submit Primary Button */}
+            <button
+              className="w-full h-11 mt-1 rounded-lg bg-primary-container hover:bg-primary text-white font-label-md text-sm font-semibold flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>
+                  <span>Authenticating Dealer...</span>
+                </>
+              ) : (
+                <>
+                  <span>Login to Console</span>
+                  <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="relative flex items-center justify-center my-4">
+            <div className="w-full h-px bg-surface-container-high"></div>
+            <span className="absolute bg-surface-container-lowest px-3 font-label-xs text-[11px] text-secondary tracking-wider uppercase font-semibold">
+              Administrative
+            </span>
+          </div>
+
+          {/* Super Admin Login Button */}
+          <button
+            className="w-full h-10 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-secondary-fixed font-label-md text-xs font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] border border-surface-container-high"
+            onClick={() => setAuthView('admin_login')}
+            type="button"
+          >
+            <span className="material-symbols-outlined text-[18px] text-primary">shield</span>
+            <span>Super Admin &amp; HQ Login</span>
+          </button>
+        </div>
+
+        {/* Partner Support Box */}
+        <div className="mt-4 p-3 rounded-xl bg-surface-container-low flex items-center gap-3 shadow-sm border border-surface-container-high">
+          <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-[20px] text-on-secondary-fixed">headset_mic</span>
+          </div>
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="font-label-xs text-[10px] text-secondary uppercase tracking-wider font-semibold">Partner Desk Support</span>
+            <a className="font-label-sm text-xs text-on-secondary-fixed font-bold truncate hover:text-primary" href="tel:+918000050580">
+              Helpline: +91 80000 50580
+            </a>
+          </div>
+          <div className="shrink-0 flex items-center text-primary">
+            <span className="material-symbols-outlined text-[18px]">call</span>
+          </div>
+        </div>
+
+        {/* Footer Legal/Auth Note */}
+        <footer className="mt-6 text-center flex flex-col items-center gap-1">
+          <div className="flex items-center gap-1.5 text-secondary">
+            <span className="material-symbols-outlined text-[14px] text-tertiary">shield</span>
+            <span className="font-label-xs text-[11px] uppercase tracking-wider font-semibold">Sunvine EPC Ecosystem</span>
+          </div>
+          <p className="font-body-sm text-[11px] text-secondary">
+            © 2025 Sunvine Renewable Energy. Authorized dealer access only.
+          </p>
+        </footer>
+      </div>
+
+      {/* ========================================================
+          DESKTOP VIEW: Exact Stitch Desktop Screen (17_ff57d7cfa39f417ab8663f318cbb739e_1__Dealer_Login.html)
+          ======================================================== */}
+      <div className="hidden lg:flex flex-col w-full">
+        <div className="w-full h-screen overflow-hidden flex flex-row bg-surface">
           {/* Left Panel: Deep Navy Visual Showcase */}
           <div className="relative w-full lg:w-1/2 bg-on-secondary-fixed text-on-secondary flex flex-col justify-between p-6 sm:p-10 lg:p-8 xl:p-12 overflow-hidden min-h-[460px] lg:min-h-0 lg:h-full">
             {/* Decorative Solar Grid Background Effect */}
