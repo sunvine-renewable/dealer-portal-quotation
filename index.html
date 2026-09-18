@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/sunvine_logo_transparent.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0F1B2E" />
+    <meta name="description" content="Sunvine Renewable Energy - Solar EPC Dealer & Admin Quotation Portal" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/sunvine_logo_transparent.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <title>Sunvine Solar EPC Portal</title>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
+  </head>
+  <body class="bg-[#F6F8F7] text-[#1B1F23] font-sans antialiased selection:bg-[#6CBF3D] selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
