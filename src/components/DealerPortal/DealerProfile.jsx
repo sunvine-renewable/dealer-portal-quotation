@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 
 export default function DealerProfile() {
   const { currentDealer, updateDealerProfile } = useApp();
+  const fileInputRef = useRef(null);
 
   const [dealerName, setDealerName] = useState(currentDealer?.contactPerson || 'Rajesh Kumar');
   const [companyName, setCompanyName] = useState(currentDealer?.firmName || 'Surya Solar Tech Private Limited');
@@ -56,6 +57,35 @@ export default function DealerProfile() {
     setConfirmPassword('');
   };
 
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      triggerToast('Please select a valid image file');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      triggerToast('Image size should be less than 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result;
+      if (updateDealerProfile) {
+        updateDealerProfile({ avatar: base64 });
+      }
+      triggerToast('Profile photo updated successfully!');
+    };
+    reader.readAsDataURL(file);
+  };
+
   const ruleLength = newPassword.length >= 8;
   const ruleCasing = /[a-z]/.test(newPassword) && /[A-Z]/.test(newPassword);
   const ruleSymbol = /[0-9!@#$%^&*(),.?":{}|<>]/.test(newPassword);
@@ -100,17 +130,26 @@ export default function DealerProfile() {
         <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-lg">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-space-lg">
             <div className="relative group">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-surface-container-high shadow-md">
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+                id="profile-avatar-upload"
+              />
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-surface-container-high shadow-md border-2 border-surface-container-lowest">
                 <img
-                  alt="Rajesh Kumar Profile"
+                  alt={`${dealerName} Profile`}
                   className="w-full h-full object-cover"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPrXHZs-qW_IfxFB32q6OMBxh9-Q8lbGsGBMHtdkNUgY_4yuNIKjzl9IouO3S3aNB09wnjzip9MP60dQxzL4kQPmGopeAc3FhmzSe-rn5i-NJoa8LROkq6pxtArBvBH1gOf32o8gNlXRFqVCbs_ran3kYrMxI68PMiaTNELo-PNmGam_oiuZjvHaBAalOT1KVsAA0nMIY8TkaF5V5g5bstz4lf60C_guBjH_ZJgQWwByqwwd7bZd8y"
+                  src={currentDealer?.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCPrXHZs-qW_IfxFB32q6OMBxh9-Q8lbGsGBMHtdkNUgY_4yuNIKjzl9IouO3S3aNB09wnjzip9MP60dQxzL4kQPmGopeAc3FhmzSe-rn5i-NJoa8LROkq6pxtArBvBH1gOf32o8gNlXRFqVCbs_ran3kYrMxI68PMiaTNELo-PNmGam_oiuZjvHaBAalOT1KVsAA0nMIY8TkaF5V5g5bstz4lf60C_guBjH_ZJgQWwByqwwd7bZd8y'}
                 />
               </div>
               <button
-                className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-on-secondary-fixed text-on-secondary flex items-center justify-center shadow-md hover:bg-primary transition-colors"
-                title="Change Avatar"
+                className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-on-secondary-fixed text-on-secondary flex items-center justify-center shadow-md hover:bg-primary transition-all cursor-pointer group-hover:scale-105 active:scale-95 z-20"
+                title="Change Avatar (Upload Photo)"
                 type="button"
+                onClick={handleAvatarClick}
               >
                 <span className="material-symbols-outlined text-[16px]">photo_camera</span>
               </button>

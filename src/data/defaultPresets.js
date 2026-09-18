@@ -154,7 +154,8 @@ export const INITIAL_DEALERS = [
     totalQuotes: 18,
     totalCapacityKw: 420.5,
     status: 'Active',
-    joinedDate: '2025-11-12'
+    joinedDate: '2025-11-12',
+    avatar: '/dealer_avatar.jpg'
   },
   {
     id: 'SV-DLR-0842',
