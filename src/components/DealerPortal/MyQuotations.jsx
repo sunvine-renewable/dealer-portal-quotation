@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { openWhatsAppChat } from '../../utils/quotationShare';
 
 export default function MyQuotations() {
   const { quotations, setActiveTab, setPreviewQuotation } = useApp();
@@ -15,6 +16,7 @@ export default function MyQuotations() {
     {
       id: '#SV-2025-0409',
       customerName: 'MIRANA TECHNOCAST PVT.LTD.',
+      customerPhone: '+91 98250 12345',
       type: 'Commercial',
       tag: 'C&I',
       location: 'Metoda GIDC, Rajkot',
@@ -30,6 +32,7 @@ export default function MyQuotations() {
     {
       id: '#SV-2025-0408',
       customerName: 'Anand Sharma',
+      customerPhone: '+91 98200 54321',
       type: 'Residential',
       tag: 'Rooftop',
       location: 'Pune, Maharashtra',
@@ -45,6 +48,7 @@ export default function MyQuotations() {
     {
       id: '#SV-2025-0407',
       customerName: 'Kavita Patel',
+      customerPhone: '+91 98980 12345',
       type: 'Residential',
       tag: 'Rooftop',
       location: 'Surat, Gujarat',
@@ -60,6 +64,7 @@ export default function MyQuotations() {
     {
       id: '#SV-2025-0406',
       customerName: 'Mehta Textiles Ltd',
+      customerPhone: '+91 98255 67890',
       type: 'Commercial',
       tag: 'C&I',
       location: 'Ahmedabad, Gujarat',
@@ -75,6 +80,7 @@ export default function MyQuotations() {
     {
       id: '#SV-2025-0405',
       customerName: 'Vikram Rathore',
+      customerPhone: '+91 97123 45678',
       type: 'Residential',
       tag: 'Rooftop',
       location: 'Jaipur, Rajasthan',
@@ -90,6 +96,7 @@ export default function MyQuotations() {
     {
       id: '#SV-2025-0404',
       customerName: 'Dr. Suresh Nair',
+      customerPhone: '+91 98450 12345',
       type: 'Residential',
       tag: 'Rooftop',
       location: 'Bangalore, Karnataka',
@@ -228,8 +235,8 @@ export default function MyQuotations() {
                 <span>PDF</span>
               </button>
               <button
-                onClick={() => alert(`WhatsApp share link ready for ${q.customerName}`)}
-                className="h-8 px-2 rounded-lg bg-primary-container text-on-primary font-label-xs text-xs font-semibold flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm"
+                onClick={() => openWhatsAppChat(q)}
+                className="h-8 px-2 rounded-lg bg-[#25D366] hover:bg-[#1EBE5B] text-white font-label-xs text-xs font-semibold flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm"
               >
                 <span className="material-symbols-outlined text-[15px]">chat</span>
                 <span>WhatsApp</span>
@@ -314,8 +321,8 @@ export default function MyQuotations() {
                       <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
                     </button>
                     <button
-                      onClick={() => alert(`WhatsApp share link ready for ${q.customerName}`)}
-                      className="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 text-primary flex items-center justify-center transition-colors"
+                      onClick={() => openWhatsAppChat(q)}
+                      className="w-8 h-8 rounded-full bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#25D366] flex items-center justify-center transition-colors"
                       title="Share via WhatsApp"
                       type="button"
                     >

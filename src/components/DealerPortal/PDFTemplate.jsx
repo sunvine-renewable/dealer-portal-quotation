@@ -8,7 +8,7 @@ const formatINR = (val) => {
   }).format(val);
 };
 
-export default function PDFTemplate({ quotation }) {
+export default function PDFTemplate({ quotation, activePage = 'all' }) {
   if (!quotation) return null;
 
   const {
@@ -39,7 +39,7 @@ export default function PDFTemplate({ quotation }) {
       {/* ========================================================
           PAGE 1: EXACT ORIGINAL MIRANA TECHNOCAST COVER PAGE
           ======================================================== */}
-      <div className="pdf-page relative w-[210mm] min-h-[297mm] mx-auto bg-white border border-gray-300 shadow-xl print:border-none print:shadow-none print:m-0 print:p-0 mb-8 page-break-after overflow-hidden flex items-center justify-center">
+      <div className={`pdf-page pdf-page-cover relative w-[210mm] h-[297mm] max-h-[297mm] mx-auto bg-white border border-gray-300 shadow-xl print:border-none print:shadow-none print:m-0 print:p-0 mb-8 overflow-hidden items-center justify-center box-border ${activePage === 'all' || activePage === 1 ? 'flex' : 'hidden print:flex'}`}>
         <img
           src="/mirana_page1_original.jpg"
           alt="Sunvine Quotation Cover"
@@ -51,7 +51,7 @@ export default function PDFTemplate({ quotation }) {
       {/* ========================================================
           PAGE 2: SYSTEM DETAILS & PRICE SUMMARY (EXACT MIRANA PDF)
           ======================================================== */}
-      <div className="pdf-page relative w-[210mm] min-h-[297mm] mx-auto p-10 flex flex-col justify-between bg-white border border-gray-300 shadow-xl print:border-none print:shadow-none print:m-0 print:p-8 mb-8 page-break-after">
+      <div className={`pdf-page pdf-page-content relative w-[210mm] h-[297mm] max-h-[297mm] mx-auto p-10 flex-col justify-between bg-white border border-gray-300 shadow-xl print:border-none print:shadow-none print:m-0 mb-8 overflow-hidden box-border ${activePage === 'all' || activePage === 2 ? 'flex' : 'hidden print:flex'}`}>
         <div>
           {/* Top Right Logo */}
           <div className="flex justify-end pb-3">
@@ -234,7 +234,7 @@ export default function PDFTemplate({ quotation }) {
       {/* ========================================================
           PAGE 3: BILL OF MATERIAL : SOLAR ON GRID SYSTEM (EXACT MIRANA PDF)
           ======================================================== */}
-      <div className="pdf-page relative w-[210mm] min-h-[297mm] mx-auto p-10 flex flex-col justify-between bg-white border border-gray-300 shadow-xl print:border-none print:shadow-none print:m-0 print:p-8 mb-8 page-break-after">
+      <div className={`pdf-page pdf-page-content relative w-[210mm] h-[297mm] max-h-[297mm] mx-auto p-10 flex-col justify-between bg-white border border-gray-300 shadow-xl print:border-none print:shadow-none print:m-0 mb-8 overflow-hidden box-border ${activePage === 'all' || activePage === 3 ? 'flex' : 'hidden print:flex'}`}>
         <div>
           {/* Top Right Logo */}
           <div className="flex justify-end pb-3">
@@ -435,10 +435,10 @@ export default function PDFTemplate({ quotation }) {
       {/* ========================================================
           PAGE 4: TERMS & CONDITIONS (EXACT MIRANA PDF)
           ======================================================== */}
-      <div className="pdf-page relative w-[210mm] min-h-[297mm] mx-auto p-10 flex flex-col justify-between bg-white border border-gray-300 shadow-xl print:border-none print:shadow-none print:m-0 print:p-8 mb-8">
+      <div className={`pdf-page pdf-page-content relative w-[210mm] h-[297mm] max-h-[297mm] mx-auto p-10 flex-col justify-between bg-white border border-gray-300 shadow-xl print:border-none print:shadow-none print:m-0 mb-8 overflow-hidden box-border ${activePage === 'all' || activePage === 4 ? 'flex' : 'hidden print:flex'}`}>
         <div>
           {/* Top Right Logo */}
-          <div className="flex justify-end pb-3">
+          <div className="flex justify-end pb-2">
             <img src="/sunvine_logo_transparent.png" alt="Sunvine" className="h-10 object-contain" />
           </div>
 
@@ -447,10 +447,10 @@ export default function PDFTemplate({ quotation }) {
             TERMS &amp; CONDITIONS
           </h2>
 
-          <div className="space-y-2 text-[10.5px] text-gray-900 leading-normal">
+          <div className="space-y-1.5 text-[10px] text-gray-900 leading-normal">
             <div>
               <strong className="block font-bold">Guarantee &amp; Warranty of The Plant</strong>
-              <strong className="block font-bold mt-1">Module Warranty:</strong>
+              <strong className="block font-bold mt-0.5">Module Warranty:</strong>
               <ul className="list-disc pl-4 space-y-0.5">
                 <li>The 30-year limited warranty covers the module as follows:</li>
                 <li>10 years against manufacturing defects.</li>
@@ -473,7 +473,7 @@ export default function PDFTemplate({ quotation }) {
               </ul>
             </div>
 
-            <div className="pt-1">
+            <div className="pt-0.5">
               <strong className="block font-bold">Warranty Exclusions: (This warranty shall not apply to damages, failures, or defects resulting from) :</strong>
               <ul className="list-disc pl-4 space-y-0.5">
                 <li>Switch Gears (L&amp;T): 12-month manufacturing defect warranty from the invoice date (No burning conditions covered).</li>
@@ -489,7 +489,7 @@ export default function PDFTemplate({ quotation }) {
               </ul>
             </div>
 
-            <div className="pt-1">
+            <div className="pt-0.5">
               <strong className="block font-bold">Terms of Payment:</strong>
               <ul className="list-disc pl-4">
                 <li>10% advance with purchase order.</li>
@@ -518,14 +518,14 @@ export default function PDFTemplate({ quotation }) {
               </ul>
             </div>
 
-            <div className="font-bold pt-1">
+            <div className="font-bold pt-0.5">
               Note: Breakage of panels or other equipment is not covered under warranty.
             </div>
           </div>
 
           {/* Large Centered Green Banner */}
-          <div className="text-center my-6">
-            <h3 className="text-lg font-black text-[#2E7D32] tracking-wide uppercase">
+          <div className="text-center my-3">
+            <h3 className="text-base font-black text-[#2E7D32] tracking-wide uppercase">
               THANK YOU FOR CHOOSING SUNVINE RENEWABLE
             </h3>
           </div>

@@ -32,34 +32,71 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Print styling for 4-Page Quotation PDF */
+/* Strict Print styling for 4-Page Quotation PDF (Guarantee 4 clean A4 sheets) */
 @media print {
-  body {
-    background-color: #ffffff !important;
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
+  @page {
+    size: 210mm 297mm;
+    margin: 0 !important;
+  }
+
+  html, body, #root, #root > div, main, main > div, .quotation-preview-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    min-height: auto !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border: none !important;
+    overflow: visible !important;
   }
 
   .no-print {
     display: none !important;
   }
 
-  .pdf-page, .print-page {
-    page-break-after: always;
-    break-after: page;
-    min-height: 297mm;
+  .pdf-document {
     width: 210mm !important;
-    padding: 12mm !important;
-    margin: 0 auto !important;
-    box-shadow: none !important;
-    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
   }
 
-  @page {
-    size: A4 portrait;
-    margin: 0;
+  .pdf-page, .print-page {
+    display: flex !important;
+    flex-direction: column !important;
+    page-break-before: auto !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    height: 297mm !important;
+    max-height: 297mm !important;
+    min-height: 297mm !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    box-shadow: none !important;
+    border: none !important;
+    overflow: hidden !important;
+    transform: none !important;
+  }
+
+  .pdf-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  .pdf-page-cover {
+    padding: 0 !important;
+  }
+
+  .pdf-page-content {
+    padding: 8mm 12mm !important;
   }
 }
+
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {

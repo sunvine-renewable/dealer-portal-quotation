@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { openWhatsAppChat } from '../../utils/quotationShare';
 
 export default function DealerDashboard() {
   const { currentDealer, quotations, setActiveTab, setPreviewQuotation } = useApp();
@@ -14,7 +15,9 @@ export default function DealerDashboard() {
 
   const recentQuotes = [
     {
+      id: 'SV-2025-0408',
       customerName: 'Anand Sharma',
+      customerPhone: '+91 98200 54321',
       location: 'Pune, Maharashtra',
       capacity: '5.0 kW',
       type: 'Mono Perc • Residential',
@@ -25,7 +28,9 @@ export default function DealerDashboard() {
       statusClass: 'bg-primary-fixed text-on-primary-fixed'
     },
     {
+      id: 'SV-2025-0407',
       customerName: 'Kavita Patel',
+      customerPhone: '+91 98980 12345',
       location: 'Surat, Gujarat',
       capacity: '3.0 kW',
       type: 'Mono Perc • Residential',
@@ -36,7 +41,9 @@ export default function DealerDashboard() {
       statusClass: 'bg-tertiary-container/30 text-on-tertiary-container'
     },
     {
+      id: 'SV-2025-0406',
       customerName: 'Mehta Textiles Ltd',
+      customerPhone: '+91 98255 67890',
       location: 'Ahmedabad, Gujarat',
       capacity: '10.0 kW',
       type: 'Commercial • C&I',
@@ -47,7 +54,9 @@ export default function DealerDashboard() {
       statusClass: 'bg-[#F9A825]/20 text-[#B27204]'
     },
     {
+      id: 'SV-2025-0405',
       customerName: 'Vikram Rathore',
+      customerPhone: '+91 97123 45678',
       location: 'Jaipur, Rajasthan',
       capacity: '7.5 kW',
       type: 'Mono Perc • Residential',
@@ -58,7 +67,9 @@ export default function DealerDashboard() {
       statusClass: 'bg-primary-fixed text-on-primary-fixed'
     },
     {
+      id: 'SV-2025-0404',
       customerName: 'Dr. Suresh Nair',
+      customerPhone: '+91 98450 12345',
       location: 'Bangalore, Karnataka',
       capacity: '4.0 kW',
       type: 'Mono Perc • Residential',
@@ -300,8 +311,8 @@ export default function DealerDashboard() {
                     <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
                   </button>
                   <button
-                    onClick={() => alert(`WhatsApp sharing link generated for ${q.customerName}`)}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-primary hover:bg-primary-fixed transition-colors"
+                    onClick={() => openWhatsAppChat(q)}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/15 transition-colors"
                     title="WhatsApp Customer"
                   >
                     <span className="material-symbols-outlined text-[16px]">chat</span>
@@ -326,288 +337,62 @@ export default function DealerDashboard() {
               </tr>
             </thead>
             <tbody className="font-body-md text-body-md divide-y divide-surface-container">
-              {/* Row 1 */}
-              <tr className="bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
-                <td className="px-space-lg py-3.5">
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-on-surface">Anand Sharma</span>
-                    <span className="text-label-xs text-secondary">Pune, Maharashtra</span>
-                  </div>
-                </td>
-                <td className="px-space-lg py-3.5">
-                  <div className="flex items-center gap-1.5 font-semibold text-on-surface">
-                    <span className="material-symbols-outlined text-primary text-[18px]">solar_power</span>
-                    <span>5.0 kW</span>
-                  </div>
-                </td>
-                <td className="px-space-lg py-3.5 text-secondary font-label-xs whitespace-nowrap">
-                  Today, 10:45 AM
-                </td>
-                <td className="px-space-lg py-3.5 text-right font-bold text-on-surface tabular-nums">
-                  ₹ 3,45,000
-                </td>
-                <td className="px-space-lg py-3.5 text-center whitespace-nowrap">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-xs font-label-xs bg-primary-container/15 text-primary">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
-                    Active / Sent
-                  </span>
-                </td>
-                <td className="px-space-lg py-3.5 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <button
-                      onClick={() => handleOpenPDF()}
-                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
-                      title="View Quotation"
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">visibility</span>
-                    </button>
-                    <button
-                      onClick={() => handleOpenPDF()}
-                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
-                      title="Download PDF"
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
-                    </button>
-                    <button
-                      onClick={() => alert('WhatsApp sharing link generated for Anand Sharma!')}
-                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-primary transition-colors"
-                      title="Share via WhatsApp"
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">share</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-
-              {/* Row 2 */}
-              <tr className="bg-surface-container-low hover:bg-surface-container transition-colors">
-                <td className="px-space-lg py-3.5">
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-on-surface">Kavita Patel</span>
-                    <span className="text-label-xs text-secondary">Surat, Gujarat</span>
-                  </div>
-                </td>
-                <td className="px-space-lg py-3.5">
-                  <div className="flex items-center gap-1.5 font-semibold text-on-surface">
-                    <span className="material-symbols-outlined text-primary text-[18px]">solar_power</span>
-                    <span>3.0 kW</span>
-                  </div>
-                </td>
-                <td className="px-space-lg py-3.5 text-secondary font-label-xs whitespace-nowrap">
-                  Yesterday
-                </td>
-                <td className="px-space-lg py-3.5 text-right font-bold text-on-surface tabular-nums">
-                  ₹ 2,10,000
-                </td>
-                <td className="px-space-lg py-3.5 text-center whitespace-nowrap">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-xs font-label-xs bg-tertiary-container/30 text-on-tertiary-container">
-                    <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-                    Customer Viewed
-                  </span>
-                </td>
-                <td className="px-space-lg py-3.5 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <button
-                      onClick={() => handleOpenPDF()}
-                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
-                      title="View Quotation"
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">visibility</span>
-                    </button>
-                    <button
-                      onClick={() => handleOpenPDF()}
-                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
-                      title="Download PDF"
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
-                    </button>
-                    <button
-                      onClick={() => alert('WhatsApp sharing link generated for Kavita Patel!')}
-                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-primary transition-colors"
-                      title="Share via WhatsApp"
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">share</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-
-              {/* Row 3 */}
-              <tr className="bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
-                <td className="px-space-lg py-3.5">
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-semibold text-on-surface">MIRANA TECHNOCAST PVT.LTD.</span>
-                      <span className="text-label-xs px-1.5 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed-variant">Commercial</span>
+              {recentQuotes.map((q, idx) => (
+                <tr key={idx} className={`transition-colors ${idx % 2 === 0 ? 'bg-surface-container-lowest hover:bg-surface-container-low' : 'bg-surface-container-low hover:bg-surface-container'}`}>
+                  <td className="px-space-lg py-3.5">
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-on-surface">{q.customerName}</span>
+                      <span className="text-label-xs text-secondary">{q.location}</span>
                     </div>
-                    <span className="text-label-xs text-secondary">Metoda GIDC, Rajkot</span>
-                  </div>
-                </td>
-                <td className="px-space-lg py-3.5">
-                  <div className="flex items-center gap-1.5 font-semibold text-on-surface">
-                    <span className="material-symbols-outlined text-primary text-[18px]">factory</span>
-                    <span>280.20 kW</span>
-                  </div>
-                </td>
-                <td className="px-space-lg py-3.5 text-secondary font-label-xs whitespace-nowrap">
-                  17 Aug 2026
-                </td>
-                <td className="px-space-lg py-3.5 text-right font-bold text-on-surface tabular-nums">
-                  ₹ 67,24,800
-                </td>
-                <td className="px-space-lg py-3.5 text-center whitespace-nowrap">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-xs font-label-xs bg-amber-500/15 text-amber-800">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                    Verified Proposal
-                  </span>
-                </td>
-                <td className="px-space-lg py-3.5 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <button
-                      onClick={() => handleOpenPDF()}
-                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
-                      title="View Quotation"
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">visibility</span>
-                    </button>
-                    <button
-                      onClick={() => handleOpenPDF()}
-                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
-                      title="Download PDF"
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
-                    </button>
-                    <button
-                      onClick={() => alert('WhatsApp sharing link generated for Mirana Technocast!')}
-                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-primary transition-colors"
-                      title="Share via WhatsApp"
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">share</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-
-              {/* Row 4 */}
-              <tr className="bg-surface-container-low hover:bg-surface-container transition-colors">
-                <td className="px-space-lg py-3.5">
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-on-surface">Vikram Rathore</span>
-                    <span className="text-label-xs text-secondary">Jaipur, Rajasthan</span>
-                  </div>
-                </td>
-                <td className="px-space-lg py-3.5">
-                  <div className="flex items-center gap-1.5 font-semibold text-on-surface">
-                    <span className="material-symbols-outlined text-primary text-[18px]">solar_power</span>
-                    <span>7.5 kW</span>
-                  </div>
-                </td>
-                <td className="px-space-lg py-3.5 text-secondary font-label-xs whitespace-nowrap">
-                  15 Oct 2024
-                </td>
-                <td className="px-space-lg py-3.5 text-right font-bold text-on-surface tabular-nums">
-                  ₹ 5,15,000
-                </td>
-                <td className="px-space-lg py-3.5 text-center whitespace-nowrap">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-xs font-label-xs bg-primary-container/15 text-primary">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
-                    Active / Sent
-                  </span>
-                </td>
-                <td className="px-space-lg py-3.5 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <button
-                      onClick={() => handleOpenPDF()}
-                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
-                      title="View Quotation"
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">visibility</span>
-                    </button>
-                    <button
-                      onClick={() => handleOpenPDF()}
-                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
-                      title="Download PDF"
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
-                    </button>
-                    <button
-                      onClick={() => alert('WhatsApp sharing link generated for Vikram Rathore!')}
-                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-primary transition-colors"
-                      title="Share via WhatsApp"
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">share</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-
-              {/* Row 5 */}
-              <tr className="bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
-                <td className="px-space-lg py-3.5">
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-on-surface">Dr. Suresh Nair</span>
-                    <span className="text-label-xs text-secondary">Bangalore, Karnataka</span>
-                  </div>
-                </td>
-                <td className="px-space-lg py-3.5">
-                  <div className="flex items-center gap-1.5 font-semibold text-on-surface">
-                    <span className="material-symbols-outlined text-primary text-[18px]">solar_power</span>
-                    <span>4.0 kW</span>
-                  </div>
-                </td>
-                <td className="px-space-lg py-3.5 text-secondary font-label-xs whitespace-nowrap">
-                  12 Oct 2024
-                </td>
-                <td className="px-space-lg py-3.5 text-right font-bold text-on-surface tabular-nums">
-                  ₹ 2,75,000
-                </td>
-                <td className="px-space-lg py-3.5 text-center whitespace-nowrap">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-xs font-label-xs bg-tertiary-container/30 text-on-tertiary-container">
-                    <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-                    Customer Viewed
-                  </span>
-                </td>
-                <td className="px-space-lg py-3.5 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <button
-                      onClick={() => handleOpenPDF()}
-                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
-                      title="View Quotation"
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">visibility</span>
-                    </button>
-                    <button
-                      onClick={() => handleOpenPDF()}
-                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
-                      title="Download PDF"
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
-                    </button>
-                    <button
-                      onClick={() => alert('WhatsApp sharing link generated for Dr. Suresh Nair!')}
-                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-primary transition-colors"
-                      title="Share via WhatsApp"
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">share</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
+                  </td>
+                  <td className="px-space-lg py-3.5">
+                    <div className="flex items-center gap-1.5 font-semibold text-on-surface">
+                      <span className="material-symbols-outlined text-primary text-[18px]">solar_power</span>
+                      <span>{q.capacity}</span>
+                    </div>
+                  </td>
+                  <td className="px-space-lg py-3.5 text-secondary font-label-xs whitespace-nowrap">
+                    {q.date}
+                  </td>
+                  <td className="px-space-lg py-3.5 text-right font-bold text-on-surface tabular-nums">
+                    {q.amount}
+                  </td>
+                  <td className="px-space-lg py-3.5 text-center whitespace-nowrap">
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-xs font-label-xs ${q.statusClass}`}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                      {q.status}
+                    </span>
+                  </td>
+                  <td className="px-space-lg py-3.5 text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <button
+                        onClick={() => handleOpenPDF(q)}
+                        className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
+                        title="View Quotation"
+                        type="button"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">visibility</span>
+                      </button>
+                      <button
+                        onClick={() => handleOpenPDF(q)}
+                        className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
+                        title="Download PDF"
+                        type="button"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                      </button>
+                      <button
+                        onClick={() => openWhatsAppChat(q)}
+                        className="p-1.5 rounded hover:bg-surface-container text-[#25D366] hover:bg-[#25D366]/15 transition-colors"
+                        title="Share via WhatsApp"
+                        type="button"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">chat</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
