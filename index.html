@@ -2,11 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- Immediate Auto-Redirect from legacy Render URL to official custom domain -->
+    <!-- Auto-Redirect browser visitors to official domain, while allowing installed PWA to auto-update natively without reinstalling -->
     <script>
       (function() {
+        var isPWA = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
         var h = window.location.hostname;
-        if (h && (h.indexOf('onrender.com') !== -1 || h.indexOf('render.com') !== -1)) {
+        if (!isPWA && h && (h.indexOf('onrender.com') !== -1 || h.indexOf('render.com') !== -1)) {
           window.location.replace('https://sunvine-dealer.vprotech.online' + window.location.pathname + window.location.search + window.location.hash);
         }
       })();
@@ -129,7 +130,21 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(() => {});
+          navigator.serviceWorker.register('/sw.js').then((reg) => {
+            if (reg) {
+              reg.update().catch(() => {});
+              reg.addEventListener('updatefound', () => {
+                var newWorker = reg.installing;
+                if (newWorker) {
+                  newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      window.location.reload();
+                    }
+                  });
+                }
+              });
+            }
+          }).catch(() => {});
         });
       }
     </script>
