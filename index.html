@@ -2,6 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Immediate Auto-Redirect from legacy Render URL to official custom domain -->
+    <script>
+      (function() {
+        var h = window.location.hostname;
+        if (h && (h.indexOf('onrender.com') !== -1 || h.indexOf('render.com') !== -1)) {
+          window.location.replace('https://sunvine-dealer.vprotech.online' + window.location.pathname + window.location.search + window.location.hash);
+        }
+      })();
+    </script>
     <link rel="icon" type="image/png" href="/pwa-192x192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0F1B2E" />
