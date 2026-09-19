@@ -23,7 +23,7 @@ export function buildProposalWhatsAppMessage(quote) {
   const moduleInfo = quote.solarModule || quote.moduleType || '600 WP TOPCon Mono Bifacial Panel';
   const invInfo = quote.inverterCapacity || '125 KW Grid-Tied Inverter';
   const date = quote.date || new Date().toLocaleDateString('en-GB');
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://dealer-portal-quotation.vercel.app';
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://sunvine-dealer.vprotech.online';
 
   return `*☀️ SUNVINE RENEWABLE ENERGY - SOLAR EPC PROPOSAL*
 
