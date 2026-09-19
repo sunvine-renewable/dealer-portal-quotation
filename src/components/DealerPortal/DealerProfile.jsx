@@ -112,14 +112,20 @@ export default function DealerProfile() {
           <h1 className="font-headline-xl text-headline-xl text-on-surface">My Profile</h1>
           <p className="font-body-md text-secondary mt-1">Manage your dealer credentials, business information, and account security.</p>
         </div>
-        <div className="flex items-center gap-space-sm">
+        <div className="flex items-center gap-space-sm flex-wrap">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container/15 text-primary font-label-xs">
             <span className="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
             Active Node • MH-WEST-04
           </span>
-          <div className="px-3 py-1 rounded-lg bg-surface-container-high text-secondary font-label-xs">
-            Last synced: Today, 14:32 IST
-          </div>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('sunvine_trigger_update_modal'))}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-container-high hover:bg-primary/15 text-secondary hover:text-primary font-label-xs transition-colors cursor-pointer border border-surface-container-high"
+            title="Check for PWA updates & changelog"
+          >
+            <span className="material-symbols-outlined text-[15px] text-primary">system_update</span>
+            <span>App v1.3.0 • Check Updates</span>
+          </button>
         </div>
       </div>
 

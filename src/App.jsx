@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import SplashScreen from './components/SplashScreen';
 import Navigation from './components/Navigation';
+import AppUpdateModal from './components/Shared/AppUpdateModal';
 
 // Authentication Views
 import DealerLogin from './components/Auth/DealerLogin';
@@ -123,6 +124,7 @@ export default function App() {
   return (
     <AppProvider>
       <MainApp />
+      <AppUpdateModal />
     </AppProvider>
   );
 }
