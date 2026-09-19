@@ -1,10 +1,132 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { openWhatsAppChat } from '../../utils/quotationShare';
 
 export default function DealerDashboard() {
   const { currentDealer, quotations, setActiveTab, setPreviewQuotation } = useApp();
   const [selectedTimeRange, setSelectedTimeRange] = useState('Last 30 Days');
+  const [timeDropdownOpen, setTimeDropdownOpen] = useState(false);
+  const timeDropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (timeDropdownRef.current && !timeDropdownRef.current.contains(event.target)) {
+        setTimeDropdownOpen(false);
+      }
+    }
+    if (timeDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [timeDropdownOpen]);
+
+  const timeRanges = [
+    { label: 'Today', subtext: 'Past 24 hours' },
+    { label: 'Last 7 Days', subtext: 'Past week' },
+    { label: 'Last 30 Days', subtext: 'Default 1 month' },
+    { label: 'This Quarter (Q4)', subtext: 'Current fiscal quarter' },
+    { label: 'Financial Year 2024-25', subtext: 'Apr 2024 - Mar 2025' },
+    { label: 'All Time', subtext: 'Complete lifetime history' }
+  ];
+
+  const kpiData = {
+    'Today': {
+      totalQuotes: 2,
+      totalQuotesDelta: '+2 today (Active)',
+      periodQuotes: 2,
+      periodLabel: 'today',
+      periodTitle: "Today's Quotations",
+      periodValueText: '₹ 5.55 Lakhs quoted',
+      targetKW: '8 kW / 15 kW',
+      targetPercent: '53%',
+      totalValue: '₹ 5.55 L',
+      approvedValue: '₹ 3.45L',
+      pipelineValue: '₹ 2.10L',
+      approvedCount: '1 Approved • 1 Pending',
+      sparkHeights: ['h-1', 'h-1', 'h-2', 'h-2', 'h-3', 'h-5', 'h-8']
+    },
+    'Last 7 Days': {
+      totalQuotes: 9,
+      totalQuotesDelta: '+9 this week (↑ 18%)',
+      periodQuotes: 9,
+      periodLabel: 'this week',
+      periodTitle: 'Weekly Quotations',
+      periodValueText: '₹ 14.8 Lakhs quoted',
+      targetKW: '28 kW / 40 kW',
+      targetPercent: '70%',
+      totalValue: '₹ 19.30 L',
+      approvedValue: '₹ 11.4L',
+      pipelineValue: '₹ 7.9L',
+      approvedCount: '3 Approved • 2 In Progress',
+      sparkHeights: ['h-2', 'h-3', 'h-4', 'h-2', 'h-5', 'h-7', 'h-8']
+    },
+    'Last 30 Days': {
+      totalQuotes: 42,
+      totalQuotesDelta: '+8 this month (↑ 24%)',
+      periodQuotes: 14,
+      periodLabel: 'in October',
+      periodTitle: 'This Month Quotations',
+      periodValueText: '₹ 18.4 Lakhs quoted',
+      targetKW: '70 kW / 100 kW',
+      targetPercent: '70%',
+      totalValue: '₹ 58.20 L',
+      approvedValue: '₹ 34.8L',
+      pipelineValue: '₹ 23.4L',
+      approvedCount: '8 Approved • 4 Commissioned',
+      sparkHeights: ['h-2', 'h-3', 'h-3', 'h-5', 'h-4', 'h-6', 'h-8']
+    },
+    'This Quarter (Q4)': {
+      totalQuotes: 98,
+      totalQuotesDelta: '+34 this quarter (↑ 38%)',
+      periodQuotes: 42,
+      periodLabel: 'this quarter',
+      periodTitle: 'Quarterly Quotations',
+      periodValueText: '₹ 64.2 Lakhs quoted',
+      targetKW: '185 kW / 250 kW',
+      targetPercent: '74%',
+      totalValue: '₹ 1.48 Cr',
+      approvedValue: '₹ 92.4L',
+      pipelineValue: '₹ 55.6L',
+      approvedCount: '24 Approved • 12 Commissioned',
+      sparkHeights: ['h-3', 'h-4', 'h-5', 'h-6', 'h-7', 'h-7', 'h-8']
+    },
+    'Financial Year 2024-25': {
+      totalQuotes: 284,
+      totalQuotesDelta: '+112 this fiscal (↑ 45%)',
+      periodQuotes: 142,
+      periodLabel: 'FY 24-25',
+      periodTitle: 'Annual Quotations',
+      periodValueText: '₹ 2.15 Cr quoted',
+      targetKW: '620 kW / 800 kW',
+      targetPercent: '77.5%',
+      totalValue: '₹ 4.12 Cr',
+      approvedValue: '₹ 2.65 Cr',
+      pipelineValue: '₹ 1.47 Cr',
+      approvedCount: '78 Approved • 52 Commissioned',
+      sparkHeights: ['h-4', 'h-5', 'h-6', 'h-7', 'h-7', 'h-8', 'h-8']
+    },
+    'All Time': {
+      totalQuotes: 412,
+      totalQuotesDelta: 'Lifetime Record',
+      periodQuotes: 412,
+      periodLabel: 'all time',
+      periodTitle: 'Cumulative Quotations',
+      periodValueText: '₹ 3.80 Cr quoted',
+      targetKW: '940 kW / 1.2 MW',
+      targetPercent: '78.3%',
+      totalValue: '₹ 6.45 Cr',
+      approvedValue: '₹ 4.20 Cr',
+      pipelineValue: '₹ 2.25 Cr',
+      approvedCount: '124 Approved • 98 Commissioned',
+      sparkHeights: ['h-4', 'h-5', 'h-6', 'h-7', 'h-8', 'h-8', 'h-8']
+    }
+  };
+
+  const activeKpi = kpiData[selectedTimeRange] || kpiData['Last 30 Days'];
 
   const handleOpenPDF = (quote) => {
     if (setPreviewQuotation) {
@@ -108,21 +230,56 @@ export default function DealerDashboard() {
           </div>
         </div>
 
-        {/* Quick Actions Toolbar */}
-        <div className="flex items-center gap-space-sm self-start lg:self-center">
-          <div className="flex items-center gap-space-xs bg-surface-container-lowest px-space-md py-space-sm rounded-lg shadow-sm text-secondary font-label-sm hover:text-on-surface cursor-pointer">
-            <span className="material-symbols-outlined text-[18px]">calendar_today</span>
-            <span>{selectedTimeRange}</span>
-            <span className="material-symbols-outlined text-[18px]">expand_more</span>
-          </div>
+        {/* Quick Actions Toolbar with Live Time Range Dropdown */}
+        <div className="relative self-start lg:self-center" ref={timeDropdownRef}>
           <button
-            onClick={() => setActiveTab('create_quote')}
-            className="flex items-center gap-space-xs bg-primary-container hover:bg-primary text-on-primary px-space-md py-space-sm rounded-lg shadow-sm font-label-md transition-all active:scale-95"
             type="button"
+            onClick={() => setTimeDropdownOpen(!timeDropdownOpen)}
+            className="flex items-center gap-space-xs bg-surface-container-lowest px-space-md py-space-sm rounded-lg shadow-sm border border-surface-container-high/60 text-on-surface hover:border-primary font-label-sm transition-all cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            <span>Create New Quotation</span>
+            <span className="material-symbols-outlined text-[18px] text-primary">calendar_today</span>
+            <span className="font-semibold">{selectedTimeRange}</span>
+            <span className={`material-symbols-outlined text-[18px] text-secondary transition-transform duration-200 ${timeDropdownOpen ? 'rotate-180 text-primary' : ''}`}>
+              expand_more
+            </span>
           </button>
+
+          {/* Time Range Dropdown Menu */}
+          {timeDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-surface-container-lowest rounded-xl shadow-xl border border-surface-container-high py-2 z-30 animate-in fade-in slide-in-from-top-1">
+              <div className="px-3 py-1.5 border-b border-surface-container-high text-[11px] font-bold text-secondary uppercase tracking-wider">
+                Select Time Window
+              </div>
+              <div className="py-1">
+                {timeRanges.map((range) => {
+                  const isSelected = selectedTimeRange === range.label;
+                  return (
+                    <button
+                      key={range.label}
+                      type="button"
+                      onClick={() => {
+                        setSelectedTimeRange(range.label);
+                        setTimeDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3.5 py-2.5 text-left text-xs transition-colors ${
+                        isSelected
+                          ? 'bg-primary-container/15 text-primary font-bold'
+                          : 'text-on-surface hover:bg-surface-container-low'
+                      }`}
+                    >
+                      <div className="flex flex-col">
+                        <span className={isSelected ? 'text-primary' : 'text-on-surface'}>{range.label}</span>
+                        <span className="text-[10px] text-secondary font-normal">{range.subtext}</span>
+                      </div>
+                      {isSelected && (
+                        <span className="material-symbols-outlined text-primary text-[18px]">check</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -135,53 +292,57 @@ export default function DealerDashboard() {
               <span className="material-symbols-outlined text-[24px]">description</span>
             </div>
             <span className="px-space-sm py-0.5 rounded-full text-label-xs font-label-xs bg-primary-container/15 text-primary">
-              +8 this month (↑ 24%)
+              {activeKpi.totalQuotesDelta}
             </span>
           </div>
           <div>
             <div className="flex items-baseline gap-space-xs">
-              <span className="font-headline-xl text-headline-xl text-on-surface font-bold">42</span>
+              <span className="font-headline-xl text-headline-xl text-on-surface font-bold">{activeKpi.totalQuotes}</span>
               <span className="font-label-sm text-label-sm text-secondary">proposals</span>
             </div>
             <div className="font-label-sm text-label-sm text-secondary mt-1">Total Quotations</div>
           </div>
           {/* Mini Sparkline Representation */}
           <div className="mt-space-md pt-space-xs flex items-end gap-1.5 h-8">
-            <div className="w-full bg-surface-container rounded-t h-2"></div>
-            <div className="w-full bg-surface-container rounded-t h-3"></div>
-            <div className="w-full bg-surface-container rounded-t h-3"></div>
-            <div className="w-full bg-surface-container rounded-t h-5"></div>
-            <div className="w-full bg-surface-container rounded-t h-4"></div>
-            <div className="w-full bg-primary-container/60 rounded-t h-6"></div>
-            <div className="w-full bg-primary-container rounded-t h-8"></div>
+            {activeKpi.sparkHeights.map((hClass, idx) => (
+              <div
+                key={idx}
+                className={`w-full rounded-t transition-all duration-300 ${
+                  idx >= 5 ? 'bg-primary-container' : 'bg-surface-container'
+                } ${hClass}`}
+              ></div>
+            ))}
           </div>
         </div>
 
-        {/* Card 2: This Month Quotations */}
+        {/* Card 2: Period Quotations */}
         <div className="relative overflow-hidden bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-space-md">
             <div className="w-12 h-12 rounded-full bg-tertiary-fixed/40 flex items-center justify-center text-tertiary">
               <span className="material-symbols-outlined text-[24px]">wb_sunny</span>
             </div>
             <span className="px-space-sm py-0.5 rounded-full text-label-xs font-label-xs bg-tertiary/10 text-tertiary">
-              ₹18.4 Lakhs quoted
+              {activeKpi.periodValueText}
             </span>
           </div>
           <div>
             <div className="flex items-baseline gap-space-xs">
-              <span className="font-headline-xl text-headline-xl text-on-surface font-bold">14</span>
-              <span className="font-label-sm text-label-sm text-secondary">in October</span>
+              <span className="font-headline-xl text-headline-xl text-on-surface font-bold">{activeKpi.periodQuotes}</span>
+              <span className="font-label-sm text-label-sm text-secondary">{activeKpi.periodLabel}</span>
             </div>
-            <div className="font-label-sm text-label-sm text-secondary mt-1">This Month Quotations</div>
+            <div className="font-label-sm text-label-sm text-secondary mt-1">{activeKpi.periodTitle}</div>
           </div>
           {/* Capacity Yield Bar Visual */}
           <div className="mt-space-md flex flex-col gap-1">
             <div className="flex justify-between text-label-xs font-label-xs text-secondary">
               <span>Target Progress</span>
-              <span className="text-on-surface font-semibold">70 kW / 100 kW</span>
+              <span className="text-on-surface font-semibold">{activeKpi.targetKW}</span>
             </div>
             <div className="w-full h-2 bg-surface-container rounded-full overflow-hidden">
-              <div className="h-full bg-tertiary rounded-full" style={{ width: '70%' }}></div>
+              <div
+                className="h-full bg-tertiary rounded-full transition-all duration-500"
+                style={{ width: activeKpi.targetPercent }}
+              ></div>
             </div>
           </div>
         </div>
@@ -193,12 +354,12 @@ export default function DealerDashboard() {
               <span className="material-symbols-outlined text-[24px]">currency_rupee</span>
             </div>
             <span className="px-space-sm py-0.5 rounded-full text-label-xs font-label-xs bg-secondary-fixed text-on-secondary-fixed-variant">
-              8 Approved • 4 Commissioned
+              {activeKpi.approvedCount}
             </span>
           </div>
           <div>
             <div className="flex items-baseline gap-space-xs">
-              <span className="font-headline-xl text-headline-xl text-on-surface font-bold">₹ 58.20 L</span>
+              <span className="font-headline-xl text-headline-xl text-on-surface font-bold">{activeKpi.totalValue}</span>
             </div>
             <div className="font-label-sm text-label-sm text-secondary mt-1">Total Business Value</div>
           </div>
@@ -206,11 +367,11 @@ export default function DealerDashboard() {
           <div className="mt-space-md flex items-center justify-between text-label-xs font-label-xs text-secondary pt-2">
             <div className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-primary-container"></span>
-              <span>₹34.8L Approved</span>
+              <span>{activeKpi.approvedValue} Approved</span>
             </div>
             <div className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-secondary-fixed-dim"></span>
-              <span>₹23.4L In Pipeline</span>
+              <span>{activeKpi.pipelineValue} In Pipeline</span>
             </div>
           </div>
         </div>

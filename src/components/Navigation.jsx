@@ -1,10 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 
 export default function Navigation() {
   const { role, activeTab, setActiveTab, currentDealer, logout } = useApp();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    }
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [dropdownOpen]);
 
   const dealerMenu = [
     { id: 'dashboard', label: 'Dashboard', icon: 'home' },
@@ -105,7 +122,7 @@ export default function Navigation() {
           <div className="h-6 w-px bg-surface-container-high"></div>
 
           {/* Dealer Avatar & Dropdown Pill */}
-          <div className="relative">
+          <div className="relative" ref={profileDropdownRef}>
             <div
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex items-center gap-space-sm cursor-pointer select-none"
