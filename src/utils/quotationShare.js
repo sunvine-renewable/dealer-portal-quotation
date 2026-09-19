@@ -100,6 +100,18 @@ export async function shareQuotationPdfViaWhatsApp(quote, exportElement, customP
   const text = buildProposalWhatsAppMessage(quote);
   const quoteId = (quote.id || 'SV-2026-Q801').replace(/[^a-zA-Z0-9-_]/g, '_');
   const fileName = `Sunvine_Proposal_${quoteId}.pdf`;
+  const waUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
+
+  // On desktop browser, pre-open window synchronously to prevent Chrome popup blocker
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+  let preOpenedTab = null;
+  if (!isMobile) {
+    try {
+      preOpenedTab = window.open('about:blank', '_blank');
+    } catch (e) {
+      preOpenedTab = null;
+    }
+  }
 
   let pdfBlob = null;
   if (exportElement) {
@@ -111,7 +123,7 @@ export async function shareQuotationPdfViaWhatsApp(quote, exportElement, customP
   }
 
   // 1. If Mobile device supports native File Sharing via Web Share API
-  if (pdfBlob && typeof navigator !== 'undefined' && navigator.canShare) {
+  if (isMobile && pdfBlob && typeof navigator !== 'undefined' && navigator.canShare) {
     try {
       const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
       if (navigator.canShare({ files: [pdfFile] })) {
@@ -130,7 +142,7 @@ export async function shareQuotationPdfViaWhatsApp(quote, exportElement, customP
     }
   }
 
-  // 2. Fallback: Download actual PDF directly to user's device
+  // 2. Fallback / Desktop: Download actual PDF directly to user's device
   if (pdfBlob) {
     const blobUrl = URL.createObjectURL(pdfBlob);
     const a = document.createElement('a');
@@ -142,10 +154,14 @@ export async function shareQuotationPdfViaWhatsApp(quote, exportElement, customP
     setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
   }
 
-  // 3. Open WhatsApp chat directly with customer number and pre-filled message
-  const waUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
-  window.open(waUrl, '_blank');
+  // 3. Navigate pre-opened tab to WhatsApp (bypassing popup blocker)
+  if (preOpenedTab && !preOpenedTab.closed) {
+    preOpenedTab.location.href = waUrl;
+  } else {
+    // Fallback if tab was not pre-opened
+    window.open(waUrl, '_blank') || (window.location.href = waUrl);
+  }
 
-  return { success: true, method: 'download_and_chat', fileName };
+  return { success: true, method: 'download_and_chat', fileName, waUrl };
 }
 

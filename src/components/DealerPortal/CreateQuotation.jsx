@@ -367,7 +367,7 @@ export default function CreateQuotation() {
             <img
               alt="A clean modern suburban house with sleek black photovoltaic solar panels neatly installed"
               className="w-full h-full object-cover"
-              src="https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=1200&q=80"
+              src="/solar_field_cover.jpg"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-inverse-surface/85 via-inverse-surface/25 to-transparent flex items-end p-4">
               <div className="flex items-center justify-between w-full text-white">
@@ -504,15 +504,62 @@ export default function CreateQuotation() {
               </div>
             </div>
 
-            {/* Simplified Dealer Commercials (Clean & Private) */}
-            <div className="p-3 bg-surface rounded-lg border border-surface-container-high flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary text-[18px]">account_balance_wallet</span>
-                <span className="font-body-sm text-body-sm text-secondary font-medium">Dealer Commercial Margin ({dealerMarginRate}%)</span>
+            {/* Interactive Dealer Commercials (Customizable Margin) */}
+            <div className="p-4 bg-surface rounded-xl border border-surface-container-high flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-[20px]">account_balance_wallet</span>
+                  <span className="font-label-sm text-sm text-on-surface font-bold">Custom Dealer Margin</span>
+                </div>
+                <span className="font-headline-sm text-headline-sm text-primary font-bold" id="dealerMarginDisplay">
+                  {formatINR(dealerMarginINR)}
+                </span>
               </div>
-              <span className="font-label-md text-label-md text-primary font-bold" id="dealerMarginDisplay">
-                {formatINR(dealerMarginINR)}
-              </span>
+
+              {/* Preset Chips & Custom Input */}
+              <div className="flex flex-wrap items-center gap-2">
+                {[5, 8, 10, 12, 15].map((pct) => (
+                  <button
+                    key={pct}
+                    type="button"
+                    onClick={() => setDealerMarginRate(pct)}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      dealerMarginRate === pct
+                        ? 'bg-primary-container text-on-primary shadow-xs'
+                        : 'bg-surface-container-lowest border border-surface-container-high text-secondary hover:text-on-surface'
+                    }`}
+                  >
+                    {pct}%
+                  </button>
+                ))}
+
+                {/* Custom Input */}
+                <div className="flex items-center gap-1.5 ml-auto">
+                  <span className="text-xs text-secondary font-medium">Custom:</span>
+                  <div className="relative flex items-center">
+                    <input
+                      type="number"
+                      min="0"
+                      max="35"
+                      step="0.5"
+                      value={dealerMarginRate}
+                      onChange={(e) => setDealerMarginRate(Math.max(0, parseFloat(e.target.value) || 0))}
+                      className="w-16 h-8 text-center text-xs font-bold rounded-lg border border-surface-container-high bg-surface-container-lowest focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none"
+                    />
+                    <span className="absolute right-2 text-xs text-secondary font-bold pointer-events-none">%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-[11px] text-secondary flex items-center justify-between pt-2 border-t border-surface-container-high">
+                <span>
+                  Spread: <strong>{formatINR(Math.round(dealerMarginINR / kw))} / kW</strong>
+                </span>
+                <span className="inline-flex items-center gap-1 text-primary font-medium text-[10px] bg-primary/10 px-2 py-0.5 rounded-full">
+                  <span className="material-symbols-outlined text-[12px]">lock</span>
+                  <span>Confidential (Hidden from Customer PDF)</span>
+                </span>
+              </div>
             </div>
           </section>
         </div>
