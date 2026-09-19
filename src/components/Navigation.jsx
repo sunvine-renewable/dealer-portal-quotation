@@ -39,8 +39,7 @@ export default function Navigation() {
               onClick={() => setActiveTab(role === 'admin' ? 'admin_dashboard' : 'dashboard')}
             />
             <div className="flex flex-col">
-              <span className="font-headline-sm text-headline-sm text-on-secondary tracking-tight leading-tight">Sunvine</span>
-              <span className="font-label-xs text-label-xs text-secondary-fixed-dim tracking-wider uppercase">
+              <span className="font-label-xs text-label-xs text-secondary-fixed-dim tracking-wider uppercase font-semibold">
                 {role === 'admin' ? 'Super Admin Portal' : 'Dealer Portal'}
               </span>
             </div>
