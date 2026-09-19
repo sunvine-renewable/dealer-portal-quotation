@@ -246,7 +246,7 @@ export default function DealerDashboard() {
 
           {/* Time Range Dropdown Menu */}
           {timeDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-64 bg-surface-container-lowest rounded-xl shadow-xl border border-surface-container-high py-2 z-30 animate-in fade-in slide-in-from-top-1">
+            <div className="absolute left-0 mt-2 w-64 bg-surface-container-lowest rounded-xl shadow-xl border border-surface-container-high py-2 z-30 animate-in fade-in slide-in-from-top-1">
               <div className="px-3 py-1.5 border-b border-surface-container-high text-[11px] font-bold text-secondary uppercase tracking-wider">
                 Select Time Window
               </div>
