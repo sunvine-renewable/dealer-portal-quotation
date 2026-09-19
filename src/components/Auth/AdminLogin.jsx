@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 
 export default function AdminLogin() {
@@ -6,17 +6,97 @@ export default function AdminLogin() {
   const [email, setEmail] = useState('admin@sunvinerenewable.com');
   const [password, setPassword] = useState('1234567890123456');
   const [showPassword, setShowPassword] = useState(false);
-  const [otp, setOtp] = useState(['4', '9', '1', '8', '2', '0']);
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [focusedIndex, setFocusedIndex] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [timer, setTimer] = useState(60);
+  const [resendNotice, setResendNotice] = useState('');
+
+  const inputRefs = useRef([]);
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (timer <= 0) return;
+    const interval = setInterval(() => {
+      setTimer((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timer]);
 
   const handleOtpChange = (index, val) => {
+    // Only accept numeric digits
+    const cleanVal = val.replace(/\D/g, '');
     const newOtp = [...otp];
-    newOtp[index] = val.slice(-1);
+
+    if (!cleanVal) {
+      newOtp[index] = '';
+      setOtp(newOtp);
+      return;
+    }
+
+    newOtp[index] = cleanVal.slice(-1);
     setOtp(newOtp);
+    setError('');
+
+    // Auto-advance to next input
+    if (index < 5 && cleanVal) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (!pastedData) return;
+
+    const newOtp = [...otp];
+    for (let i = 0; i < 6; i++) {
+      newOtp[i] = pastedData[i] || '';
+    }
+    setOtp(newOtp);
+    setError('');
+
+    // Focus last filled or 6th input
+    const nextIndex = Math.min(pastedData.length, 5);
+    inputRefs.current[nextIndex]?.focus();
+  };
+
+  const handleResendOtp = () => {
+    if (timer > 0) return;
+    setTimer(60);
+    setOtp(['', '', '', '', '', '']);
+    setResendNotice('New 6-digit authentication token generated and dispatched.');
+    inputRefs.current[0]?.focus();
+    setTimeout(() => setResendNotice(''), 4000);
   };
 
   const handleAdminSubmit = (e) => {
     if (e) e.preventDefault();
+    setError('');
+
+    if (!email || !email.includes('@')) {
+      setError('Please provide an authorized corporate email.');
+      return;
+    }
+    if (!password || password.length < 6) {
+      setError('Invalid executive master password.');
+      return;
+    }
+
+    const otpCode = otp.join('');
+    if (otpCode.length !== 6) {
+      setError('Please enter all 6 digits of the Two-Factor Authentication code.');
+      inputRefs.current[otp.findIndex((d) => !d) || 0]?.focus();
+      return;
+    }
+
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
@@ -198,37 +278,77 @@ export default function AdminLogin() {
                     <span className="material-symbols-outlined text-primary-container text-[20px]">vibration</span>
                     <span className="font-label-md text-label-md font-bold">Two-Factor Authentication (2FA)</span>
                   </div>
-                  <span className="inline-flex items-center gap-1 font-label-xs text-label-xs text-secondary">
-                    <span className="material-symbols-outlined text-[14px]">timer</span>
-                    Resend OTP in <strong>42s</strong>
+                  <span className={`inline-flex items-center gap-1 font-label-xs text-label-xs ${timer > 0 ? 'text-secondary' : 'text-primary font-semibold'}`}>
+                    <span className="material-symbols-outlined text-[14px]">{timer > 0 ? 'timer' : 'check_circle'}</span>
+                    {timer > 0 ? (
+                      <>Resend OTP in <strong>{timer}s</strong></>
+                    ) : (
+                      <span>Code can be resent</span>
+                    )}
                   </span>
                 </div>
                 <p className="font-body-sm text-body-sm text-secondary">
-                  Enter 6-digit cryptographic security code sent to your registered hardware authenticator.
+                  Enter 6-digit cryptographic security code sent to your registered hardware authenticator / authorized email.
                 </p>
 
-                {/* 6 OTP Boxes Grid */}
-                <div className="grid grid-cols-6 gap-2 sm:gap-3 py-1">
+                {/* Resend Notice Alert */}
+                {resendNotice && (
+                  <div className="p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-primary font-body-sm text-xs flex items-center gap-2">
+                    <span className="material-symbols-outlined text-sm">mark_email_read</span>
+                    <span>{resendNotice}</span>
+                  </div>
+                )}
+
+                {/* Error Banner */}
+                {error && (
+                  <div className="p-2.5 rounded-lg bg-error/10 border border-error/20 text-error font-body-sm text-xs flex items-center gap-2">
+                    <span className="material-symbols-outlined text-sm">error</span>
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                {/* 6 OTP Boxes Grid - Fully Interactive */}
+                <div className="grid grid-cols-6 gap-2 sm:gap-3 py-1" onPaste={handlePaste}>
                   {otp.map((digit, idx) => (
                     <input
                       key={idx}
-                      className={`h-12 w-full text-center font-headline-md text-headline-md text-[#0F1B2E] bg-surface-container-lowest rounded-lg focus:outline-none transition-all ${
-                        idx === 4
-                          ? 'border-2 border-primary-container ring-2 ring-primary-container/20'
-                          : 'border border-surface-container-highest focus:border-primary-container focus:ring-2 focus:ring-primary-container/25'
+                      ref={(el) => (inputRefs.current[idx] = el)}
+                      className={`h-12 w-full text-center font-headline-md text-headline-md text-[#0F1B2E] bg-surface-container-lowest rounded-lg focus:outline-none transition-all border ${
+                        focusedIndex === idx
+                          ? 'border-primary-container ring-2 ring-primary-container/25 bg-surface-container-lowest'
+                          : digit
+                          ? 'border-primary-container/60 bg-surface-container-lowest'
+                          : 'border-surface-container-highest focus:border-primary-container'
                       }`}
-                      maxLength="1"
+                      maxLength={1}
                       type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={digit}
+                      onFocus={() => setFocusedIndex(idx)}
                       onChange={(e) => handleOtpChange(idx, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(idx, e)}
+                      autoComplete="one-time-code"
                     />
                   ))}
                 </div>
 
-                <div className="flex items-center justify-end">
-                  <button className="inline-flex items-center gap-1 font-label-xs text-label-xs text-tertiary hover:underline" type="button">
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] text-secondary font-label-xs">
+                    Auto-focus enabled • Paste supported
+                  </span>
+                  <button
+                    className={`inline-flex items-center gap-1 font-label-xs text-label-xs transition-colors ${
+                      timer > 0
+                        ? 'text-secondary/60 cursor-not-allowed'
+                        : 'text-tertiary hover:underline cursor-pointer font-semibold'
+                    }`}
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={timer > 0}
+                  >
                     <span className="material-symbols-outlined text-[14px]">refresh</span>
-                    Resend Security Code
+                    {timer > 0 ? `Resend in ${timer}s` : 'Resend Security Code'}
                   </button>
                 </div>
               </div>

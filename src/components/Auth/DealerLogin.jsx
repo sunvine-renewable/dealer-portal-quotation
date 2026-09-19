@@ -14,7 +14,15 @@ export default function DealerLogin() {
     if (e) e.preventDefault();
     const cleanNumber = mobileNumber.replace(/\D/g, '');
     if (cleanNumber.length !== 10) {
-      setError('Please enter a valid 10-digit mobile number');
+      setError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+    if (!/^[6-9]/.test(cleanNumber)) {
+      setError('Mobile number must start with 6, 7, 8, or 9.');
+      return;
+    }
+    if (!password || password.trim().length === 0) {
+      setError('Please enter your account password.');
       return;
     }
     setError('');
@@ -112,7 +120,10 @@ export default function DealerLogin() {
                   required
                   type="tel"
                   value={mobileNumber}
-                  onChange={(e) => setMobileNumber(e.target.value)}
+                  onChange={(e) => {
+                    setMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10));
+                    if (error) setError('');
+                  }}
                 />
               </div>
               {error && (
@@ -378,7 +389,10 @@ export default function DealerLogin() {
                       required
                       type="tel"
                       value={mobileNumber}
-                      onChange={(e) => setMobileNumber(e.target.value)}
+                      onChange={(e) => {
+                        setMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10));
+                        if (error) setError('');
+                      }}
                     />
                   </div>
                   {error && (

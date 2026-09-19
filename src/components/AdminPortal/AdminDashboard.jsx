@@ -36,17 +36,17 @@ export default function AdminDashboard() {
             Real-time EPC quotation pipeline, dealer throughput, and grid interconnection dispatch.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center bg-surface-container-lowest border border-surface-container-highest rounded-lg px-3 py-2 text-secondary font-label-md text-label-md">
-            <span className="material-symbols-outlined text-[18px] mr-2 text-primary">calendar_month</span>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="flex items-center bg-surface-container-lowest border border-surface-container-highest rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-secondary font-label-md text-xs sm:text-sm">
+            <span className="material-symbols-outlined text-[16px] sm:text-[18px] mr-1.5 sm:mr-2 text-primary">calendar_month</span>
             <span className="text-on-surface font-semibold">Oct 1 - Oct 31, 2025</span>
-            <span className="material-symbols-outlined text-[18px] ml-2">expand_more</span>
+            <span className="material-symbols-outlined text-[16px] sm:text-[18px] ml-1.5 sm:ml-2">expand_more</span>
           </div>
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 bg-surface-container-lowest border border-surface-container-highest text-secondary hover:text-on-surface px-3 py-2 rounded-lg font-label-md text-label-md transition-colors"
+            className="flex items-center gap-1.5 sm:gap-2 bg-surface-container-lowest border border-surface-container-highest text-secondary hover:text-on-surface px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg font-label-md text-xs sm:text-sm transition-colors shadow-xs"
           >
-            <span className="material-symbols-outlined text-[18px]">download</span>
+            <span className="material-symbols-outlined text-[16px] sm:text-[18px]">download</span>
             <span>Export Ledger</span>
           </button>
         </div>
@@ -163,7 +163,7 @@ export default function AdminDashboard() {
                 </p>
               </div>
               {/* Filter Status Pills */}
-              <div className="flex items-center bg-surface-container-low p-1 rounded-lg border border-surface-container-highest font-label-sm text-label-sm overflow-x-auto">
+              <div className="flex items-center bg-surface-container-low p-1 rounded-lg border border-surface-container-highest font-label-sm text-label-sm overflow-x-auto max-w-full shrink-0">
                 <button
                   onClick={() => setFilterStatus('all')}
                   className={`px-3 py-1.5 rounded whitespace-nowrap transition-colors ${
