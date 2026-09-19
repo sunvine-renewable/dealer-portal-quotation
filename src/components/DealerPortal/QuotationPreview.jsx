@@ -69,7 +69,7 @@ export default function QuotationPreview({ isPublicView = false }) {
       if (res?.method === 'native_file_share') {
         setStatusNotice('Official PDF shared to WhatsApp!');
       } else if (res?.method === 'download_and_chat') {
-        setStatusNotice(`PDF downloaded (${res.fileName}) & WhatsApp chat opened!`);
+        setStatusNotice(`Official PDF downloaded (${res.fileName})! WhatsApp Web opened. Attach using the 📎 paperclip or drag-and-drop into chat.`);
       }
     } catch (err) {
       console.error(err);

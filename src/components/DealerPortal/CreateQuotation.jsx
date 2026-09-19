@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { quotationService } from '../../services/quotationService';
 
@@ -8,7 +8,15 @@ const formatINR = (val) => {
 };
 
 export default function CreateQuotation() {
-  const { currentDealer, addQuotation, setActiveTab, setPreviewQuotation } = useApp();
+  const { 
+    currentDealer, 
+    addQuotation, 
+    updateQuotation, 
+    editingQuotation, 
+    clearEditingQuotation, 
+    setActiveTab, 
+    setPreviewQuotation 
+  } = useApp();
 
   // Step 1.1 Customer Details
   const [custName, setCustName] = useState('Anand Sharma');
@@ -28,6 +36,35 @@ export default function CreateQuotation() {
   const [dealerMarginRate, setDealerMarginRate] = useState(8); // 8%
   const [dealerMarginFixed, setDealerMarginFixed] = useState(25000); // ₹ 25,000
   const [saveStatus, setSaveStatus] = useState('');
+
+  // Auto-populate when editing an existing quote
+  useEffect(() => {
+    if (editingQuotation) {
+      if (editingQuotation.customerName) setCustName(editingQuotation.customerName);
+      if (editingQuotation.customerPhone) setCustPhone(editingQuotation.customerPhone);
+      if (editingQuotation.location || editingQuotation.city) {
+        setCustLocation(editingQuotation.location || `${editingQuotation.city || 'Pune'}, Maharashtra`);
+      }
+      const rawKw = parseFloat(editingQuotation.systemCapacityKW || editingQuotation.capacity || 5);
+      if (!isNaN(rawKw)) setSystemCapacity(String(rawKw));
+      if (editingQuotation.solarModule || editingQuotation.panelType) {
+        setPanelBrand(editingQuotation.solarModule || editingQuotation.panelType);
+      }
+      if (editingQuotation.inverterType) {
+        setInverterModel(editingQuotation.inverterType);
+      }
+      if (editingQuotation.baseRatePerKW) {
+        setRatePerKw(Number(editingQuotation.baseRatePerKW));
+      }
+      if (editingQuotation.dealerTotalMargin) {
+        setMarginMode('amount');
+        setDealerMarginFixed(Number(editingQuotation.dealerTotalMargin));
+      } else if (editingQuotation.dealerMarginPerKW && rawKw > 0) {
+        setMarginMode('amount');
+        setDealerMarginFixed(Number(editingQuotation.dealerMarginPerKW) * rawKw);
+      }
+    }
+  }, [editingQuotation]);
 
   // Sizing Computations
   const kw = parseFloat(systemCapacity) || 5;
@@ -74,6 +111,7 @@ export default function CreateQuotation() {
   ];
 
   const handleReset = () => {
+    if (clearEditingQuotation) clearEditingQuotation();
     setCustName('Anand Sharma');
     setCustPhone('+91 98234 56789');
     setCustLocation('Pune, 411038');
@@ -85,39 +123,53 @@ export default function CreateQuotation() {
   };
 
   const handleSaveDraft = async () => {
+    const isEdit = Boolean(editingQuotation?.id);
     const quotePayload = {
-      id: `SV-2026-Q${Math.floor(100 + Math.random() * 900)}`,
-      date: new Date().toLocaleDateString('en-GB'),
+      id: isEdit ? editingQuotation.id : `SV-2026-Q${Math.floor(100 + Math.random() * 900)}`,
+      date: isEdit ? (editingQuotation.date || new Date().toLocaleDateString('en-GB')) : new Date().toLocaleDateString('en-GB'),
       customerName: custName,
       customerPhone: custPhone,
+      location: custLocation,
       city: custLocation.split(',')[0]?.trim() || 'Pune',
       state: 'Maharashtra',
       systemCapacityKW: kw,
       panelType: panelBrand,
+      solarModule: panelBrand,
       inverterType: inverterModel,
+      inverterCapacity: `${kw} kW`,
       baseCost: baseProjectCost,
       dealerMargin: dealerMarginINR,
+      dealerTotalMargin: dealerMarginINR,
+      dealerMarginPerKW: Math.round(dealerMarginINR / kw),
       totalAmount: totalCost,
+      grandTotalCustomer: totalCost,
       subsidyAmount: subsidy,
       netPayable: finalPayable,
-      status: 'Draft',
+      status: isEdit ? (editingQuotation.status || 'Draft') : 'Draft',
+      statusClass: isEdit ? (editingQuotation.statusClass || 'bg-secondary/15 text-secondary') : 'bg-secondary/15 text-secondary',
       dealerCode: currentDealer?.id || 'SV-DLR-0104',
       dealerName: currentDealer?.firmName || 'Rajesh Solar Solutions'
     };
 
-    setSaveStatus('Saving to Supabase...');
-    if (addQuotation) addQuotation(quotePayload);
+    setSaveStatus('Saving quotation...');
+    if (isEdit && updateQuotation) {
+      updateQuotation(quotePayload);
+    } else if (addQuotation) {
+      addQuotation(quotePayload);
+    }
     await quotationService.saveQuotation(quotePayload);
-    setSaveStatus('Draft saved successfully to cloud!');
+    setSaveStatus(isEdit ? 'Quotation updated successfully!' : 'Draft saved successfully to cloud!');
     setTimeout(() => setSaveStatus(''), 3000);
   };
 
   const handlePreview = () => {
+    const isEdit = Boolean(editingQuotation?.id);
     const quotePayload = {
-      id: `SV-2026-Q${Math.floor(100 + Math.random() * 900)}`,
-      date: new Date().toLocaleDateString('en-GB'),
+      id: isEdit ? editingQuotation.id : `SV-2026-Q${Math.floor(100 + Math.random() * 900)}`,
+      date: isEdit ? (editingQuotation.date || new Date().toLocaleDateString('en-GB')) : new Date().toLocaleDateString('en-GB'),
       customerName: custName,
       customerPhone: custPhone,
+      location: custLocation,
       city: custLocation.split(',')[0]?.trim() || 'Pune',
       state: 'Maharashtra',
       systemCapacityKW: kw,
@@ -134,11 +186,16 @@ export default function CreateQuotation() {
       subsidyAmount: subsidy,
       grandTotalCustomer: totalCost,
       netPayable: finalPayable,
-      status: 'Approved',
+      status: isEdit ? (editingQuotation.status || 'Active / Sent') : 'Active / Sent',
+      statusClass: isEdit ? (editingQuotation.statusClass || 'bg-primary/15 text-primary') : 'bg-primary/15 text-primary',
       dealerId: currentDealer?.id || 'SV-DLR-0104'
     };
 
-    if (addQuotation) addQuotation(quotePayload);
+    if (isEdit && updateQuotation) {
+      updateQuotation(quotePayload);
+    } else if (addQuotation) {
+      addQuotation(quotePayload);
+    }
     if (setPreviewQuotation) setPreviewQuotation(quotePayload);
     setActiveTab('preview_quote');
   };
@@ -155,11 +212,22 @@ export default function CreateQuotation() {
             <span className="material-symbols-outlined text-[18px] group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
             <span>Back to Dashboard</span>
           </button>
-          <div className="flex items-center gap-space-sm mt-1">
-            <h1 className="font-headline-xl text-headline-xl text-on-surface tracking-tight font-bold">New Quotation</h1>
-            <span className="bg-surface-container-high text-secondary px-2.5 py-0.5 rounded-full font-label-xs tracking-wide uppercase">
-              Ref #SV-2025-Q408
+          <div className="flex flex-wrap items-center gap-space-sm mt-1">
+            <h1 className="font-headline-xl text-headline-xl text-on-surface tracking-tight font-bold">
+              {editingQuotation ? 'Edit Quotation' : 'New Quotation'}
+            </h1>
+            <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-label-xs tracking-wide uppercase font-semibold">
+              {editingQuotation ? `Editing #${editingQuotation.id}` : 'Ref #SV-2025-Q408'}
             </span>
+            {editingQuotation && (
+              <button
+                onClick={handleReset}
+                type="button"
+                className="text-xs text-secondary hover:text-error underline ml-2 font-medium"
+              >
+                Cancel Edit / Create New
+              </button>
+            )}
           </div>
         </div>
 

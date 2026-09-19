@@ -122,7 +122,15 @@ export const AppProvider = ({ children }) => {
   // Quotations List
   const [quotations, setQuotations] = useState(() => {
     const saved = localStorage.getItem('sunvine_quotations');
-    return saved ? JSON.parse(saved) : INITIAL_QUOTATIONS;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length >= 3) {
+          return parsed;
+        }
+      } catch (e) {}
+    }
+    return INITIAL_QUOTATIONS;
   });
 
   // Active quotation loaded in 4-Page Preview
@@ -130,6 +138,9 @@ export const AppProvider = ({ children }) => {
     const saved = localStorage.getItem('sunvine_preview_quotation');
     return saved ? JSON.parse(saved) : INITIAL_QUOTATIONS[0];
   });
+
+  // Active quotation loaded for Editing in CreateQuotation
+  const [editingQuotation, setEditingQuotation] = useState(null);
 
   // Synchronize state with localStorage
   useEffect(() => {
@@ -205,6 +216,27 @@ export const AppProvider = ({ children }) => {
     setPreviewQuotation(newQuote);
   };
 
+  const updateQuotation = (updatedQuote) => {
+    setQuotations(prev => {
+      const exists = prev.some(q => q.id === updatedQuote.id);
+      if (exists) {
+        return prev.map(q => q.id === updatedQuote.id ? { ...q, ...updatedQuote } : q);
+      }
+      return [updatedQuote, ...prev];
+    });
+    setPreviewQuotation(updatedQuote);
+    setEditingQuotation(null);
+  };
+
+  const startEditingQuotation = (quote) => {
+    setEditingQuotation(quote);
+    setActiveTab('create_quote');
+  };
+
+  const clearEditingQuotation = () => {
+    setEditingQuotation(null);
+  };
+
   const updateQuotationStatus = (id, newStatus) => {
     setQuotations(prev => prev.map(q => q.id === id ? { ...q, status: newStatus } : q));
   };
@@ -252,6 +284,10 @@ export const AppProvider = ({ children }) => {
         updateDealerMarginCap,
         quotations,
         addQuotation,
+        updateQuotation,
+        editingQuotation,
+        startEditingQuotation,
+        clearEditingQuotation,
         updateQuotationStatus,
         previewQuotation,
         setPreviewQuotation

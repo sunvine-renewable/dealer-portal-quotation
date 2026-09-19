@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { openWhatsAppChat } from '../../utils/quotationShare';
 
 export default function DealerDashboard() {
-  const { currentDealer, quotations, setActiveTab, setPreviewQuotation } = useApp();
+  const { currentDealer, quotations, startEditingQuotation, setActiveTab, setPreviewQuotation } = useApp();
   const [selectedTimeRange, setSelectedTimeRange] = useState('Last 30 Days');
   const [timeDropdownOpen, setTimeDropdownOpen] = useState(false);
   const timeDropdownRef = useRef(null);
@@ -38,170 +38,103 @@ export default function DealerDashboard() {
       totalQuotes: 2,
       totalQuotesDelta: '+2 today (Active)',
       periodQuotes: 2,
-      periodLabel: 'today',
-      periodTitle: "Today's Quotations",
-      periodValueText: '₹ 5.55 Lakhs quoted',
-      targetKW: '8 kW / 15 kW',
-      targetPercent: '53%',
-      totalValue: '₹ 5.55 L',
-      approvedValue: '₹ 3.45L',
-      pipelineValue: '₹ 2.10L',
-      approvedCount: '1 Approved • 1 Pending',
-      sparkHeights: ['h-1', 'h-1', 'h-2', 'h-2', 'h-3', 'h-5', 'h-8']
+      periodLabel: 'Today',
+      avgTicket: '₹ 4.8L',
+      capacity: '12.5 kW',
+      conversionRate: '50.0%',
+      conversionSubtext: '1 won / 2 dispatched',
+      totalValue: '₹ 9.6 Lakh',
+      approvedValue: '₹ 5.8L',
+      pipelineValue: '₹ 3.8L'
     },
     'Last 7 Days': {
-      totalQuotes: 9,
-      totalQuotesDelta: '+9 this week (↑ 18%)',
-      periodQuotes: 9,
-      periodLabel: 'this week',
-      periodTitle: 'Weekly Quotations',
-      periodValueText: '₹ 14.8 Lakhs quoted',
-      targetKW: '28 kW / 40 kW',
-      targetPercent: '70%',
-      totalValue: '₹ 19.30 L',
-      approvedValue: '₹ 11.4L',
-      pipelineValue: '₹ 7.9L',
-      approvedCount: '3 Approved • 2 In Progress',
-      sparkHeights: ['h-2', 'h-3', 'h-4', 'h-2', 'h-5', 'h-7', 'h-8']
+      totalQuotes: 8,
+      totalQuotesDelta: '+4 vs previous 7d',
+      periodQuotes: 8,
+      periodLabel: 'Last 7 Days',
+      avgTicket: '₹ 5.2L',
+      capacity: '48.0 kW',
+      conversionRate: '42.8%',
+      conversionSubtext: '3 won / 8 dispatched',
+      totalValue: '₹ 41.5 Lakh',
+      approvedValue: '₹ 28.0L',
+      pipelineValue: '₹ 13.5L'
     },
     'Last 30 Days': {
       totalQuotes: 42,
-      totalQuotesDelta: '+8 this month (↑ 24%)',
-      periodQuotes: 14,
-      periodLabel: 'in October',
-      periodTitle: 'This Month Quotations',
-      periodValueText: '₹ 18.4 Lakhs quoted',
-      targetKW: '70 kW / 100 kW',
-      targetPercent: '70%',
-      totalValue: '₹ 58.20 L',
-      approvedValue: '₹ 34.8L',
-      pipelineValue: '₹ 23.4L',
-      approvedCount: '8 Approved • 4 Commissioned',
-      sparkHeights: ['h-2', 'h-3', 'h-3', 'h-5', 'h-4', 'h-6', 'h-8']
+      totalQuotesDelta: '+12% vs last month',
+      periodQuotes: 18,
+      periodLabel: 'This Month',
+      avgTicket: '₹ 5.6L',
+      capacity: '420.5 kW',
+      conversionRate: '38.4%',
+      conversionSubtext: '16 won / 42 dispatched',
+      totalValue: '₹ 1.01 Crore',
+      approvedValue: '₹ 67.2L',
+      pipelineValue: '₹ 34.0L'
     },
     'This Quarter (Q4)': {
-      totalQuotes: 98,
-      totalQuotesDelta: '+34 this quarter (↑ 38%)',
-      periodQuotes: 42,
-      periodLabel: 'this quarter',
-      periodTitle: 'Quarterly Quotations',
-      periodValueText: '₹ 64.2 Lakhs quoted',
-      targetKW: '185 kW / 250 kW',
-      targetPercent: '74%',
-      totalValue: '₹ 1.48 Cr',
-      approvedValue: '₹ 92.4L',
-      pipelineValue: '₹ 55.6L',
-      approvedCount: '24 Approved • 12 Commissioned',
-      sparkHeights: ['h-3', 'h-4', 'h-5', 'h-6', 'h-7', 'h-7', 'h-8']
+      totalQuotes: 64,
+      totalQuotesDelta: '+24% vs Q3',
+      periodQuotes: 64,
+      periodLabel: 'Q4 FY24',
+      avgTicket: '₹ 5.8L',
+      capacity: '680 kW',
+      conversionRate: '41.2%',
+      conversionSubtext: '26 won / 64 dispatched',
+      totalValue: '₹ 1.84 Crore',
+      approvedValue: '₹ 1.25 Cr',
+      pipelineValue: '₹ 59.0L'
     },
     'Financial Year 2024-25': {
-      totalQuotes: 284,
-      totalQuotesDelta: '+112 this fiscal (↑ 45%)',
-      periodQuotes: 142,
-      periodLabel: 'FY 24-25',
-      periodTitle: 'Annual Quotations',
-      periodValueText: '₹ 2.15 Cr quoted',
-      targetKW: '620 kW / 800 kW',
-      targetPercent: '77.5%',
-      totalValue: '₹ 4.12 Cr',
-      approvedValue: '₹ 2.65 Cr',
-      pipelineValue: '₹ 1.47 Cr',
-      approvedCount: '78 Approved • 52 Commissioned',
-      sparkHeights: ['h-4', 'h-5', 'h-6', 'h-7', 'h-7', 'h-8', 'h-8']
+      totalQuotes: 148,
+      totalQuotesDelta: '+55% YoY Growth',
+      periodQuotes: 148,
+      periodLabel: 'FY 2024-25',
+      avgTicket: '₹ 6.1L',
+      capacity: '1.45 MW',
+      conversionRate: '44.6%',
+      conversionSubtext: '66 won / 148 dispatched',
+      totalValue: '₹ 4.88 Crore',
+      approvedValue: '₹ 3.40 Cr',
+      pipelineValue: '₹ 1.48 Cr'
     },
     'All Time': {
-      totalQuotes: 412,
-      totalQuotesDelta: 'Lifetime Record',
-      periodQuotes: 412,
-      periodLabel: 'all time',
-      periodTitle: 'Cumulative Quotations',
-      periodValueText: '₹ 3.80 Cr quoted',
-      targetKW: '940 kW / 1.2 MW',
-      targetPercent: '78.3%',
-      totalValue: '₹ 6.45 Cr',
-      approvedValue: '₹ 4.20 Cr',
-      pipelineValue: '₹ 2.25 Cr',
-      approvedCount: '124 Approved • 98 Commissioned',
-      sparkHeights: ['h-4', 'h-5', 'h-6', 'h-7', 'h-8', 'h-8', 'h-8']
+      totalQuotes: 284,
+      totalQuotesDelta: 'Verified Partner History',
+      periodQuotes: 284,
+      periodLabel: 'Lifetime All Time',
+      avgTicket: '₹ 5.9L',
+      capacity: '2.85 MW',
+      conversionRate: '46.1%',
+      conversionSubtext: '131 won lifetime',
+      totalValue: '₹ 9.12 Crore',
+      approvedValue: '₹ 6.90 Cr',
+      pipelineValue: '₹ 2.22 Cr'
     }
   };
 
   const activeKpi = kpiData[selectedTimeRange] || kpiData['Last 30 Days'];
 
   const handleOpenPDF = (quote) => {
-    if (setPreviewQuotation) {
-      setPreviewQuotation(quote || quotations[0]);
-    }
+    if (setPreviewQuotation) setPreviewQuotation(quote);
     setActiveTab('preview_quote');
   };
 
-  const recentQuotes = [
-    {
-      id: 'SV-2025-0408',
-      customerName: 'Anand Sharma',
-      customerPhone: '+91 98200 54321',
-      location: 'Pune, Maharashtra',
-      capacity: '5.0 kW',
-      type: 'Mono Perc • Residential',
-      date: 'Today, 10:45 AM',
-      amount: '₹ 3,45,000',
-      subsidy: '₹ 78,000 Subsidy',
-      status: 'Active / Sent',
-      statusClass: 'bg-primary-fixed text-on-primary-fixed'
-    },
-    {
-      id: 'SV-2025-0407',
-      customerName: 'Kavita Patel',
-      customerPhone: '+91 98980 12345',
-      location: 'Surat, Gujarat',
-      capacity: '3.0 kW',
-      type: 'Mono Perc • Residential',
-      date: 'Yesterday',
-      amount: '₹ 2,10,000',
-      subsidy: '₹ 78,000 Subsidy',
-      status: 'Customer Viewed',
-      statusClass: 'bg-tertiary-container/30 text-on-tertiary-container'
-    },
-    {
-      id: 'SV-2025-0406',
-      customerName: 'Mehta Textiles Ltd',
-      customerPhone: '+91 98255 67890',
-      location: 'Ahmedabad, Gujarat',
-      capacity: '10.0 kW',
-      type: 'Commercial • C&I',
-      date: '18 Oct 2024',
-      amount: '₹ 5,85,000',
-      subsidy: 'Commercial BOQ',
-      status: 'Pending Approval',
-      statusClass: 'bg-[#F9A825]/20 text-[#B27204]'
-    },
-    {
-      id: 'SV-2025-0405',
-      customerName: 'Vikram Rathore',
-      customerPhone: '+91 97123 45678',
-      location: 'Jaipur, Rajasthan',
-      capacity: '7.5 kW',
-      type: 'Mono Perc • Residential',
-      date: '15 Oct 2024',
-      amount: '₹ 5,15,000',
-      subsidy: '₹ 78,000 Subsidy',
-      status: 'Won / Converted',
-      statusClass: 'bg-primary-fixed text-on-primary-fixed'
-    },
-    {
-      id: 'SV-2025-0404',
-      customerName: 'Dr. Suresh Nair',
-      customerPhone: '+91 98450 12345',
-      location: 'Bangalore, Karnataka',
-      capacity: '4.0 kW',
-      type: 'Mono Perc • Residential',
-      date: '12 Oct 2024',
-      amount: '₹ 2,75,000',
-      subsidy: '₹ 78,000 Subsidy',
-      status: 'Customer Viewed',
-      statusClass: 'bg-tertiary-container/30 text-on-tertiary-container'
-    }
-  ];
+  const recentQuotes = (quotations && quotations.length > 0)
+    ? quotations.slice(0, 5).map(q => ({
+        ...q,
+        capacity: q.systemCapacityKW ? `${q.systemCapacityKW} kW` : (q.capacity || '5.0 kW'),
+        type: q.projectType || q.type || 'Mono Perc • Residential',
+        amount: typeof q.amount === 'string' 
+          ? q.amount 
+          : '₹\u00A0' + (q.grandTotalCustomer || q.totalAmount || 0).toLocaleString('en-IN'),
+        subsidy: q.subsidyAmount ? `₹\u00A0${Number(q.subsidyAmount).toLocaleString('en-IN')} Subsidy` : (q.subsidy || 'Subsidy Eligible'),
+        status: q.status || 'Active / Sent',
+        statusClass: q.statusClass || 'bg-primary/15 text-primary',
+        location: q.location || (q.city ? `${q.city}, ${q.state || 'Maharashtra'}` : 'Pune, Maharashtra')
+      }))
+    : [];
 
   return (
     <div className="flex flex-col w-full gap-space-lg">
@@ -458,18 +391,18 @@ export default function DealerDashboard() {
                 </div>
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={() => handleOpenPDF(quotations[0])}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-secondary hover:bg-surface-container-high transition-colors"
-                    title="View Proposal"
+                    onClick={() => startEditingQuotation(q)}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-secondary hover:text-primary hover:bg-primary/10 transition-colors"
+                    title="Edit Quotation"
                   >
-                    <span className="material-symbols-outlined text-[16px]">visibility</span>
+                    <span className="material-symbols-outlined text-[16px]">edit</span>
                   </button>
                   <button
-                    onClick={() => handleOpenPDF(quotations[0])}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-secondary hover:bg-surface-container-high transition-colors"
-                    title="Download PDF"
+                    onClick={() => handleOpenPDF(q)}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-secondary hover:text-on-surface hover:bg-surface-container-high transition-colors"
+                    title="View Proposal PDF"
                   >
-                    <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+                    <span className="material-symbols-outlined text-[16px]">description</span>
                   </button>
                   <button
                     onClick={() => openWhatsAppChat(q)}
@@ -527,20 +460,20 @@ export default function DealerDashboard() {
                   <td className="px-space-lg py-3.5 text-center">
                     <div className="flex items-center justify-center gap-1">
                       <button
-                        onClick={() => handleOpenPDF(q)}
-                        className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
-                        title="View Quotation"
+                        onClick={() => startEditingQuotation(q)}
+                        className="p-1.5 rounded hover:bg-primary/10 text-secondary hover:text-primary transition-colors"
+                        title="Edit Quotation"
                         type="button"
                       >
-                        <span className="material-symbols-outlined text-[18px]">visibility</span>
+                        <span className="material-symbols-outlined text-[18px]">edit</span>
                       </button>
                       <button
                         onClick={() => handleOpenPDF(q)}
                         className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
-                        title="Download PDF"
+                        title="View Proposal PDF"
                         type="button"
                       >
-                        <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                        <span className="material-symbols-outlined text-[18px]">description</span>
                       </button>
                       <button
                         onClick={() => openWhatsAppChat(q)}

@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { openWhatsAppChat } from '../../utils/quotationShare';
 
 export default function MyQuotations() {
-  const { quotations, setActiveTab, setPreviewQuotation } = useApp();
+  const { quotations, startEditingQuotation, setActiveTab, setPreviewQuotation } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -12,110 +12,28 @@ export default function MyQuotations() {
     setActiveTab('preview_quote');
   };
 
-  const quotesList = [
-    {
-      id: '#SV-2025-0409',
-      customerName: 'MIRANA TECHNOCAST PVT.LTD.',
-      customerPhone: '+91 98250 12345',
-      type: 'Commercial',
-      tag: 'C&I',
-      location: 'Metoda GIDC, Rajkot',
-      capacity: '280.20 kW',
-      moduleType: 'TOPCon 600W',
-      date: '17 Aug 2026',
-      amount: '₹ 67,24,800',
-      status: 'Active / Sent',
-      statusColor: 'text-primary bg-primary/10',
-      dotColor: 'bg-primary-container',
-      icon: 'factory'
-    },
-    {
-      id: '#SV-2025-0408',
-      customerName: 'Anand Sharma',
-      customerPhone: '+91 98200 54321',
-      type: 'Residential',
-      tag: 'Rooftop',
-      location: 'Pune, Maharashtra',
-      capacity: '5.0 kW',
-      moduleType: 'Mono Perc',
-      date: 'Today, 10:45 AM',
-      amount: '₹ 3,45,000',
-      status: 'Active / Sent',
-      statusColor: 'text-primary bg-primary/10',
-      dotColor: 'bg-primary-container',
-      icon: 'solar_power'
-    },
-    {
-      id: '#SV-2025-0407',
-      customerName: 'Kavita Patel',
-      customerPhone: '+91 98980 12345',
-      type: 'Residential',
-      tag: 'Rooftop',
-      location: 'Surat, Gujarat',
-      capacity: '3.0 kW',
-      moduleType: 'Mono Perc',
-      date: 'Yesterday',
-      amount: '₹ 2,10,000',
-      status: 'Customer Viewed',
-      statusColor: 'text-tertiary bg-tertiary-container/20',
-      dotColor: 'bg-tertiary',
-      icon: 'solar_power'
-    },
-    {
-      id: '#SV-2025-0406',
-      customerName: 'Mehta Textiles Ltd',
-      customerPhone: '+91 98255 67890',
-      type: 'Commercial',
-      tag: 'C&I',
-      location: 'Ahmedabad, Gujarat',
-      capacity: '10.0 kW',
-      moduleType: 'Commercial',
-      date: '18 Oct 2024',
-      amount: '₹ 5,85,000',
-      status: 'Pending Approval',
-      statusColor: 'text-[#B27204] bg-[#F9A825]/15',
-      dotColor: 'bg-[#B27204]',
-      icon: 'factory'
-    },
-    {
-      id: '#SV-2025-0405',
-      customerName: 'Vikram Rathore',
-      customerPhone: '+91 97123 45678',
-      type: 'Residential',
-      tag: 'Rooftop',
-      location: 'Jaipur, Rajasthan',
-      capacity: '7.5 kW',
-      moduleType: 'Mono Perc',
-      date: '15 Oct 2024',
-      amount: '₹ 3,95,000',
-      status: 'Won / Converted',
-      statusColor: 'text-primary bg-primary/10',
-      dotColor: 'bg-primary-container',
-      icon: 'solar_power'
-    },
-    {
-      id: '#SV-2025-0404',
-      customerName: 'Dr. Suresh Nair',
-      customerPhone: '+91 98450 12345',
-      type: 'Residential',
-      tag: 'Rooftop',
-      location: 'Bangalore, Karnataka',
-      capacity: '4.0 kW',
-      moduleType: 'Mono Perc',
-      date: '12 Oct 2024',
-      amount: '₹ 2,10,000',
-      status: 'Customer Viewed',
-      statusColor: 'text-tertiary bg-tertiary-container/20',
-      dotColor: 'bg-tertiary',
-      icon: 'solar_power'
-    }
-  ];
+  // Harmonized quotation list matching DealerDashboard schema
+  const quotesList = (quotations && quotations.length > 0 ? quotations : []).map(q => ({
+    ...q,
+    capacity: q.systemCapacityKW ? `${q.systemCapacityKW} kW` : (q.capacity || '5.0 kW'),
+    type: q.projectType || q.type || 'Mono Perc • Residential',
+    amount: typeof q.amount === 'string'
+      ? q.amount
+      : '₹\u00A0' + (q.grandTotalCustomer || q.totalAmount || 0).toLocaleString('en-IN'),
+    subsidy: q.subsidyAmount ? `₹\u00A0${Number(q.subsidyAmount).toLocaleString('en-IN')} Subsidy` : (q.subsidy || 'Subsidy Eligible'),
+    status: q.status || 'Active / Sent',
+    statusClass: q.statusClass || 'bg-primary/15 text-primary',
+    location: q.location || (q.city ? `${q.city}, ${q.state || 'Maharashtra'}` : 'Pune, Maharashtra'),
+    date: q.date || 'Today'
+  }));
 
   const filteredQuotes = quotesList.filter(q => {
-    const matchesSearch = q.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          q.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          q.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || q.status.toLowerCase().includes(statusFilter.toLowerCase());
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = (q.customerName && q.customerName.toLowerCase().includes(term)) ||
+                          (q.id && q.id.toLowerCase().includes(term)) ||
+                          (q.location && q.location.toLowerCase().includes(term));
+    const matchesStatus = statusFilter === 'all' || 
+                          (q.status && q.status.toLowerCase().includes(statusFilter.toLowerCase()));
     return matchesSearch && matchesStatus;
   });
 
@@ -127,11 +45,11 @@ export default function MyQuotations() {
           <div className="flex items-center gap-2">
             <h1 className="font-headline-xl text-headline-xl text-on-surface font-bold">My Quotations Directory</h1>
             <span className="px-2.5 py-0.5 rounded-full bg-surface-container-high text-secondary font-label-sm text-label-sm">
-              42 Records
+              {filteredQuotes.length} Records
             </span>
           </div>
           <p className="font-body-md text-body-md text-secondary mt-1">
-            Browse, search, duplicate and dispatch client proposals across your authorized territory.
+            Browse, search, edit, view PDF, and dispatch client proposals across your territory.
           </p>
         </div>
         <button
@@ -158,11 +76,11 @@ export default function MyQuotations() {
           />
         </div>
 
-        {/* Filters */}
+        {/* Status Filter */}
         <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto">
           <div className="flex items-center gap-1.5 text-secondary font-label-sm text-xs">
             <span className="material-symbols-outlined text-[18px]">tune</span>
-            <span>Filter:</span>
+            <span>Status:</span>
           </div>
           <select
             className="h-10 px-3 bg-surface-container-lowest border border-surface-container-high rounded-lg text-on-surface text-xs font-semibold focus:outline-none focus:border-primary-container"
@@ -174,159 +92,140 @@ export default function MyQuotations() {
             <option value="viewed">Customer Viewed</option>
             <option value="won">Won / Converted</option>
             <option value="pending">Pending Approval</option>
+            <option value="draft">Draft</option>
           </select>
         </div>
       </section>
 
-      {/* Mobile Card Feed (Exact Stitch Design: 23_292ed563ed264e6fabb0adbb328d3f5f_6__My_Quotations__Mobile_.html) */}
+      {/* Mobile Card Feed (Identical to DealerDashboard Mobile layout) */}
       <div className="md:hidden flex flex-col gap-3">
         {filteredQuotes.map((q, idx) => (
-          <div key={idx} className="bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-surface-container-high/60 flex flex-col gap-3">
-            <div className="flex items-start justify-between">
-              <div>
+          <div key={idx} className="bg-surface-container-lowest p-4 rounded-xl shadow-sm flex flex-col gap-2.5 border border-surface-container-high/60">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-headline-sm text-sm font-bold text-on-surface">{q.customerName}</span>
-                  <span className={`px-2 py-0.5 rounded-full font-label-xs text-[10px] flex items-center gap-1 font-semibold ${q.statusColor}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${q.dotColor}`}></span>
+                  <span className="font-label-md text-sm text-on-surface font-bold truncate">{q.customerName}</span>
+                  <span className={`px-2 py-0.5 rounded-full font-label-xs text-[10px] shrink-0 font-semibold ${q.statusClass}`}>
                     {q.status}
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5 mt-0.5 text-secondary font-body-sm text-xs">
-                  <span className="material-symbols-outlined text-[13px]">location_on</span>
-                  <span>{q.location}</span>
-                  <span className="text-outline-variant">•</span>
-                  <span className="text-on-surface font-semibold">{q.id}</span>
-                </div>
+                <p className="font-body-sm text-xs text-secondary mt-0.5">{q.capacity} • {q.type}</p>
               </div>
-              <span className="font-label-xs text-[10px] text-secondary bg-surface-container-low px-2 py-1 rounded-md shrink-0">
-                {q.date.split(',')[0]}
-              </span>
-            </div>
-
-            <div className="bg-surface-container-low rounded-lg p-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined text-[18px]">solar_power</span>
-                </div>
-                <div>
-                  <div className="font-label-sm text-xs font-semibold text-on-surface">{q.capacity} {q.moduleType}</div>
-                  <div className="font-body-sm text-[11px] text-secondary">{q.type} • {q.tag}</div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="font-headline-sm text-sm font-bold text-on-surface">{q.amount}</div>
-                <div className="font-label-xs text-[10px] text-primary font-semibold">Net Payable</div>
+              <div className="text-right shrink-0">
+                <span className="font-headline-sm text-sm font-bold text-on-surface block whitespace-nowrap">{q.amount}</span>
+                <span className="font-label-xs text-[10px] text-secondary">{q.subsidy}</span>
               </div>
             </div>
-
-            <div className="grid grid-cols-3 gap-2 pt-0.5">
-              <button
-                onClick={() => handleOpenPDF(quotations[0])}
-                className="h-8 px-2 rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant font-label-xs text-xs font-medium flex items-center justify-center gap-1 transition-colors"
-              >
-                <span className="material-symbols-outlined text-[15px]">visibility</span>
-                <span>View</span>
-              </button>
-              <button
-                onClick={() => handleOpenPDF(quotations[0])}
-                className="h-8 px-2 rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant font-label-xs text-xs font-medium flex items-center justify-center gap-1 transition-colors"
-              >
-                <span className="material-symbols-outlined text-[15px]">picture_as_pdf</span>
-                <span>PDF</span>
-              </button>
-              <button
-                onClick={() => openWhatsAppChat(q)}
-                className="h-8 px-2 rounded-lg bg-[#25D366] hover:bg-[#1EBE5B] text-white font-label-xs text-xs font-semibold flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm"
-              >
-                <span className="material-symbols-outlined text-[15px]">chat</span>
-                <span>WhatsApp</span>
-              </button>
+            <div className="flex items-center justify-between pt-1 bg-surface-container-low px-2.5 py-1.5 rounded-lg text-xs">
+              <div className="flex items-center gap-1 text-secondary">
+                <span className="material-symbols-outlined text-[15px] text-tertiary">location_on</span>
+                <span className="font-label-xs text-[11px] truncate max-w-[120px]">{q.location.split(',')[0]}</span>
+                <span className="text-outline-variant">•</span>
+                <span className="font-label-xs text-[11px]">{q.date}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => startEditingQuotation(q)}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-secondary hover:text-primary hover:bg-primary/10 transition-colors"
+                  title="Edit Quotation"
+                  type="button"
+                >
+                  <span className="material-symbols-outlined text-[16px]">edit</span>
+                </button>
+                <button
+                  onClick={() => handleOpenPDF(q)}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-secondary hover:text-on-surface hover:bg-surface-container-high transition-colors"
+                  title="View Proposal PDF"
+                  type="button"
+                >
+                  <span className="material-symbols-outlined text-[16px]">description</span>
+                </button>
+                <button
+                  onClick={() => openWhatsAppChat(q)}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/15 transition-colors"
+                  title="Share via WhatsApp"
+                  type="button"
+                >
+                  <span className="material-symbols-outlined text-[16px]">chat</span>
+                </button>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Desktop Data Table */}
-      <section className="hidden md:block w-full overflow-x-auto rounded-xl shadow-xs bg-surface-container-lowest border border-surface-container-high">
+      {/* Desktop View: Full Data Table (Identical structure and columns to DealerDashboard) */}
+      <div className="hidden md:block w-full overflow-x-auto rounded-xl shadow-sm bg-surface-container-lowest border border-surface-container-high/60">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-on-secondary-fixed text-on-secondary h-12 text-label-sm font-label-sm select-none">
-              <th className="py-3 px-space-md font-semibold tracking-wider">Quotation ID</th>
-              <th className="py-3 px-space-md font-semibold tracking-wider">Customer &amp; Location</th>
-              <th className="py-3 px-space-md font-semibold tracking-wider">Plant Specs</th>
-              <th className="py-3 px-space-md font-semibold tracking-wider">Creation Date</th>
-              <th className="py-3 px-space-md font-semibold tracking-wider text-right">Quoted Amount</th>
-              <th className="py-3 px-space-md font-semibold tracking-wider text-center">Status</th>
-              <th className="py-3 px-space-md font-semibold tracking-wider text-right">Actions</th>
+              <th className="px-space-lg py-space-sm font-semibold tracking-wider">Customer Name</th>
+              <th className="px-space-lg py-space-sm font-semibold tracking-wider">System Capacity</th>
+              <th className="px-space-lg py-space-sm font-semibold tracking-wider">Date</th>
+              <th className="px-space-lg py-space-sm font-semibold tracking-wider text-right">Amount</th>
+              <th className="px-space-lg py-space-sm font-semibold tracking-wider text-center">Status</th>
+              <th className="px-space-lg py-space-sm font-semibold tracking-wider text-center">Actions</th>
             </tr>
           </thead>
           <tbody className="font-body-md text-body-md divide-y divide-surface-container">
             {filteredQuotes.map((q, idx) => (
-              <tr key={idx} className="bg-surface-container-lowest hover:bg-[#F0F4F2] transition-colors group">
-                <td className="py-3.5 px-space-md">
-                  <div className="flex items-center gap-2">
-                    <span className="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">{q.id}</span>
-                    <span
-                      className="material-symbols-outlined text-[16px] text-secondary opacity-0 group-hover:opacity-100 cursor-pointer hover:text-primary transition-opacity"
-                      title="Copy ID"
-                      onClick={() => navigator.clipboard.writeText(q.id)}
-                    >
-                      content_copy
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3.5 px-space-md">
+              <tr key={idx} className={`transition-colors ${idx % 2 === 0 ? 'bg-surface-container-lowest hover:bg-surface-container-low' : 'bg-surface-container-low hover:bg-surface-container'}`}>
+                <td className="px-space-lg py-3.5">
                   <div className="flex flex-col">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-label-md text-label-md text-on-surface font-semibold">{q.customerName}</span>
-                      <span className="font-label-xs px-1.5 py-0.2 bg-secondary-fixed text-on-secondary-fixed rounded text-[10px] font-semibold">{q.tag}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-on-surface">{q.customerName}</span>
+                      {q.id && (
+                        <span className="text-[10px] font-mono text-secondary bg-surface-container px-1.5 py-0.5 rounded">
+                          {q.id}
+                        </span>
+                      )}
                     </div>
-                    <span className="font-body-sm text-secondary flex items-center gap-1 mt-0.5">
-                      <span className="material-symbols-outlined text-[13px] text-secondary">location_on</span>
-                      {q.location}
-                    </span>
+                    <span className="text-label-xs text-secondary mt-0.5">{q.location}</span>
                   </div>
                 </td>
-                <td className="py-3.5 px-space-md">
-                  <div className="flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-primary text-[18px]">{q.icon}</span>
-                    <span className="font-body-md font-semibold text-on-surface">{q.capacity}</span>
-                    <span className="font-label-xs text-secondary bg-surface-container px-1.5 py-0.5 rounded text-[11px]">{q.moduleType}</span>
+                <td className="px-space-lg py-3.5">
+                  <div className="flex items-center gap-1.5 font-semibold text-on-surface">
+                    <span className="material-symbols-outlined text-primary text-[18px]">solar_power</span>
+                    <span>{q.capacity}</span>
                   </div>
                 </td>
-                <td className="py-3.5 px-space-md font-body-md text-secondary whitespace-nowrap">{q.date}</td>
-                <td className="py-3.5 px-space-md text-right font-headline-sm text-on-surface font-bold tabular-nums">{q.amount}</td>
-                <td className="py-3.5 px-space-md text-center whitespace-nowrap">
-                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-label-xs ${q.statusColor}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${q.dotColor}`}></span>
+                <td className="px-space-lg py-3.5 text-secondary font-label-xs whitespace-nowrap">
+                  {q.date}
+                </td>
+                <td className="px-space-lg py-3.5 text-right font-bold text-on-surface tabular-nums whitespace-nowrap">
+                  {q.amount}
+                </td>
+                <td className="px-space-lg py-3.5 text-center whitespace-nowrap">
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-xs font-label-xs ${q.statusClass}`}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
                     {q.status}
                   </span>
                 </td>
-                <td className="py-3.5 px-space-md text-right">
-                  <div className="inline-flex items-center gap-1">
+                <td className="px-space-lg py-3.5 text-center">
+                  <div className="flex items-center justify-center gap-1">
                     <button
-                      onClick={() => handleOpenPDF(quotations[0])}
-                      className="w-8 h-8 rounded-full bg-surface-container-low hover:bg-surface-container text-secondary hover:text-on-surface flex items-center justify-center transition-colors"
-                      title="View Proposal"
+                      onClick={() => startEditingQuotation(q)}
+                      className="p-1.5 rounded hover:bg-primary/10 text-secondary hover:text-primary transition-colors"
+                      title="Edit Quotation"
                       type="button"
                     >
-                      <span className="material-symbols-outlined text-[18px]">visibility</span>
+                      <span className="material-symbols-outlined text-[18px]">edit</span>
                     </button>
                     <button
-                      onClick={() => handleOpenPDF(quotations[0])}
-                      className="w-8 h-8 rounded-full bg-surface-container-low hover:bg-surface-container text-secondary hover:text-on-surface flex items-center justify-center transition-colors"
-                      title="Download Official PDF"
+                      onClick={() => handleOpenPDF(q)}
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
+                      title="View Proposal PDF"
                       type="button"
                     >
-                      <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                      <span className="material-symbols-outlined text-[18px]">description</span>
                     </button>
                     <button
                       onClick={() => openWhatsAppChat(q)}
-                      className="w-8 h-8 rounded-full bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#25D366] flex items-center justify-center transition-colors"
+                      className="p-1.5 rounded hover:bg-surface-container text-[#25D366] hover:bg-[#25D366]/15 transition-colors"
                       title="Share via WhatsApp"
                       type="button"
                     >
-                      <span className="material-symbols-outlined text-[18px]">share</span>
+                      <span className="material-symbols-outlined text-[18px]">chat</span>
                     </button>
                   </div>
                 </td>
@@ -334,7 +233,7 @@ export default function MyQuotations() {
             ))}
           </tbody>
         </table>
-      </section>
+      </div>
     </div>
   );
 }

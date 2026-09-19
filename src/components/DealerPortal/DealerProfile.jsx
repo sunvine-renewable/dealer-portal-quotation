@@ -467,38 +467,47 @@ export default function DealerProfile() {
               <div className="w-10 h-10 rounded-lg bg-tertiary-container/30 text-on-tertiary-container flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-[22px]">contact_support</span>
               </div>
-              <div className="flex flex-col">
-                <h3 className="font-headline-sm text-headline-sm text-on-surface">Sunvine Channel Partner Support</h3>
-                <p className="font-body-sm text-secondary mt-1">Get fast-track resolution for regional approvals, equipment dispatch, or warranty claims.</p>
-                <div className="mt-space-md flex flex-col gap-2 font-body-sm">
+              <div className="flex flex-col w-full">
+                <h3 className="font-headline-sm text-headline-sm text-on-surface">Sunvine Official Dealer Support</h3>
+                <p className="font-body-sm text-secondary mt-1">Direct priority channel for equipment dispatch, regional DISCOM approvals &amp; warranty assistance.</p>
+                <div className="mt-space-md flex flex-col gap-2.5 font-body-sm">
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[18px] text-primary shrink-0">support_agent</span>
-                    <span className="text-secondary">Dedicated Dealer Desk:</span>
-                    <a className="text-on-surface font-semibold hover:text-primary transition-colors" href="tel:18007868463">
-                      1800-SUN-VINE (Toll Free)
+                    <span className="text-secondary">Official Helpline:</span>
+                    <a className="text-on-surface font-bold hover:text-primary transition-colors tracking-wide" href="tel:+918000050580">
+                      +91 80000 50580
                     </a>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[18px] text-primary shrink-0">mail</span>
-                    <span className="text-secondary">Email:</span>
-                    <a className="text-on-surface font-semibold hover:text-primary transition-colors" href="mailto:dealers@sunvine.in">
-                      dealers@sunvine.in
+                    <span className="text-secondary">Support Email:</span>
+                    <a className="text-on-surface font-semibold hover:text-primary transition-colors" href="mailto:info@sunvinerenewable.com">
+                      info@sunvinerenewable.com
                     </a>
                   </div>
-                  <div className="flex items-start gap-2 pt-1">
-                    <span className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">person_pin</span>
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[18px] text-primary shrink-0">mark_email_read</span>
+                    <span className="text-secondary">Alternate Email:</span>
+                    <a className="text-on-surface font-semibold hover:text-primary transition-colors" href="mailto:sunvinerenewable@gmail.com">
+                      sunvinerenewable@gmail.com
+                    </a>
+                  </div>
+                  <div className="flex items-start gap-2 pt-1 border-t border-surface-container-high/60">
+                    <span className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">apartment</span>
                     <div>
-                      <span className="text-secondary">Territory Manager:</span>
-                      <div className="text-on-surface font-semibold">Amit Deshmukh • <a className="text-tertiary hover:underline" href="tel:+919822011223">+91 98220 11223</a></div>
+                      <span className="text-secondary text-xs">Corporate Office &amp; Works:</span>
+                      <div className="text-on-surface text-xs font-semibold mt-0.5 leading-snug">
+                        Plot No. G-705, Lodhika GIDC, Metoda, Rajkot, Gujarat - 360021
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="mt-space-md pt-space-sm flex items-center justify-between text-secondary font-label-xs">
+                <div className="mt-space-md pt-space-sm flex items-center justify-between text-secondary font-label-xs border-t border-surface-container-high/60">
                   <span className="flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-primary-container"></span>
-                    Regional Hub: Pune Central
+                    Central Operations: Rajkot &amp; Pune Hubs
                   </span>
-                  <span>Mon–Sat • 9 AM – 7 PM</span>
+                  <span className="font-semibold text-primary">Mon–Sat • 9 AM – 7 PM IST</span>
                 </div>
               </div>
             </div>
