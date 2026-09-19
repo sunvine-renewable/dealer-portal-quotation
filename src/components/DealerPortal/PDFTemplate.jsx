@@ -39,7 +39,7 @@ export default function PDFTemplate({ quotation, activePage = 'all' }) {
       {/* ========================================================
           PAGE 1: EXACT ORIGINAL MIRANA TECHNOCAST COVER PAGE
           ======================================================== */}
-      <div className={`pdf-page pdf-page-cover relative w-[210mm] h-[297mm] max-h-[297mm] mx-auto bg-white border border-gray-300 shadow-xl print:border-none print:shadow-none print:m-0 print:p-0 mb-8 overflow-hidden items-center justify-center box-border ${activePage === 'all' || activePage === 1 ? 'flex' : 'hidden print:flex'}`}>
+      <div className={`pdf-page pdf-page-cover relative w-[210mm] h-[297mm] max-h-[297mm] mx-auto bg-white border border-gray-300 shadow-xl print:!border-none print:!shadow-none print:!m-0 print:!mb-0 print:!p-0 mb-8 overflow-hidden items-center justify-center box-border ${activePage === 'all' || activePage === 1 ? 'flex' : 'hidden print:flex'}`}>
         <img
           src="/mirana_page1_original.jpg"
           alt="Sunvine Quotation Cover"
@@ -51,7 +51,7 @@ export default function PDFTemplate({ quotation, activePage = 'all' }) {
       {/* ========================================================
           PAGE 2: SYSTEM DETAILS & PRICE SUMMARY (EXACT MIRANA PDF)
           ======================================================== */}
-      <div className={`pdf-page pdf-page-content relative w-[210mm] h-[297mm] max-h-[297mm] mx-auto p-10 flex-col justify-between bg-white border border-gray-300 shadow-xl print:border-none print:shadow-none print:m-0 mb-8 overflow-hidden box-border ${activePage === 'all' || activePage === 2 ? 'flex' : 'hidden print:flex'}`}>
+      <div className={`pdf-page pdf-page-content relative w-[210mm] h-[297mm] max-h-[297mm] mx-auto p-10 flex-col justify-between bg-white border border-gray-300 shadow-xl print:!border-none print:!shadow-none print:!m-0 print:!mb-0 mb-8 overflow-hidden box-border ${activePage === 'all' || activePage === 2 ? 'flex' : 'hidden print:flex'}`}>
         <div>
           {/* Top Right Logo */}
           <div className="flex justify-end pb-3">
@@ -234,7 +234,7 @@ export default function PDFTemplate({ quotation, activePage = 'all' }) {
       {/* ========================================================
           PAGE 3: BILL OF MATERIAL : SOLAR ON GRID SYSTEM (EXACT MIRANA PDF)
           ======================================================== */}
-      <div className={`pdf-page pdf-page-content relative w-[210mm] h-[297mm] max-h-[297mm] mx-auto p-10 flex-col justify-between bg-white border border-gray-300 shadow-xl print:border-none print:shadow-none print:m-0 mb-8 overflow-hidden box-border ${activePage === 'all' || activePage === 3 ? 'flex' : 'hidden print:flex'}`}>
+      <div className={`pdf-page pdf-page-content relative w-[210mm] h-[297mm] max-h-[297mm] mx-auto p-10 flex-col justify-between bg-white border border-gray-300 shadow-xl print:!border-none print:!shadow-none print:!m-0 print:!mb-0 mb-8 overflow-hidden box-border ${activePage === 'all' || activePage === 3 ? 'flex' : 'hidden print:flex'}`}>
         <div>
           {/* Top Right Logo */}
           <div className="flex justify-end pb-3">
@@ -435,7 +435,7 @@ export default function PDFTemplate({ quotation, activePage = 'all' }) {
       {/* ========================================================
           PAGE 4: TERMS & CONDITIONS (EXACT MIRANA PDF)
           ======================================================== */}
-      <div className={`pdf-page pdf-page-content relative w-[210mm] h-[297mm] max-h-[297mm] mx-auto p-10 flex-col justify-between bg-white border border-gray-300 shadow-xl print:border-none print:shadow-none print:m-0 mb-8 overflow-hidden box-border ${activePage === 'all' || activePage === 4 ? 'flex' : 'hidden print:flex'}`}>
+      <div className={`pdf-page pdf-page-content relative w-[210mm] h-[297mm] max-h-[297mm] mx-auto p-10 flex-col justify-between bg-white border border-gray-300 shadow-xl print:!border-none print:!shadow-none print:!m-0 print:!mb-0 mb-8 overflow-hidden box-border ${activePage === 'all' || activePage === 4 ? 'flex' : 'hidden print:flex'}`}>
         <div>
           {/* Top Right Logo */}
           <div className="flex justify-end pb-2">

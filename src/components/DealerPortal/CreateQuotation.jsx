@@ -3,8 +3,8 @@ import { useApp } from '../../context/AppContext';
 import { quotationService } from '../../services/quotationService';
 
 const formatINR = (val) => {
-  if (val === undefined || val === null || isNaN(val)) return '₹ 0';
-  return '₹ ' + Number(val).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+  if (val === undefined || val === null || isNaN(val)) return '₹\u00A00';
+  return '₹\u00A0' + Number(val).toLocaleString('en-IN', { maximumFractionDigits: 0 });
 };
 
 export default function CreateQuotation() {
@@ -24,7 +24,9 @@ export default function CreateQuotation() {
 
   // Step 1.3 Pricing & Subsidy
   const [ratePerKw, setRatePerKw] = useState(65000);
+  const [marginMode, setMarginMode] = useState('percent'); // 'percent' | 'amount'
   const [dealerMarginRate, setDealerMarginRate] = useState(8); // 8%
+  const [dealerMarginFixed, setDealerMarginFixed] = useState(25000); // ₹ 25,000
   const [saveStatus, setSaveStatus] = useState('');
 
   // Sizing Computations
@@ -33,6 +35,22 @@ export default function CreateQuotation() {
   const moduleCount = Math.ceil((kw * 1000) / panelWatt);
   const rooftopAreaSqFt = Math.round(kw * 64);
 
+  // Base EPC & Hardware Project Cost
+  const baseProjectCost = Math.round(kw * ratePerKw);
+
+  // Dealer margin computation (dual mode: % or fixed ₹ amount)
+  const dealerMarginINR = marginMode === 'percent'
+    ? Math.round(baseProjectCost * (dealerMarginRate / 100))
+    : Math.round(dealerMarginFixed);
+
+  // Effective margin percentage
+  const effectiveMarginPercent = baseProjectCost > 0
+    ? ((dealerMarginINR / baseProjectCost) * 100).toFixed(1)
+    : '0.0';
+
+  // Total Customer Quoted Project Cost (Base Cost + Dealer Margin)
+  const totalCost = baseProjectCost + dealerMarginINR;
+
   // PM Surya Ghar Central DBT Subsidy Formula
   const calculateSubsidy = (capacity) => {
     if (capacity <= 1) return 30000;
@@ -40,7 +58,6 @@ export default function CreateQuotation() {
     return 78000; // Cap at 78,000 for 3kW+
   };
 
-  const totalCost = Math.round(kw * ratePerKw);
   const subsidy = calculateSubsidy(kw);
   const finalPayable = Math.max(0, totalCost - subsidy);
   const annualGenerationUnits = Math.round(kw * 1440);
@@ -48,7 +65,6 @@ export default function CreateQuotation() {
   const paybackYears = annualSavings > 0 ? (finalPayable / annualSavings).toFixed(1) : '3.8';
   const paybackPercent = Math.min(100, Math.round((parseFloat(paybackYears) / 10) * 100));
   const breakEvenYear = new Date().getFullYear() + Math.ceil(parseFloat(paybackYears));
-  const dealerMarginINR = Math.round(totalCost * (dealerMarginRate / 100));
 
   const availableInverters = [
     { name: 'Sunvine Solar Hybrid Inverter 5kW 3-Phase', efficiency: '98.4%', specs: 'Built-in WiFi Smart Logger • IP65 Protection' },
@@ -63,7 +79,9 @@ export default function CreateQuotation() {
     setCustLocation('Pune, 411038');
     setSystemCapacity('5');
     setRatePerKw(65000);
+    setMarginMode('percent');
     setDealerMarginRate(8);
+    setDealerMarginFixed(25000);
   };
 
   const handleSaveDraft = async () => {
@@ -77,7 +95,7 @@ export default function CreateQuotation() {
       systemCapacityKW: kw,
       panelType: panelBrand,
       inverterType: inverterModel,
-      baseCost: totalCost - dealerMarginINR,
+      baseCost: baseProjectCost,
       dealerMargin: dealerMarginINR,
       totalAmount: totalCost,
       subsidyAmount: subsidy,
@@ -109,8 +127,8 @@ export default function CreateQuotation() {
       inverterCapacity: `${kw} kW`,
       inverterType: inverterModel,
       inverterCount: '1 NOS',
-      baseRatePerKW: ratePerKw - Math.round(ratePerKw * (dealerMarginRate / 100)),
-      dealerMarginPerKW: Math.round(ratePerKw * (dealerMarginRate / 100)),
+      baseRatePerKW: ratePerKw,
+      dealerMarginPerKW: Math.round(dealerMarginINR / kw),
       dealerTotalMargin: dealerMarginINR,
       totalAmount: totalCost,
       subsidyAmount: subsidy,
@@ -427,23 +445,50 @@ export default function CreateQuotation() {
                   <span className="material-symbols-outlined text-[20px]">auto_graph</span>
                   <span>Central DBT Subsidy Calculated</span>
                 </div>
-                <span className="material-symbols-outlined text-primary/25 text-[32px] absolute -top-1 -right-1 pointer-events-none">payments</span>
+                <span className="material-symbols-outlined text-primary/20 text-[36px] absolute -top-1 -right-1 pointer-events-none">payments</span>
               </div>
 
-              {/* Line 1: Total Project Cost */}
+              {/* Line 1: Base System Cost */}
               <div className="flex items-center justify-between pt-1">
                 <div className="flex flex-col">
-                  <span className="font-label-sm text-label-sm text-secondary font-medium">Total Project Cost</span>
+                  <span className="font-label-sm text-label-sm text-secondary font-medium">Base Hardware &amp; EPC Cost</span>
                   <span className="font-body-sm text-[11px] text-secondary/70">
                     {kw} kW × {formatINR(ratePerKw)}
                   </span>
                 </div>
-                <span className="font-headline-sm text-headline-sm text-on-secondary-fixed font-bold tabular-nums">
+                <span className="font-headline-sm text-headline-sm text-on-secondary-fixed font-bold tabular-nums whitespace-nowrap">
+                  {formatINR(baseProjectCost)}
+                </span>
+              </div>
+
+              {/* Line 2: Dealer Margin Added */}
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-label-sm text-label-sm text-on-surface font-semibold">Dealer Commercial Margin</span>
+                    <span className="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.2 rounded font-label-xs font-semibold">
+                      {marginMode === 'percent' ? `${dealerMarginRate}%` : `${effectiveMarginPercent}%`}
+                    </span>
+                  </div>
+                  <span className="font-body-sm text-[11px] text-secondary">Added to proposal</span>
+                </div>
+                <span className="font-headline-sm text-headline-sm text-emerald-700 font-bold tabular-nums whitespace-nowrap">
+                  + {formatINR(dealerMarginINR)}
+                </span>
+              </div>
+
+              {/* Line 3: Total Project Cost */}
+              <div className="flex items-center justify-between py-1 border-t border-dashed border-primary/20">
+                <div className="flex flex-col">
+                  <span className="font-label-sm text-label-sm text-on-surface font-bold">Total Project Cost</span>
+                  <span className="font-body-sm text-[11px] text-secondary">Customer quote before subsidy</span>
+                </div>
+                <span className="font-headline-sm text-headline-sm text-on-secondary-fixed font-black tabular-nums whitespace-nowrap">
                   {formatINR(totalCost)}
                 </span>
               </div>
 
-              {/* Line 2: Government Subsidy */}
+              {/* Line 4: Government Subsidy */}
               <div className="flex items-center justify-between">
                 <div className="flex flex-col">
                   <div className="flex items-center gap-1.5">
@@ -454,37 +499,37 @@ export default function CreateQuotation() {
                   </div>
                   <span className="font-body-sm text-[11px] text-secondary">PM Surya Ghar: Muft Bijli Yojana</span>
                 </div>
-                <span className="font-headline-sm text-headline-sm text-primary font-bold tabular-nums">
+                <span className="font-headline-sm text-headline-sm text-primary font-bold tabular-nums whitespace-nowrap">
                   - {formatINR(subsidy)}
                 </span>
               </div>
 
-              {/* Line 3: Estimated Annual Savings */}
+              {/* Line 5: Estimated Annual Savings */}
               <div className="flex items-center justify-between">
                 <div className="flex flex-col">
                   <span className="font-label-sm text-label-sm text-secondary font-medium">Estimated Annual Savings</span>
                   <span className="font-body-sm text-[11px] text-secondary">approx. {annualGenerationUnits.toLocaleString()} units / year generated</span>
                 </div>
-                <span className="font-label-md text-label-md text-on-surface font-bold tabular-nums">
+                <span className="font-label-md text-label-md text-on-surface font-bold tabular-nums whitespace-nowrap">
                   {formatINR(annualSavings)} <span className="font-body-sm text-secondary font-normal">/ yr</span>
                 </span>
               </div>
 
-              <div className="w-full h-px bg-primary/20 my-0.5"></div>
-
-              {/* Line 4: Final Customer Payable */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-0.5">
+              {/* Line 6: Final Customer Payable (Guaranteed Single Line) */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t-2 border-[#6CBF3D]/40">
                 <div className="flex flex-col">
-                  <span className="font-label-md text-label-md text-on-secondary-fixed uppercase tracking-wider font-bold">
+                  <span className="font-label-md text-xs sm:text-sm text-on-secondary-fixed uppercase tracking-wider font-bold">
                     Final Customer Payable
                   </span>
                   <span className="font-body-sm text-[11px] text-secondary">Net cost post-DBT reimbursement</span>
                 </div>
-                <div className="flex items-center gap-2 self-end sm:self-auto">
-                  <span className="font-headline-xl text-headline-xl text-on-secondary-fixed font-bold tabular-nums">
+                <div className="flex items-baseline gap-2 self-start sm:self-auto whitespace-nowrap shrink-0">
+                  <span className="text-2xl sm:text-3xl font-black text-on-secondary-fixed tabular-nums whitespace-nowrap inline-flex items-baseline">
                     {formatINR(finalPayable)}
                   </span>
-                  <span className="bg-primary text-on-primary text-label-xs px-2 py-0.5 rounded-full shadow-xs font-bold">Net</span>
+                  <span className="bg-primary text-on-primary text-label-xs px-2 py-0.5 rounded-full shadow-xs font-bold shrink-0">
+                    Net
+                  </span>
                 </div>
               </div>
             </div>
@@ -504,58 +549,120 @@ export default function CreateQuotation() {
               </div>
             </div>
 
-            {/* Interactive Dealer Commercials (Customizable Margin) */}
-            <div className="p-4 bg-surface rounded-xl border border-surface-container-high flex flex-col gap-3">
+            {/* Interactive Dealer Commercials (Dual Mode: % or Fixed ₹ Amount) */}
+            <div className="p-4 bg-surface rounded-xl border border-surface-container-high flex flex-col gap-3.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary text-[20px]">account_balance_wallet</span>
                   <span className="font-label-sm text-sm text-on-surface font-bold">Custom Dealer Margin</span>
                 </div>
-                <span className="font-headline-sm text-headline-sm text-primary font-bold" id="dealerMarginDisplay">
+                <span className="font-headline-sm text-headline-sm text-primary font-bold whitespace-nowrap" id="dealerMarginDisplay">
                   {formatINR(dealerMarginINR)}
                 </span>
               </div>
 
-              {/* Preset Chips & Custom Input */}
-              <div className="flex flex-wrap items-center gap-2">
-                {[5, 8, 10, 12, 15].map((pct) => (
-                  <button
-                    key={pct}
-                    type="button"
-                    onClick={() => setDealerMarginRate(pct)}
-                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                      dealerMarginRate === pct
-                        ? 'bg-primary-container text-on-primary shadow-xs'
-                        : 'bg-surface-container-lowest border border-surface-container-high text-secondary hover:text-on-surface'
-                    }`}
-                  >
-                    {pct}%
-                  </button>
-                ))}
-
-                {/* Custom Input */}
-                <div className="flex items-center gap-1.5 ml-auto">
-                  <span className="text-xs text-secondary font-medium">Custom:</span>
-                  <div className="relative flex items-center">
-                    <input
-                      type="number"
-                      min="0"
-                      max="35"
-                      step="0.5"
-                      value={dealerMarginRate}
-                      onChange={(e) => setDealerMarginRate(Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-16 h-8 text-center text-xs font-bold rounded-lg border border-surface-container-high bg-surface-container-lowest focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none"
-                    />
-                    <span className="absolute right-2 text-xs text-secondary font-bold pointer-events-none">%</span>
-                  </div>
-                </div>
+              {/* Mode Toggle: % vs ₹ */}
+              <div className="flex items-center p-1 bg-surface-container-low rounded-lg border border-surface-container-high w-fit">
+                <button
+                  type="button"
+                  onClick={() => setMarginMode('percent')}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                    marginMode === 'percent'
+                      ? 'bg-primary-container text-on-primary shadow-xs'
+                      : 'text-secondary hover:text-on-surface'
+                  }`}
+                >
+                  <span>% Percentage</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMarginMode('amount')}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                    marginMode === 'amount'
+                      ? 'bg-primary-container text-on-primary shadow-xs'
+                      : 'text-secondary hover:text-on-surface'
+                  }`}
+                >
+                  <span>₹ Fixed Amount</span>
+                </button>
               </div>
 
+              {/* Preset Chips & Custom Input */}
+              {marginMode === 'percent' ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  {[5, 8, 10, 12, 15].map((pct) => (
+                    <button
+                      key={pct}
+                      type="button"
+                      onClick={() => setDealerMarginRate(pct)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        dealerMarginRate === pct
+                          ? 'bg-primary-container text-on-primary shadow-xs'
+                          : 'bg-surface-container-lowest border border-surface-container-high text-secondary hover:text-on-surface'
+                      }`}
+                    >
+                      {pct}%
+                    </button>
+                  ))}
+
+                  {/* Custom % Input */}
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    <span className="text-xs text-secondary font-medium">Custom %:</span>
+                    <div className="relative flex items-center">
+                      <input
+                        type="number"
+                        min="0"
+                        max="50"
+                        step="0.5"
+                        value={dealerMarginRate}
+                        onChange={(e) => setDealerMarginRate(Math.max(0, parseFloat(e.target.value) || 0))}
+                        className="w-16 h-8 text-center text-xs font-bold rounded-lg border border-surface-container-high bg-surface-container-lowest focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none"
+                      />
+                      <span className="absolute right-2 text-xs text-secondary font-bold pointer-events-none">%</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2">
+                  {[10000, 20000, 30000, 50000].map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setDealerMarginFixed(amt)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        dealerMarginFixed === amt
+                          ? 'bg-primary-container text-on-primary shadow-xs'
+                          : 'bg-surface-container-lowest border border-surface-container-high text-secondary hover:text-on-surface'
+                      }`}
+                    >
+                      ₹{(amt / 1000)}k
+                    </button>
+                  ))}
+
+                  {/* Custom ₹ Input */}
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    <span className="text-xs text-secondary font-medium">Custom ₹:</span>
+                    <div className="relative flex items-center">
+                      <span className="absolute left-2 text-xs text-secondary font-bold pointer-events-none">₹</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="500000"
+                        step="1000"
+                        value={dealerMarginFixed}
+                        onChange={(e) => setDealerMarginFixed(Math.max(0, parseInt(e.target.value) || 0))}
+                        className="w-24 h-8 pl-5 pr-2 text-xs font-bold rounded-lg border border-surface-container-high bg-surface-container-lowest focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="text-[11px] text-secondary flex items-center justify-between pt-2 border-t border-surface-container-high">
-                <span>
-                  Spread: <strong>{formatINR(Math.round(dealerMarginINR / kw))} / kW</strong>
+                <span className="whitespace-nowrap">
+                  Spread: <strong className="text-on-surface font-bold">{formatINR(Math.round(dealerMarginINR / kw))} / kW</strong> ({effectiveMarginPercent}%)
                 </span>
-                <span className="inline-flex items-center gap-1 text-primary font-medium text-[10px] bg-primary/10 px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-primary font-medium text-[10px] bg-primary/10 px-2 py-0.5 rounded-full shrink-0">
                   <span className="material-symbols-outlined text-[12px]">lock</span>
                   <span>Confidential (Hidden from Customer PDF)</span>
                 </span>
@@ -595,78 +702,201 @@ export default function CreateQuotation() {
         </div>
       </div>
 
-      {/* Single Line Diagram (SLD) Interactive Modal */}
+      {/* High-End Engineering Single Line Diagram (SLD) Interactive Modal */}
       {showSldModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-surface-container-high animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-surface-container-lowest rounded-2xl max-w-4xl w-full p-5 sm:p-7 shadow-2xl border border-surface-container-high animate-in fade-in zoom-in-95 my-auto">
+            {/* Modal Header */}
             <div className="flex items-center justify-between pb-4 border-b border-surface-container-high">
-              <div className="flex items-center gap-2 text-primary font-bold">
-                <span className="material-symbols-outlined text-2xl">schema</span>
-                <h3 className="font-headline-sm text-lg text-on-surface">Electrical Single Line Diagram (SLD)</h3>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                  <span className="material-symbols-outlined text-2xl">schema</span>
+                </div>
+                <div>
+                  <h3 className="font-headline-sm text-base sm:text-lg font-bold text-on-surface">
+                    Electrical Single Line Diagram (SLD)
+                  </h3>
+                  <p className="text-xs text-secondary font-mono">
+                    {kw} kW Grid-Tied PV System • DISCOM Net-Metered Architecture
+                  </p>
+                </div>
               </div>
               <button
                 onClick={() => setShowSldModal(false)}
-                className="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary"
+                className="w-9 h-9 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary hover:text-on-surface transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined text-xl">close</span>
               </button>
             </div>
 
-            <div className="py-6 flex flex-col items-center">
-              {/* Interactive Vector SLD Flowchart */}
-              <div className="w-full bg-surface-container-low p-4 rounded-xl border border-surface-container-high flex flex-col items-center gap-4">
-                <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs font-semibold text-center">
-                  <div className="p-2.5 rounded-lg bg-white border border-primary text-primary shadow-xs">
-                    <span className="block text-sm font-bold">{kw} kW Array</span>
-                    <span className="text-[10px] text-secondary">{moduleCount}x {panelWatt}W Panels</span>
+            {/* Technical Schematic CAD-Style Display */}
+            <div className="py-5">
+              <div className="w-full bg-[#0F1B2E] text-white p-5 sm:p-6 rounded-2xl border border-white/10 shadow-inner flex flex-col gap-6 overflow-x-auto">
+                {/* Top Schematics Flow */}
+                <div className="flex items-center justify-between min-w-[700px] gap-3 relative py-3">
+                  {/* Block 1: PV Array */}
+                  <div className="flex flex-col items-center gap-1.5 w-36 text-center">
+                    <div className="p-3 bg-white/5 border border-primary/40 rounded-xl flex flex-col items-center w-full shadow-lg group hover:border-primary transition-colors">
+                      <span className="material-symbols-outlined text-[#6CBF3D] text-[28px] mb-1">solar_power</span>
+                      <span className="text-xs font-bold text-white tracking-wide">{kw} kW Array</span>
+                      <span className="text-[10px] text-[#A5D6A7] font-mono">{moduleCount}× {panelWatt}W Modules</span>
+                      <span className="text-[9px] text-gray-400 mt-1 bg-black/40 px-1.5 py-0.5 rounded">Voc: 480V DC</span>
+                    </div>
+                    <span className="text-[9px] text-gray-400 uppercase tracking-wider font-semibold">Stage 1: DC Solar</span>
                   </div>
-                  <span className="material-symbols-outlined text-secondary text-sm">arrow_forward</span>
-                  <div className="p-2.5 rounded-lg bg-white border border-secondary text-on-surface shadow-xs">
-                    <span className="block text-sm font-bold">DC Isolator</span>
-                    <span className="text-[10px] text-secondary">600V DC SPD</span>
+
+                  {/* DC Cable Wire Indicator */}
+                  <div className="flex-1 flex flex-col items-center relative">
+                    <span className="text-[9px] text-red-400 font-mono mb-0.5 whitespace-nowrap">DC Cable (4 mm²)</span>
+                    <div className="w-full h-1 bg-gradient-to-r from-red-500 via-red-500 to-amber-500 rounded relative">
+                      <span className="absolute -top-1 right-0 text-[10px] text-amber-400 font-bold">►</span>
+                    </div>
+                    <span className="text-[8px] text-gray-400 mt-0.5">Isc: 13.8A</span>
                   </div>
-                  <span className="material-symbols-outlined text-secondary text-sm">arrow_forward</span>
-                  <div className="p-2.5 rounded-lg bg-[#6CBF3D]/10 border border-[#6CBF3D] text-[#1c4900] shadow-xs">
-                    <span className="block text-sm font-bold">Inverter</span>
-                    <span className="text-[10px] text-secondary">{kw}kW 3-Phase</span>
+
+                  {/* Block 2: DCDB Box */}
+                  <div className="flex flex-col items-center gap-1.5 w-32 text-center">
+                    <div className="p-3 bg-white/5 border border-amber-500/40 rounded-xl flex flex-col items-center w-full shadow-lg">
+                      <span className="material-symbols-outlined text-amber-400 text-[26px] mb-1">shield</span>
+                      <span className="text-xs font-bold text-white">DCDB Box</span>
+                      <span className="text-[10px] text-amber-300 font-mono">600V DC SPD</span>
+                      <span className="text-[9px] text-gray-400 mt-1 bg-black/40 px-1.5 py-0.5 rounded">32A 2P Isolator</span>
+                    </div>
+                    <span className="text-[9px] text-gray-400 uppercase tracking-wider font-semibold">Surge Protect</span>
                   </div>
-                  <span className="material-symbols-outlined text-secondary text-sm">arrow_forward</span>
-                  <div className="p-2.5 rounded-lg bg-white border border-secondary text-on-surface shadow-xs">
-                    <span className="block text-sm font-bold">Net Meter</span>
-                    <span className="text-[10px] text-secondary">Bi-directional</span>
+
+                  {/* Interconnect Wire */}
+                  <div className="w-8 h-1 bg-amber-500 rounded relative">
+                    <span className="absolute -top-1 right-0 text-[10px] text-amber-400 font-bold">►</span>
                   </div>
-                  <span className="material-symbols-outlined text-secondary text-sm">arrow_forward</span>
-                  <div className="p-2.5 rounded-lg bg-white border border-primary text-primary shadow-xs">
-                    <span className="block text-sm font-bold">DISCOM Grid</span>
-                    <span className="text-[10px] text-secondary">415V 50Hz</span>
+
+                  {/* Block 3: Solar Inverter */}
+                  <div className="flex flex-col items-center gap-1.5 w-40 text-center">
+                    <div className="p-3 bg-gradient-to-b from-[#6CBF3D]/20 to-primary/10 border-2 border-[#6CBF3D] rounded-xl flex flex-col items-center w-full shadow-xl">
+                      <div className="flex items-center gap-1 text-[#6CBF3D] mb-1">
+                        <span className="material-symbols-outlined text-[24px]">power</span>
+                        <span className="text-[11px] font-black font-mono">⚡ ⎓ ∿</span>
+                      </div>
+                      <span className="text-xs font-extrabold text-white">{kw} kW Inverter</span>
+                      <span className="text-[10px] text-[#C8E6C9] font-medium">Dual MPPT • 98.4%</span>
+                      <span className="text-[9px] text-white/90 mt-1 bg-primary/40 px-2 py-0.5 rounded-full font-bold">IP65 / WiFi</span>
+                    </div>
+                    <span className="text-[9px] text-[#A5D6A7] uppercase tracking-wider font-semibold">Stage 2: Inversion</span>
+                  </div>
+
+                  {/* AC Cable Wire Indicator */}
+                  <div className="flex-1 flex flex-col items-center relative">
+                    <span className="text-[9px] text-blue-400 font-mono mb-0.5 whitespace-nowrap">AC Cable (10 mm²)</span>
+                    <div className="w-full h-1 bg-gradient-to-r from-blue-500 to-cyan-400 rounded relative">
+                      <span className="absolute -top-1 right-0 text-[10px] text-cyan-400 font-bold">►</span>
+                    </div>
+                    <span className="text-[8px] text-gray-400 mt-0.5">415V 3-Phase</span>
+                  </div>
+
+                  {/* Block 4: ACDB Box */}
+                  <div className="flex flex-col items-center gap-1.5 w-32 text-center">
+                    <div className="p-3 bg-white/5 border border-cyan-500/40 rounded-xl flex flex-col items-center w-full shadow-lg">
+                      <span className="material-symbols-outlined text-cyan-400 text-[26px] mb-1">toggle_on</span>
+                      <span className="text-xs font-bold text-white">ACDB Box</span>
+                      <span className="text-[10px] text-cyan-300 font-mono">4-Pole 63A MCB</span>
+                      <span className="text-[9px] text-gray-400 mt-1 bg-black/40 px-1.5 py-0.5 rounded">30mA RCD ELCB</span>
+                    </div>
+                    <span className="text-[9px] text-gray-400 uppercase tracking-wider font-semibold">AC Breaker</span>
+                  </div>
+
+                  {/* Interconnect Wire */}
+                  <div className="w-8 h-1 bg-cyan-400 rounded relative">
+                    <span className="absolute -top-1 right-0 text-[10px] text-cyan-400 font-bold">►</span>
+                  </div>
+
+                  {/* Block 5: Bi-Directional Net Meter */}
+                  <div className="flex flex-col items-center gap-1.5 w-36 text-center">
+                    <div className="p-3 bg-white/5 border border-indigo-500/40 rounded-xl flex flex-col items-center w-full shadow-lg">
+                      <span className="material-symbols-outlined text-indigo-400 text-[26px] mb-1">speed</span>
+                      <span className="text-xs font-bold text-white">Net Meter</span>
+                      <span className="text-[10px] text-indigo-300 font-mono">Import / Export</span>
+                      <span className="text-[9px] text-gray-400 mt-1 bg-black/40 px-1.5 py-0.5 rounded">Class 0.5s DISCOM</span>
+                    </div>
+                    <span className="text-[9px] text-gray-400 uppercase tracking-wider font-semibold">Bi-Directional</span>
+                  </div>
+
+                  {/* Interconnect Wire */}
+                  <div className="w-8 h-1 bg-indigo-400 rounded relative">
+                    <span className="absolute -top-1 right-0 text-[10px] text-indigo-400 font-bold">►</span>
+                  </div>
+
+                  {/* Block 6: DISCOM Grid */}
+                  <div className="flex flex-col items-center gap-1.5 w-36 text-center">
+                    <div className="p-3 bg-[#6CBF3D]/20 border border-[#6CBF3D] rounded-xl flex flex-col items-center w-full shadow-lg">
+                      <span className="material-symbols-outlined text-[#6CBF3D] text-[28px] mb-1">electrical_services</span>
+                      <span className="text-xs font-bold text-white">DISCOM Grid</span>
+                      <span className="text-[10px] text-[#A5D6A7] font-mono">415V 50Hz</span>
+                      <span className="text-[9px] text-white/80 mt-1 bg-black/50 px-1.5 py-0.5 rounded">3-Phase + Neutral</span>
+                    </div>
+                    <span className="text-[9px] text-[#A5D6A7] uppercase tracking-wider font-semibold">Stage 3: Utility Grid</span>
                   </div>
                 </div>
 
-                <div className="w-full pt-3 border-t border-surface-container-high grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                  <div className="bg-white p-2 rounded border border-surface-container-high">
-                    <span className="text-[10px] text-secondary block">Array DC Voltage</span>
-                    <span className="font-bold text-on-surface">480V Voc</span>
+                {/* Bottom Row: 3 Dedicated Earthing Pits (IS 3043 Compliant) */}
+                <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#6CBF3D] animate-ping"></span>
+                    <span className="text-xs font-bold text-white">IS 3043 Chemical Earthing System:</span>
                   </div>
-                  <div className="bg-white p-2 rounded border border-surface-container-high">
-                    <span className="text-[10px] text-secondary block">Inverter Protection</span>
-                    <span className="font-bold text-on-surface">IP65 Waterproof</span>
+
+                  <div className="flex flex-wrap items-center gap-3 text-xs">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-emerald-500/30 rounded-lg">
+                      <span className="font-mono text-[#6CBF3D] font-bold">⏚ Pit 1</span>
+                      <span className="text-gray-300">PV Array Structure Ground</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-emerald-500/30 rounded-lg">
+                      <span className="font-mono text-[#6CBF3D] font-bold">⏚ Pit 2</span>
+                      <span className="text-gray-300">Inverter &amp; ACDB Enclosure Ground</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-emerald-500/30 rounded-lg">
+                      <span className="font-mono text-[#6CBF3D] font-bold">⏚ Pit 3</span>
+                      <span className="text-gray-300">Lightning Arrestor (LA Spike)</span>
+                    </div>
+                    <div className="px-2.5 py-1 bg-emerald-950/60 border border-emerald-400/40 text-emerald-300 rounded-md font-mono text-[11px] font-bold">
+                      Resistance &lt; 5.0 Ω
+                    </div>
                   </div>
-                  <div className="bg-white p-2 rounded border border-surface-container-high">
-                    <span className="text-[10px] text-secondary block">AC Grid Output</span>
-                    <span className="font-bold text-on-surface">415V / 3-Phase</span>
-                  </div>
-                  <div className="bg-white p-2 rounded border border-surface-container-high">
-                    <span className="text-[10px] text-secondary block">Earthing Chemical</span>
-                    <span className="font-bold text-on-surface">3 Dedicated Pits</span>
-                  </div>
+                </div>
+              </div>
+
+              {/* Technical Specifications Summary Table */}
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div className="bg-surface-container-low p-3 rounded-xl border border-surface-container-high">
+                  <span className="text-[10px] text-secondary block font-semibold uppercase">Array DC Operating</span>
+                  <span className="font-bold text-on-surface text-sm">480V Voc • 13.8A Isc</span>
+                  <p className="text-[10px] text-secondary mt-0.5">Dual String Configuration</p>
+                </div>
+                <div className="bg-surface-container-low p-3 rounded-xl border border-surface-container-high">
+                  <span className="text-[10px] text-secondary block font-semibold uppercase">Inverter Protection</span>
+                  <span className="font-bold text-on-surface text-sm">IP65 Weatherproof</span>
+                  <p className="text-[10px] text-secondary mt-0.5">Anti-Islanding IEEE 1547</p>
+                </div>
+                <div className="bg-surface-container-low p-3 rounded-xl border border-surface-container-high">
+                  <span className="text-[10px] text-secondary block font-semibold uppercase">AC Output &amp; Harmonics</span>
+                  <span className="font-bold text-on-surface text-sm">415V AC / THD &lt; 3%</span>
+                  <p className="text-[10px] text-secondary mt-0.5">Pure Sine Wave 50Hz</p>
+                </div>
+                <div className="bg-surface-container-low p-3 rounded-xl border border-surface-container-high">
+                  <span className="text-[10px] text-secondary block font-semibold uppercase">Certification Standard</span>
+                  <span className="font-bold text-primary text-sm">MNRE / CE / IEC</span>
+                  <p className="text-[10px] text-secondary mt-0.5">PM Surya Ghar Certified</p>
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end pt-2">
+            {/* Modal Actions */}
+            <div className="flex items-center justify-between pt-3 border-t border-surface-container-high">
+              <span className="text-xs text-secondary font-medium hidden sm:inline">
+                Approved standard schematic for residential and C&amp;I rooftop installations.
+              </span>
               <button
                 onClick={() => setShowSldModal(false)}
-                className="px-5 py-2 rounded-lg bg-primary-container text-on-primary font-semibold text-sm hover:bg-[#4F9A2C] transition-colors"
+                className="px-6 py-2.5 rounded-xl bg-primary-container text-on-primary font-bold text-xs hover:bg-[#4F9A2C] transition-all active:scale-95 shadow-md ml-auto cursor-pointer"
               >
                 Close Diagram
               </button>

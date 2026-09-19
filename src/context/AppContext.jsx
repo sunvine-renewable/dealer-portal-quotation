@@ -9,6 +9,35 @@ import {
 
 const AppContext = createContext();
 
+const TAB_TO_PATH = {
+  dashboard: '/dashboard',
+  create_quote: '/new-quotation',
+  preview_quote: '/preview-quotation',
+  my_quotes: '/my-quotations',
+  profile: '/profile',
+  dealer_settings: '/settings',
+  admin_dashboard: '/admin',
+  dealers_mgmt: '/admin/dealers',
+  pricing_master: '/admin/pricing',
+  hardware_master: '/admin/hardware',
+  all_quotes: '/admin/quotations',
+  admin_settings: '/admin/settings'
+};
+
+const PATH_TO_TAB = Object.entries(TAB_TO_PATH).reduce((acc, [tab, path]) => {
+  acc[path] = tab;
+  return acc;
+}, {});
+
+const getInitialTabFromUrl = () => {
+  if (typeof window === 'undefined') return 'dashboard';
+  const pathname = window.location.pathname;
+  if (pathname === '/' || pathname === '') {
+    return localStorage.getItem('sunvine_tab') || 'dashboard';
+  }
+  return PATH_TO_TAB[pathname] || localStorage.getItem('sunvine_tab') || 'dashboard';
+};
+
 export const AppProvider = ({ children }) => {
   // Authentication & Session State
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -20,7 +49,46 @@ export const AppProvider = ({ children }) => {
 
   // Role: 'dealer' or 'admin'
   const [role, setRole] = useState(() => localStorage.getItem('sunvine_role') || 'dealer');
-  const [activeTab, setActiveTab] = useState(() => localStorage.getItem('sunvine_tab') || 'dashboard');
+  const [activeTab, setActiveTabState] = useState(getInitialTabFromUrl);
+
+  const setActiveTab = (newTab, replace = false) => {
+    setActiveTabState(newTab);
+    if (typeof window !== 'undefined') {
+      const targetPath = TAB_TO_PATH[newTab] || '/dashboard';
+      if (window.location.pathname !== targetPath) {
+        if (replace) {
+          window.history.replaceState({ tab: newTab }, '', targetPath);
+        } else {
+          window.history.pushState({ tab: newTab }, '', targetPath);
+        }
+      }
+    }
+  };
+
+  // Browser back/forward button synchronization
+  useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window !== 'undefined') {
+        const path = window.location.pathname;
+        const matchedTab = PATH_TO_TAB[path];
+        if (matchedTab) {
+          setActiveTabState(matchedTab);
+        }
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Update URL on initial load if logged in
+  useEffect(() => {
+    if (isAuthenticated && typeof window !== 'undefined') {
+      const targetPath = TAB_TO_PATH[activeTab] || '/dashboard';
+      if (window.location.pathname !== targetPath && window.location.pathname === '/') {
+        window.history.replaceState({ tab: activeTab }, '', targetPath);
+      }
+    }
+  }, [isAuthenticated, activeTab]);
   
   // Current Dealer Profile
   const [currentDealer, setCurrentDealer] = useState(() => {

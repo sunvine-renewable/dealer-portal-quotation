@@ -115,8 +115,9 @@ export default function QuotationPreview({ isPublicView = false }) {
         <div className="flex items-center gap-2 sm:gap-3">
           {!isPublicView && (
             <button
-              onClick={() => setActiveTab(role === 'admin' ? 'all_quotes' : 'dashboard')}
+              onClick={() => setActiveTab('create_quote')}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-surface-container-high text-xs font-semibold text-secondary hover:text-on-surface hover:bg-surface-container-low transition-colors"
+              title="Return to Step 1 Details & Pricing"
             >
               <span className="material-symbols-outlined text-[16px]">arrow_back</span>
               <span>Back</span>
@@ -137,18 +138,35 @@ export default function QuotationPreview({ isPublicView = false }) {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2">
-          {/* Dealer Private Profit Notice Pill (Strictly hidden from customer public view) */}
-          {!isPublicView && (
-            <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-xs">
-              <span className="material-symbols-outlined text-[16px] text-amber-600">lock</span>
-              <span>
-                Your Margin: <strong className="font-semibold">₹{(previewQuotation.dealerTotalMargin || (previewQuotation.dealerMarginPerKW * previewQuotation.systemCapacityKW) || 0).toLocaleString('en-IN')}</strong> (Hidden from PDF)
+        {/* Stepper Stage Pipeline (Consistent with Step 1, highlights Step 2 as Active on all screens) */}
+        {!isPublicView && (
+          <div className="flex items-center bg-surface-container-low/80 p-1 sm:p-1.5 rounded-xl border border-surface-container-high shadow-2xs order-last md:order-none w-full md:w-auto justify-center">
+            <button
+              type="button"
+              onClick={() => setActiveTab('create_quote')}
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1 rounded-lg text-primary hover:bg-surface-container-lowest font-label-sm font-semibold transition-all cursor-pointer"
+              title="Go back to Step 1: Details & Pricing"
+            >
+              <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-[10px] sm:text-[11px] font-bold shadow-xs">
+                ✓
+              </span>
+              <span className="text-xs sm:text-sm">Details &amp; Pricing</span>
+            </button>
+            <div className="w-4 sm:w-6 h-0.5 bg-primary/30 mx-1"></div>
+            <div className="flex items-center gap-1.5 px-2 sm:px-3 py-1 rounded-lg bg-primary/10 text-primary font-label-sm font-bold border border-primary/20">
+              <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-[10px] sm:text-[11px] font-bold shadow-xs">
+                2
+              </span>
+              <span className="text-xs sm:text-sm">Preview &amp; Send</span>
+              <span className="bg-primary text-on-primary text-[9px] px-1.5 py-0.2 rounded uppercase tracking-wider font-bold">
+                Active
               </span>
             </div>
-          )}
+          </div>
+        )}
 
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
           {!isPublicView && (
             <button
               onClick={() => setShowWhatsAppModal(true)}

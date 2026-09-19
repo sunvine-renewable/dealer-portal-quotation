@@ -32,27 +32,48 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* Strict Print styling for 4-Page Quotation PDF (Guarantee 4 clean A4 sheets) */
+/* Strict Print styling for 4-Page Quotation PDF (Guarantee EXACTLY 4 clean A4 sheets, zero blank pages) */
 @media print {
   @page {
     size: 210mm 297mm;
     margin: 0 !important;
   }
 
-  html, body, #root, #root > div, main, main > div, .quotation-preview-container {
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    width: 210mm !important;
+    height: 100% !important;
+    overflow: visible !important;
+  }
+
+  .no-print, header, aside, nav, button {
+    display: none !important;
+  }
+
+  #root, #root > div, main, main > div, .quotation-preview-container, .pdf-scalable-viewport {
     margin: 0 !important;
     padding: 0 !important;
     width: 210mm !important;
     max-width: 210mm !important;
-    min-height: auto !important;
-    background: #ffffff !important;
+    transform: none !important;
+    position: static !important;
+    overflow: visible !important;
     box-shadow: none !important;
     border: none !important;
-    overflow: visible !important;
+    background: transparent !important;
   }
 
-  .no-print {
-    display: none !important;
+  .pdf-scalable-viewport {
+    transform: none !important;
+    margin-bottom: 0 !important;
+    width: 210mm !important;
   }
 
   .pdf-document {
@@ -76,6 +97,7 @@
     width: 210mm !important;
     max-width: 210mm !important;
     margin: 0 !important;
+    margin-bottom: 0 !important;
     box-sizing: border-box !important;
     box-shadow: none !important;
     border: none !important;
@@ -84,8 +106,8 @@
   }
 
   .pdf-page:last-child {
-    page-break-after: auto !important;
-    break-after: auto !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
 
   .pdf-page-cover {
