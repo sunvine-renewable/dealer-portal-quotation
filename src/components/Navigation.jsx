@@ -1,11 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import NotificationPanel from './Shared/NotificationPanel';
 
 export default function Navigation() {
-  const { role, activeTab, setActiveTab, currentDealer, logout } = useApp();
+  const { role, activeTab, setActiveTab, currentDealer, logout, unreadNotificationsCount } = useApp();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const profileDropdownRef = useRef(null);
+  const desktopNotificationRef = useRef(null);
+  const mobileNotificationRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -87,7 +91,7 @@ export default function Navigation() {
         <div className="p-space-md border-t border-white/10">
           <button
             onClick={logout}
-            className="w-full flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-secondary-fixed-dim hover:bg-white/5 hover:text-on-secondary transition-colors font-body-md"
+            className="w-full flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-secondary-fixed-dim hover:bg-white/5 hover:text-on-secondary transition-colors font-body-md cursor-pointer"
           >
             <span className="material-symbols-outlined text-[20px]">logout</span>
             <span>Logout</span>
@@ -108,14 +112,29 @@ export default function Navigation() {
         {/* Right Status / Profile Controls */}
         <div className="flex items-center gap-space-lg">
           {/* Notification Bell with Active Indicator */}
-          <button
-            className="relative p-space-xs rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container-low transition-colors"
-            type="button"
-            title="Notifications"
-          >
-            <span className="material-symbols-outlined text-[22px]">notifications</span>
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary-container"></span>
-          </button>
+          <div className="relative" ref={desktopNotificationRef}>
+            <button
+              onClick={() => {
+                setNotificationsOpen(!notificationsOpen);
+                setDropdownOpen(false);
+              }}
+              className={`relative p-2 rounded-xl transition-all cursor-pointer ${
+                notificationsOpen
+                  ? 'bg-primary-container/15 text-primary ring-2 ring-primary/20'
+                  : 'text-secondary hover:text-on-surface hover:bg-surface-container-low'
+              }`}
+              type="button"
+              title="Notifications"
+              aria-label="Toggle notifications panel"
+            >
+              <span className="material-symbols-outlined text-[22px]">notifications</span>
+              {unreadNotificationsCount > 0 ? (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-error text-on-error rounded-full text-[10px] font-bold flex items-center justify-center shadow-xs border-2 border-surface-container-lowest animate-in zoom-in duration-200">
+                  {unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}
+                </span>
+              ) : null}
+            </button>
+          </div>
 
           {/* Divider */}
           <div className="h-6 w-px bg-surface-container-high"></div>
@@ -123,7 +142,10 @@ export default function Navigation() {
           {/* Dealer Avatar & Dropdown Pill */}
           <div className="relative" ref={profileDropdownRef}>
             <div
-              onClick={() => setDropdownOpen(!dropdownOpen)}
+              onClick={() => {
+                setDropdownOpen(!dropdownOpen);
+                setNotificationsOpen(false);
+              }}
               className="flex items-center gap-space-sm cursor-pointer select-none"
             >
               <img
@@ -161,7 +183,7 @@ export default function Navigation() {
                       setActiveTab('profile');
                       setDropdownOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-xs font-medium text-on-surface hover:bg-surface-container-low hover:text-primary"
+                    className="w-full flex items-center gap-2 px-4 py-2 text-xs font-medium text-on-surface hover:bg-surface-container-low hover:text-primary cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[16px]">account_circle</span>
                     <span>View Profile</span>
@@ -172,7 +194,7 @@ export default function Navigation() {
                     setDropdownOpen(false);
                     logout();
                   }}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-xs font-semibold text-error hover:bg-error-container/20"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-xs font-semibold text-error hover:bg-error-container/20 cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[16px]">logout</span>
                   <span>Logout</span>
@@ -186,31 +208,44 @@ export default function Navigation() {
       {/* ========================================================
           MOBILE TOP BAR: Exact Stitch Design (26_78314a1fb43e40518984de1bee26f24b_3__Dealer_Dashboard__Mobile_.html)
           ======================================================== */}
-      <header className="no-print fixed top-0 left-0 right-0 w-full z-40 bg-surface/90 backdrop-blur-xl border-b border-surface-container-high md:hidden h-16 px-4 flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
-        <div className="flex items-center gap-2">
+      <header className="no-print fixed top-0 left-0 right-0 w-full z-40 bg-surface/90 backdrop-blur-xl border-b border-surface-container-high md:hidden h-16 px-3.5 flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+        <div className="flex items-center gap-2 min-w-0">
           <img
             alt="Brand logo"
-            className="h-8 w-auto object-contain"
+            className="h-7 sm:h-8 w-auto object-contain cursor-pointer shrink-0"
             src="/sunvine_logo_transparent.png"
             onClick={() => setActiveTab(role === 'admin' ? 'admin_dashboard' : 'dashboard')}
           />
-          <div className="flex flex-col">
-            <span className="font-headline-sm text-sm font-bold text-on-surface leading-tight tracking-tight">
+          <div className="flex flex-col min-w-0">
+            <span className="font-headline-sm text-sm font-bold text-on-surface leading-tight tracking-tight truncate">
               Sunvine
             </span>
-            <span className="font-label-xs text-[10px] text-secondary leading-tight tracking-wider uppercase font-semibold">
+            <span className="font-label-xs text-[10px] text-secondary leading-tight tracking-wider uppercase font-semibold truncate">
               {role === 'admin' ? 'Admin Console' : 'Dealer Portal'}
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            aria-label="Notifications"
-            className="w-9 h-9 flex items-center justify-center rounded-full text-secondary hover:bg-surface-container-high transition-colors"
-            onClick={() => alert('All systems normal. 0 unread alerts.')}
-          >
-            <span className="material-symbols-outlined text-[20px]">notifications</span>
-          </button>
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Mobile Notification Bell */}
+          <div className="relative" ref={mobileNotificationRef}>
+            <button
+              aria-label="Notifications"
+              className={`w-9 h-9 flex items-center justify-center rounded-full transition-colors relative cursor-pointer ${
+                notificationsOpen
+                  ? 'bg-primary-container/20 text-primary'
+                  : 'text-secondary hover:bg-surface-container-high'
+              }`}
+              onClick={() => setNotificationsOpen(!notificationsOpen)}
+            >
+              <span className="material-symbols-outlined text-[20px]">notifications</span>
+              {unreadNotificationsCount > 0 ? (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-0.5 bg-error text-on-error rounded-full text-[9px] font-bold flex items-center justify-center shadow-xs border border-surface">
+                  {unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}
+                </span>
+              ) : null}
+            </button>
+          </div>
+
           <div
             onClick={() => setActiveTab(role === 'admin' ? 'admin_settings' : 'profile')}
             className="relative flex items-center justify-center p-0.5 rounded-full ring-1 ring-primary/40 cursor-pointer"
@@ -223,7 +258,7 @@ export default function Navigation() {
           </div>
           <button
             aria-label="Logout"
-            className="w-8 h-8 flex items-center justify-center rounded-full text-secondary hover:text-error transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-secondary hover:text-error transition-colors cursor-pointer"
             onClick={logout}
             title="Sign Out"
           >
@@ -232,10 +267,18 @@ export default function Navigation() {
         </div>
       </header>
 
+      {/* Unified Single-Instance Notification Panel (Serves both Desktop Dropdown & Mobile Bottom Sheet) */}
+      <NotificationPanel
+        isOpen={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+        desktopTriggerRef={desktopNotificationRef}
+        mobileTriggerRef={mobileNotificationRef}
+      />
+
       {/* ========================================================
           MOBILE BOTTOM TAB BAR: Exact Stitch Design (26_78314a1fb43e40518984de1bee26f24b_3__Dealer_Dashboard__Mobile_.html)
           ======================================================== */}
-      <nav className="no-print fixed bottom-0 left-0 right-0 w-full z-50 bg-surface/95 backdrop-blur-xl border-t border-surface-container-high shadow-[0_-2px_12px_rgba(0,0,0,0.05)] md:hidden">
+      <nav className="no-print fixed bottom-0 left-0 right-0 w-full z-50 bg-surface/95 backdrop-blur-xl border-t border-surface-container-high shadow-[0_-2px_12px_rgba(0,0,0,0.05)] md:hidden pb-[max(0px,env(safe-area-inset-bottom))]">
         <div className="flex items-center justify-around h-16 px-1">
           {menuItems.slice(0, 5).map((item) => {
             const isActive = activeTab === item.id;

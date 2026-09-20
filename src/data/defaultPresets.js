@@ -392,3 +392,108 @@ export const INITIAL_QUOTATIONS = [
     statusClass: 'bg-tertiary-container/30 text-on-tertiary-container'
   }
 ];
+
+// Production-grade Initial Notifications for EPC Solar Dealer Portal
+export const DEFAULT_NOTIFICATIONS = [
+  {
+    id: 'notif-1',
+    type: 'success',
+    icon: 'check_circle',
+    title: 'Quotation #SV-Q-1042 approved',
+    description: 'Your quotation for Rajesh Kumar has been approved by MNRE compliance team.',
+    timestamp: '2m ago',
+    read: false,
+    targetTab: 'my_quotes'
+  },
+  {
+    id: 'notif-2',
+    type: 'info',
+    icon: 'bolt',
+    title: 'DISCOM tariff updated for Western MH',
+    description: 'MSEDCL net-metering grid injection tariff revised to ₹3.82/unit for rooftop installations.',
+    timestamp: '45m ago',
+    read: false,
+    targetTab: 'pricing_master'
+  },
+  {
+    id: 'notif-3',
+    type: 'warning',
+    icon: 'shield',
+    title: 'Margin governance policy changed',
+    description: 'Admin updated maximum dealer margin ceiling to ₹8,000/kW for Residential 1–3 kW systems.',
+    timestamp: '1h ago',
+    read: false,
+    targetTab: 'dealer_settings'
+  },
+  {
+    id: 'notif-4',
+    type: 'info',
+    icon: 'support_agent',
+    title: 'New message from Sunvine Support Desk',
+    description: 'Dispatch confirmation for APS 600W TOPCon Bifacial panels for SV-2025-0402.',
+    timestamp: '3h ago',
+    read: true,
+    targetTab: 'profile'
+  },
+  {
+    id: 'notif-5',
+    type: 'warning',
+    icon: 'schedule',
+    title: 'MNRE Channel Registration expiring in 30 days',
+    description: 'Your MNRE Partner empanelment (MNRE/2023/MH/4412) renewal window is now open.',
+    timestamp: 'Yesterday',
+    read: true,
+    targetTab: 'profile'
+  },
+  {
+    id: 'notif-6',
+    type: 'alert',
+    icon: 'cancel',
+    title: 'Quotation #SV-Q-1038 rejected — revision needed',
+    description: 'DISCOM load clearance rejected due to sanction capacity mismatch. Please update and re-submit.',
+    timestamp: 'Yesterday',
+    read: true,
+    targetTab: 'my_quotes'
+  },
+  {
+    id: 'notif-7',
+    type: 'info',
+    icon: 'account_balance',
+    title: 'Bank commission rate updated',
+    description: 'Quarterly EPC channel incentive payout structure and commission schedule updated for Q3.',
+    timestamp: '2d ago',
+    read: true,
+    targetTab: 'dashboard'
+  },
+  {
+    id: 'notif-8',
+    type: 'info',
+    icon: 'description',
+    title: 'New firmware & compliance document uploaded',
+    description: 'Standard DISCOM 3-Phase Grid-Tie SLD schematic template (v2.4) uploaded to catalog.',
+    timestamp: '3d ago',
+    read: true,
+    targetTab: 'hardware_master'
+  },
+  {
+    id: 'notif-9',
+    type: 'success',
+    icon: 'verified_user',
+    title: 'Dealer KYC verification completed',
+    description: 'GSTIN 27AABCS1429B1Z8 verified. Authorized Tier-1 Gold EPC status active.',
+    timestamp: '4d ago',
+    read: true,
+    targetTab: 'profile'
+  },
+  {
+    id: 'notif-10',
+    type: 'info',
+    icon: 'build',
+    title: 'System maintenance scheduled this weekend',
+    description: 'Portal cloud synchronization upgrade scheduled for Saturday 11:00 PM – 1:00 AM IST.',
+    timestamp: '5d ago',
+    read: true,
+    targetTab: 'dashboard'
+  }
+];
+

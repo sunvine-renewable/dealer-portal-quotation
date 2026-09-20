@@ -4,7 +4,8 @@ import {
   DEFAULT_MODULES,
   DEFAULT_INVERTERS,
   INITIAL_DEALERS,
-  INITIAL_QUOTATIONS
+  INITIAL_QUOTATIONS,
+  DEFAULT_NOTIFICATIONS
 } from '../data/defaultPresets';
 
 const AppContext = createContext();
@@ -142,6 +143,20 @@ export const AppProvider = ({ children }) => {
   // Active quotation loaded for Editing in CreateQuotation
   const [editingQuotation, setEditingQuotation] = useState(null);
 
+  // System & Compliance Notifications
+  const [notifications, setNotifications] = useState(() => {
+    const saved = localStorage.getItem('sunvine_notifications');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch (e) {}
+    }
+    return DEFAULT_NOTIFICATIONS;
+  });
+
   // Synchronize state with localStorage
   useEffect(() => {
     localStorage.setItem('sunvine_auth', isAuthenticated ? 'true' : 'false');
@@ -184,6 +199,10 @@ export const AppProvider = ({ children }) => {
       localStorage.setItem('sunvine_preview_quotation', JSON.stringify(previewQuotation));
     }
   }, [previewQuotation]);
+
+  useEffect(() => {
+    localStorage.setItem('sunvine_notifications', JSON.stringify(notifications));
+  }, [notifications]);
 
   // Auth Actions
   const login = (userRole, userProfile = null) => {
@@ -257,6 +276,35 @@ export const AppProvider = ({ children }) => {
     setPricingMaster(newMaster);
   };
 
+  // Notification Actions
+  const unreadNotificationsCount = notifications.filter(n => !n.read).length;
+
+  const markNotificationAsRead = (id) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const deleteNotification = (id) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const clearAllNotifications = () => {
+    setNotifications([]);
+  };
+
+  const addNotification = (notif) => {
+    const newNotif = {
+      id: `notif-${Date.now()}`,
+      timestamp: 'Just now',
+      read: false,
+      ...notif
+    };
+    setNotifications(prev => [newNotif, ...prev]);
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -290,7 +338,14 @@ export const AppProvider = ({ children }) => {
         clearEditingQuotation,
         updateQuotationStatus,
         previewQuotation,
-        setPreviewQuotation
+        setPreviewQuotation,
+        notifications,
+        unreadNotificationsCount,
+        markNotificationAsRead,
+        markAllNotificationsAsRead,
+        deleteNotification,
+        clearAllNotifications,
+        addNotification
       }}
     >
       {children}

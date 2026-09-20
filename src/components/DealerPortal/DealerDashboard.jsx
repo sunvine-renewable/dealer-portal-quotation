@@ -152,24 +152,24 @@ export default function DealerDashboard() {
     <div className="flex flex-col w-full gap-space-lg">
       {/* Top Operational Control & Profile Header */}
       <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md pb-space-sm">
-        <div className="flex items-start md:items-center gap-space-md">
+        <div className="flex items-start md:items-center gap-3 sm:gap-space-md min-w-0">
           <div className="relative shrink-0">
             <img
-              alt="Rajesh Kumar Profile"
-              className="w-16 h-16 rounded-xl object-cover shadow-md shadow-secondary/10"
+              alt="Dealer Profile"
+              className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl object-cover shadow-md shadow-secondary/10"
               src={currentDealer.avatar || '/dealer_avatar.jpg'}
             />
-            <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary-container rounded-full ring-2 ring-surface"></span>
+            <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-primary-container rounded-full ring-2 ring-surface"></span>
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-space-xs text-secondary font-label-xs tracking-wider uppercase">
-              <span className="inline-block w-2 h-2 rounded-full bg-primary-container"></span>
-              <span>{currentDealer.firmName || 'Surya Solar Tech'} • {currentDealer.city || 'Pune West Hub'}</span>
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-1.5 text-secondary text-[10px] sm:text-label-xs font-semibold tracking-wider uppercase truncate">
+              <span className="inline-block w-2 h-2 rounded-full bg-primary-container shrink-0"></span>
+              <span className="truncate">{currentDealer.firmName || 'Surya Solar Tech'} • {currentDealer.city || 'Pune West Hub'}</span>
             </div>
-            <h1 className="font-headline-xl text-headline-xl text-on-secondary-fixed tracking-tight">
+            <h1 className="font-headline-xl text-xl sm:text-2xl lg:text-headline-xl text-on-secondary-fixed tracking-tight font-bold truncate">
               Welcome back, {currentDealer.contactPerson || 'Rajesh Kumar'}
             </h1>
-            <p className="font-body-md text-body-md text-secondary">
+            <p className="text-xs sm:text-body-md text-secondary mt-0.5">
               Here's an overview of your quotation activity and solar installations pipeline.
             </p>
           </div>
