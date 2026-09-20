@@ -24,20 +24,20 @@ export default function Navigation() {
   }, [dropdownOpen]);
 
   const dealerMenu = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'home' },
-    { id: 'create_quote', label: 'New Quotation', icon: 'note_add' },
-    { id: 'my_quotes', label: 'My Quotations', icon: 'folder_open' },
-    { id: 'profile', label: 'Profile', icon: 'person' },
-    { id: 'dealer_settings', label: 'Settings', icon: 'settings' },
+    { id: 'dashboard', label: 'Dashboard', mobileLabel: 'Dashboard', icon: 'home' },
+    { id: 'create_quote', label: 'New Quotation', mobileLabel: 'New Quote', icon: 'note_add' },
+    { id: 'my_quotes', label: 'My Quotations', mobileLabel: 'My Quotes', icon: 'folder_open' },
+    { id: 'profile', label: 'Profile', mobileLabel: 'Profile', icon: 'person' },
+    { id: 'dealer_settings', label: 'Settings', mobileLabel: 'Settings', icon: 'settings' },
   ];
 
   const adminMenu = [
-    { id: 'admin_dashboard', label: 'Executive Overview', icon: 'dashboard' },
-    { id: 'dealers_mgmt', label: 'Dealer Partners', icon: 'group' },
-    { id: 'pricing_master', label: 'Pricing & Presets', icon: 'tune' },
-    { id: 'hardware_master', label: 'Hardware Catalog', icon: 'memory' },
-    { id: 'all_quotes', label: 'All Quotations Audit', icon: 'inventory_2' },
-    { id: 'admin_settings', label: 'Master Governance', icon: 'settings' },
+    { id: 'admin_dashboard', label: 'Executive Overview', mobileLabel: 'Overview', icon: 'dashboard' },
+    { id: 'dealers_mgmt', label: 'Dealer Partners', mobileLabel: 'Dealers', icon: 'group' },
+    { id: 'pricing_master', label: 'Pricing & Presets', mobileLabel: 'Pricing', icon: 'tune' },
+    { id: 'hardware_master', label: 'Hardware Catalog', mobileLabel: 'Hardware', icon: 'memory' },
+    { id: 'all_quotes', label: 'All Quotations Audit', mobileLabel: 'All Quotes', icon: 'inventory_2' },
+    { id: 'admin_settings', label: 'Master Governance', mobileLabel: 'Settings', icon: 'settings' },
   ];
 
   const menuItems = role === 'admin' ? adminMenu : dealerMenu;
@@ -70,11 +70,10 @@ export default function Navigation() {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-space-sm px-space-lg py-space-sm transition-colors text-left ${
-                    isActive
-                      ? 'border-l-4 border-primary-container bg-white/10 text-on-secondary font-label-md'
-                      : 'text-secondary-fixed-dim hover:bg-white/5 hover:text-on-secondary font-body-md'
-                  }`}
+                  className={`flex items-center gap-space-sm px-space-lg py-space-sm transition-colors text-left ${isActive
+                    ? 'border-l-4 border-primary-container bg-white/10 text-on-secondary font-label-md'
+                    : 'text-secondary-fixed-dim hover:bg-white/5 hover:text-on-secondary font-body-md'
+                    }`}
                 >
                   <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
                   <span>{item.label}</span>
@@ -244,15 +243,14 @@ export default function Navigation() {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex flex-col items-center justify-center min-w-[58px] min-h-[44px] py-1 px-1 gap-0.5 rounded-lg transition-colors ${
-                  isActive ? 'text-primary font-semibold' : 'text-secondary hover:text-on-surface'
-                }`}
+                className={`flex flex-col items-center justify-center flex-1 min-h-[44px] py-1 px-0.5 gap-0.5 rounded-lg transition-colors ${isActive ? 'text-primary font-semibold' : 'text-secondary hover:text-on-surface'
+                  }`}
               >
                 <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>
                   {item.icon}
                 </span>
-                <span className="text-[10px] font-medium leading-none truncate max-w-[62px]">
-                  {item.label.split(' ')[0]}
+                <span className="text-[10px] font-medium leading-none text-center w-full">
+                  {item.mobileLabel}
                 </span>
               </button>
             );
