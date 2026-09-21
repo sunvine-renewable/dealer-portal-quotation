@@ -73,7 +73,7 @@ export default function PricingMaster() {
       </div>
 
       {/* Breadcrumb & Master Title Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between pb-6 gap-4 border-b border-surface-container-highest">
+      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between pb-6 gap-4 border-b border-surface-container-highest">
         <div>
           <div className="flex items-center gap-2 font-label-sm text-label-sm text-secondary mb-1.5">
             <span>Admin Console</span>
@@ -90,7 +90,7 @@ export default function PricingMaster() {
           </p>
         </div>
         {/* Header Action Controls */}
-        <div className="flex items-center gap-3 self-start md:self-center shrink-0">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 self-start xl:self-center shrink-0">
           <button
             onClick={() => {
               setRate1to3(62000);
@@ -98,14 +98,14 @@ export default function PricingMaster() {
               setRateCommercial(24000);
               triggerToast('Reset to default system presets');
             }}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-surface-container-highest bg-surface-container-lowest text-on-surface hover:bg-surface-container-low text-label-md font-label-md transition-colors shadow-sm"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-surface-container-highest bg-surface-container-lowest text-on-surface hover:bg-surface-container-low text-label-md font-label-md transition-colors shadow-sm text-xs sm:text-sm"
           >
             <span className="material-symbols-outlined text-lg text-secondary">restart_alt</span>
             <span>Reset to Defaults</span>
           </button>
           <button
             onClick={handleSave}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-surface-container-lowest font-label-md text-label-md transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-surface-container-lowest font-label-md text-label-md transition-colors shadow-sm text-xs sm:text-sm"
           >
             <span className="material-symbols-outlined text-lg">cloud_sync</span>
             <span>Save &amp; Publish Changes</span>
@@ -115,10 +115,10 @@ export default function PricingMaster() {
       </div>
 
       {/* Navigation Tabs Bar */}
-      <div className="flex items-center gap-2 border-b border-surface-container-highest mt-4 overflow-x-auto">
+      <div className="flex items-center gap-2 border-b border-surface-container-highest mt-4 overflow-x-auto no-scrollbar pb-0.5 max-w-full">
         <button
           onClick={() => setActiveTab('base')}
-          className={`flex items-center gap-2 px-4 py-3.5 border-b-2 font-label-md font-bold tracking-tight whitespace-nowrap ${
+          className={`flex items-center gap-2 px-4 py-3.5 border-b-2 font-label-md font-bold tracking-tight whitespace-nowrap shrink-0 ${
             activeTab === 'base' ? 'border-primary text-inverse-surface' : 'border-transparent text-secondary hover:text-on-surface'
           }`}
         >
@@ -127,7 +127,7 @@ export default function PricingMaster() {
         </button>
         <button
           onClick={() => setActiveTab('modules')}
-          className={`flex items-center gap-2 px-4 py-3.5 border-b-2 font-label-md font-medium whitespace-nowrap transition-colors ${
+          className={`flex items-center gap-2 px-4 py-3.5 border-b-2 font-label-md font-medium whitespace-nowrap shrink-0 transition-colors ${
             activeTab === 'modules' ? 'border-primary text-inverse-surface font-bold' : 'border-transparent text-secondary hover:text-on-surface'
           }`}
         >
@@ -136,7 +136,7 @@ export default function PricingMaster() {
         </button>
         <button
           onClick={() => setActiveTab('bom')}
-          className={`flex items-center gap-2 px-4 py-3.5 border-b-2 font-label-md font-medium whitespace-nowrap transition-colors ${
+          className={`flex items-center gap-2 px-4 py-3.5 border-b-2 font-label-md font-medium whitespace-nowrap shrink-0 transition-colors ${
             activeTab === 'bom' ? 'border-primary text-inverse-surface font-bold' : 'border-transparent text-secondary hover:text-on-surface'
           }`}
         >
@@ -145,7 +145,7 @@ export default function PricingMaster() {
         </button>
         <button
           onClick={() => setActiveTab('bank')}
-          className={`flex items-center gap-2 px-4 py-3.5 border-b-2 font-label-md font-medium whitespace-nowrap transition-colors ${
+          className={`flex items-center gap-2 px-4 py-3.5 border-b-2 font-label-md font-medium whitespace-nowrap shrink-0 transition-colors ${
             activeTab === 'bank' ? 'border-primary text-inverse-surface font-bold' : 'border-transparent text-secondary hover:text-on-surface'
           }`}
         >
@@ -172,7 +172,7 @@ export default function PricingMaster() {
               <span className="font-label-xs text-label-xs bg-surface-container-low text-secondary px-2.5 py-1 rounded border border-surface-container-highest">Currency: INR (₹)</span>
             </div>
             {/* Tier Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {/* Tier 1 */}
               <div className="border border-surface-container-highest rounded-lg p-4 bg-surface-container-lowest hover:border-primary-container/60 transition-all flex flex-col justify-between">
                 <div>
@@ -278,7 +278,7 @@ export default function PricingMaster() {
                 MNRE National Portal DBT Matrix 2024-25
               </span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               <div className="p-4 rounded-lg bg-surface-container-low border border-surface-container-highest relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-2 h-full bg-primary-container"></div>
                 <div className="flex items-center justify-between mb-2">
@@ -332,7 +332,7 @@ export default function PricingMaster() {
               </div>
               <span className="font-label-xs text-label-xs bg-surface-container px-2.5 py-1 rounded text-secondary font-semibold">Tier-1 Hardware</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {/* Module Defaults */}
               <div className="border border-surface-container-highest rounded-lg p-4 bg-surface-container-low">
                 <div className="flex items-center justify-between mb-3">
@@ -422,7 +422,7 @@ export default function PricingMaster() {
                 <span>Verified RTGS Account</span>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               <div>
                 <label className="font-body-sm text-body-sm text-secondary block mb-1">Beneficiary Firm Name</label>
                 <input
@@ -484,7 +484,7 @@ export default function PricingMaster() {
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
                 <label className="font-body-sm text-body-sm text-secondary block mb-1">Default Payment Milestones</label>
                 <input

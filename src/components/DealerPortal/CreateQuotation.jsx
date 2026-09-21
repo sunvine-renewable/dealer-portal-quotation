@@ -203,8 +203,8 @@ export default function CreateQuotation() {
   return (
     <div className="flex flex-col w-full pb-28">
       {/* Top Navigation Bar & Progress Track (Exact Stitch Stepper) */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md mb-6">
-        <div className="flex flex-col gap-1">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col gap-1 min-w-0">
           <button
             onClick={() => setActiveTab('dashboard')}
             className="inline-flex items-center gap-1.5 text-secondary hover:text-on-surface font-label-sm transition-colors w-fit group"
@@ -232,18 +232,18 @@ export default function CreateQuotation() {
         </div>
 
         {/* Stepper Indicator */}
-        <div className="flex items-center bg-surface-container-lowest p-2 rounded-xl shadow-sm self-start md:self-auto border border-surface-container-high">
-          <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary font-label-sm">
-            <span className="w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-label-xs font-bold">1</span>
+        <div className="flex items-center bg-surface-container-lowest p-1.5 sm:p-2 rounded-xl shadow-sm self-start lg:self-auto border border-surface-container-high max-w-full overflow-x-auto">
+          <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg bg-primary/10 text-primary font-label-sm whitespace-nowrap">
+            <span className="w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-label-xs font-bold shrink-0">1</span>
             <span>Details &amp; Pricing</span>
             <span className="bg-primary-container/20 text-on-primary-container text-[10px] px-1.5 py-0.5 rounded font-label-xs uppercase tracking-wider font-semibold">Active</span>
           </div>
-          <div className="w-8 h-0.5 bg-surface-container-high mx-1"></div>
+          <div className="w-4 sm:w-8 h-0.5 bg-surface-container-high mx-1 shrink-0"></div>
           <button
             onClick={handlePreview}
-            className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-secondary hover:text-on-surface font-label-sm transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg text-secondary hover:text-on-surface font-label-sm transition-colors cursor-pointer whitespace-nowrap"
           >
-            <span className="w-5 h-5 rounded-full bg-surface-container-high text-secondary flex items-center justify-center text-label-xs font-bold">2</span>
+            <span className="w-5 h-5 rounded-full bg-surface-container-high text-secondary flex items-center justify-center text-label-xs font-bold shrink-0">2</span>
             <span>Preview &amp; Send</span>
           </button>
         </div>
@@ -739,31 +739,34 @@ export default function CreateQuotation() {
       </div>
 
       {/* Sticky Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 md:left-64 right-0 h-20 bg-surface-container-lowest border-t border-surface-container-high shadow-[0_-4px_16px_rgba(0,0,0,0.06)] z-40 flex items-center justify-between px-4 md:px-8">
+      <div className="fixed bottom-0 left-0 md:left-64 right-0 h-16 sm:h-20 bg-surface-container-lowest border-t border-surface-container-high shadow-[0_-4px_16px_rgba(0,0,0,0.06)] z-40 flex items-center justify-between px-3 sm:px-4 md:px-8">
         <button
           onClick={handleReset}
-          className="h-10 px-4 rounded-lg bg-surface-container-lowest text-on-secondary-fixed hover:bg-surface-container-low font-label-md transition-colors flex items-center gap-2 border border-surface-container-high shadow-xs cursor-pointer"
+          className="h-9 sm:h-10 px-2.5 sm:px-4 rounded-lg bg-surface-container-lowest text-on-secondary-fixed hover:bg-surface-container-low font-label-md transition-colors flex items-center gap-1.5 sm:gap-2 border border-surface-container-high shadow-xs cursor-pointer shrink-0"
           type="button"
         >
           <span className="material-symbols-outlined text-[18px]">refresh</span>
-          <span>Reset Form</span>
+          <span className="hidden sm:inline">Reset Form</span>
+          <span className="sm:hidden text-xs">Reset</span>
         </button>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={handleSaveDraft}
-            className="h-10 px-4 md:px-5 rounded-lg bg-surface-container-lowest text-on-secondary-fixed hover:bg-surface-container-low font-label-md transition-colors border border-surface-container-high shadow-xs cursor-pointer"
+            className="h-9 sm:h-10 px-2.5 sm:px-4 md:px-5 rounded-lg bg-surface-container-lowest text-on-secondary-fixed hover:bg-surface-container-low font-label-md transition-colors border border-surface-container-high shadow-xs cursor-pointer text-xs sm:text-sm shrink-0"
             type="button"
           >
-            Save Draft
+            <span className="hidden sm:inline">Save Draft</span>
+            <span className="sm:hidden">Save</span>
           </button>
           <button
             onClick={handlePreview}
-            className="h-10 px-5 md:px-6 rounded-lg bg-[#6CBF3D] hover:bg-[#4F9A2C] active:scale-[0.99] text-on-primary font-label-md transition-all shadow-md hover:shadow-lg flex items-center gap-2 cursor-pointer font-semibold"
+            className="h-9 sm:h-10 px-3 sm:px-5 md:px-6 rounded-lg bg-[#6CBF3D] hover:bg-[#4F9A2C] active:scale-[0.99] text-on-primary font-label-md transition-all shadow-md hover:shadow-lg flex items-center gap-1.5 sm:gap-2 cursor-pointer font-semibold text-xs sm:text-sm shrink-0"
             type="button"
           >
-            <span>Preview Quotation</span>
-            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+            <span className="hidden sm:inline">Preview Quotation</span>
+            <span className="sm:hidden">Preview</span>
+            <span className="material-symbols-outlined text-[16px] sm:text-[18px]">arrow_forward</span>
           </button>
         </div>
       </div>

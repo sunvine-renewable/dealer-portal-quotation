@@ -120,9 +120,9 @@ export default function HardwareMaster() {
       </div>
 
       {/* PAGE HEADER BLOCK */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-surface-container-highest">
+      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 pb-6 border-b border-surface-container-highest">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <h1 className="font-headline-lg text-headline-lg text-inverse-surface tracking-tight">
               Solar Equipment &amp; Hardware Master Catalog
             </h1>
@@ -135,31 +135,31 @@ export default function HardwareMaster() {
           </p>
         </div>
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
           <button
             onClick={() => triggerToast('Hardware specifications export initiated')}
-            className="flex items-center gap-1.5 px-3 py-2 border border-surface-container-highest bg-surface-container-lowest text-inverse-surface font-label-md rounded-lg hover:bg-surface-container-low transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-2 border border-surface-container-highest bg-surface-container-lowest text-inverse-surface font-label-md rounded-lg hover:bg-surface-container-low transition-colors shadow-sm text-xs sm:text-sm"
           >
             <span className="material-symbols-outlined text-secondary">file_download</span>
             <span>Import Specs (Excel)</span>
           </button>
           <button
             onClick={() => triggerToast('Bulk price revision opened')}
-            className="flex items-center gap-1.5 px-3 py-2 border border-surface-container-highest bg-surface-container-lowest text-inverse-surface font-label-md rounded-lg hover:bg-surface-container-low transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-2 border border-surface-container-highest bg-surface-container-lowest text-inverse-surface font-label-md rounded-lg hover:bg-surface-container-low transition-colors shadow-sm text-xs sm:text-sm"
           >
             <span className="material-symbols-outlined text-secondary">price_change</span>
             <span>Bulk Price Update</span>
           </button>
           <button
             onClick={() => setShowAddInverterModal(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 border border-inverse-surface bg-surface-container-lowest text-inverse-surface font-label-md rounded-lg hover:bg-surface-container-low transition-colors shadow-sm cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-2 border border-inverse-surface bg-surface-container-lowest text-inverse-surface font-label-md rounded-lg hover:bg-surface-container-low transition-colors shadow-sm cursor-pointer text-xs sm:text-sm"
           >
             <span className="material-symbols-outlined">add</span>
             <span>+ Add Inverter Model</span>
           </button>
           <button
             onClick={() => setShowAddModuleModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-primary-container hover:bg-primary text-on-primary font-label-md font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 bg-primary-container hover:bg-primary text-on-primary font-label-md font-bold rounded-lg shadow-sm transition-colors cursor-pointer text-xs sm:text-sm"
           >
             <span className="material-symbols-outlined">add_circle</span>
             <span>+ Add Solar Module</span>
@@ -242,11 +242,11 @@ export default function HardwareMaster() {
       </section>
 
       {/* SEGMENTED TABS */}
-      <div className="flex items-center justify-between border-b border-surface-container-highest pb-3">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-surface-container-highest pb-3 gap-3">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
           <button
             onClick={() => setActiveTab('modules')}
-            className={`px-4 py-2 rounded-lg font-label-md font-bold flex items-center gap-2 shadow-sm transition-colors ${
+            className={`px-3 sm:px-4 py-2 rounded-lg font-label-md font-bold flex items-center gap-2 shadow-sm transition-colors whitespace-nowrap shrink-0 ${
               activeTab === 'modules'
                 ? 'bg-inverse-surface text-surface-container-lowest'
                 : 'bg-surface-container-low text-secondary hover:text-inverse-surface'
@@ -258,7 +258,7 @@ export default function HardwareMaster() {
           </button>
           <button
             onClick={() => setActiveTab('inverters')}
-            className={`px-4 py-2 rounded-lg font-label-md font-medium flex items-center gap-2 transition-colors ${
+            className={`px-3 sm:px-4 py-2 rounded-lg font-label-md font-medium flex items-center gap-2 transition-colors whitespace-nowrap shrink-0 ${
               activeTab === 'inverters'
                 ? 'bg-inverse-surface text-surface-container-lowest font-bold shadow-sm'
                 : 'bg-surface-container-low text-secondary hover:text-inverse-surface'
@@ -270,7 +270,7 @@ export default function HardwareMaster() {
           </button>
           <button
             onClick={() => setActiveTab('bos')}
-            className={`px-4 py-2 rounded-lg font-label-md font-medium flex items-center gap-2 transition-colors ${
+            className={`px-3 sm:px-4 py-2 rounded-lg font-label-md font-medium flex items-center gap-2 transition-colors whitespace-nowrap shrink-0 ${
               activeTab === 'bos'
                 ? 'bg-inverse-surface text-surface-container-lowest font-bold shadow-sm'
                 : 'bg-surface-container-low text-secondary hover:text-inverse-surface'
@@ -283,7 +283,7 @@ export default function HardwareMaster() {
         </div>
         <button
           onClick={() => triggerToast('Exported catalog inventory spreadsheet')}
-          className="flex items-center gap-1.5 text-primary font-label-md hover:underline"
+          className="flex items-center gap-1.5 text-primary font-label-md hover:underline self-end sm:self-center shrink-0"
         >
           <span className="material-symbols-outlined">download</span>
           <span>Export Ledger</span>

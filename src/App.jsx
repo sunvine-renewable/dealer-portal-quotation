@@ -112,8 +112,8 @@ function MainApp() {
       <UpdateNotificationPopup />
 
       {/* Main Content Area */}
-      <main className="md:pl-64 pt-16 pb-24 md:pb-8 transition-all w-full">
-        <div className="p-3 sm:p-4 md:p-8 w-full max-w-[1600px] mx-auto">
+      <main className="md:pl-64 pt-16 pb-24 md:pb-8 transition-all w-full min-w-0 max-w-full overflow-x-hidden">
+        <div className="p-3 sm:p-4 lg:p-6 xl:p-8 w-full max-w-[1600px] mx-auto min-w-0">
           {renderView()}
         </div>
       </main>

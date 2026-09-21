@@ -29,7 +29,9 @@
   word-wrap: normal;
   direction: ltr;
   -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* Strict Print styling for 4-Page Quotation PDF (Guarantee EXACTLY 4 clean A4 sheets, zero blank pages) */
