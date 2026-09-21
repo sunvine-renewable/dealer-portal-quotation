@@ -57,9 +57,11 @@
     display: none !important;
   }
 
-  #root, #root > div, main, main > div, .quotation-preview-container, .pdf-scalable-viewport {
+  #root, #root > div, main, main > div, .quotation-preview-container, .quotation-preview-container > div, .pdf-scalable-viewport {
     margin: 0 !important;
+    margin-top: 0 !important;
     padding: 0 !important;
+    padding-top: 0 !important;
     width: 210mm !important;
     max-width: 210mm !important;
     transform: none !important;
@@ -72,14 +74,19 @@
 
   .pdf-scalable-viewport {
     transform: none !important;
+    margin: 0 !important;
+    margin-top: 0 !important;
     margin-bottom: 0 !important;
+    padding: 0 !important;
     width: 210mm !important;
   }
 
   .pdf-document {
     width: 210mm !important;
     margin: 0 !important;
+    margin-top: 0 !important;
     padding: 0 !important;
+    padding-top: 0 !important;
     background: #ffffff !important;
   }
 
@@ -91,12 +98,13 @@
     break-after: page !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    height: 297mm !important;
-    max-height: 297mm !important;
-    min-height: 297mm !important;
+    height: 296mm !important;
+    max-height: 296mm !important;
+    min-height: 296mm !important;
     width: 210mm !important;
     max-width: 210mm !important;
     margin: 0 !important;
+    margin-top: 0 !important;
     margin-bottom: 0 !important;
     box-sizing: border-box !important;
     box-shadow: none !important;
@@ -111,6 +119,20 @@
   }
 
   .pdf-page-cover {
+    padding: 0 !important;
+    margin: 0 !important;
+    margin-top: 0 !important;
+    height: 296mm !important;
+    max-height: 296mm !important;
+  }
+
+  .pdf-page-cover img {
+    width: 210mm !important;
+    height: 296mm !important;
+    max-height: 296mm !important;
+    object-fit: cover !important;
+    display: block !important;
+    margin: 0 !important;
     padding: 0 !important;
   }
 

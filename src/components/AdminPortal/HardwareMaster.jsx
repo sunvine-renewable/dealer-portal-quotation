@@ -2,14 +2,109 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 
 export default function HardwareMaster() {
-  const { modulesList, invertersList } = useApp();
+  const { modulesList, setModulesList, invertersList, setInvertersList, addNotification } = useApp();
   const [activeTab, setActiveTab] = useState('modules'); // 'modules' | 'inverters' | 'bos'
   const [moduleSearch, setModuleSearch] = useState('');
   const [toastMessage, setToastMessage] = useState('');
+  const [showAddModuleModal, setShowAddModuleModal] = useState(false);
+  const [showAddInverterModal, setShowAddInverterModal] = useState(false);
+
+  const [moduleForm, setModuleForm] = useState({
+    brand: '',
+    model: '',
+    cellTech: 'TOPCon Mono Bifacial',
+    wattage: '550',
+    efficiency: '22.6%',
+    ratePerWp: '19.20',
+    warranty: '30 Years Performance'
+  });
+
+  const [inverterForm, setInverterForm] = useState({
+    brand: '',
+    model: '',
+    capacity: '5 kW',
+    phase: '3-Phase 415V',
+    efficiency: '98.4%',
+    warranty: '10 Years'
+  });
 
   const triggerToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(''), 3000);
+  };
+
+  const handleSaveModule = (e) => {
+    e.preventDefault();
+    if (!moduleForm.brand.trim() || !moduleForm.model.trim()) return;
+    const newMod = {
+      id: `mod-${Date.now()}`,
+      brand: moduleForm.brand.trim(),
+      model: moduleForm.model.trim(),
+      cellTech: moduleForm.cellTech,
+      wattage: Number(moduleForm.wattage) || 550,
+      efficiency: moduleForm.efficiency,
+      ratePerWp: `₹ ${moduleForm.ratePerWp}/Wp`,
+      warranty: moduleForm.warranty
+    };
+    if (setModulesList) {
+      setModulesList(prev => [...(prev || []), newMod]);
+    }
+    if (addNotification) {
+      addNotification({
+        type: 'success',
+        icon: 'solar_power',
+        title: `New Solar Module Added: ${newMod.brand} ${newMod.model}`,
+        description: `High-efficiency ${newMod.wattage}W (${newMod.cellTech}) added to hardware catalog.`,
+        targetTab: 'hardware_master'
+      });
+    }
+    setShowAddModuleModal(false);
+    triggerToast(`Added ${newMod.brand} ${newMod.model} to catalog!`);
+    setModuleForm({
+      brand: '',
+      model: '',
+      cellTech: 'TOPCon Mono Bifacial',
+      wattage: '550',
+      efficiency: '22.6%',
+      ratePerWp: '19.20',
+      warranty: '30 Years Performance'
+    });
+  };
+
+  const handleSaveInverter = (e) => {
+    e.preventDefault();
+    if (!inverterForm.brand.trim() || !inverterForm.model.trim()) return;
+    const newInv = {
+      id: `inv-${Date.now()}`,
+      brand: inverterForm.brand.trim(),
+      model: inverterForm.model.trim(),
+      capacity: inverterForm.capacity,
+      phase: inverterForm.phase,
+      efficiency: inverterForm.efficiency,
+      warranty: inverterForm.warranty
+    };
+    if (setInvertersList) {
+      setInvertersList(prev => [...(prev || []), newInv]);
+    }
+    if (addNotification) {
+      addNotification({
+        type: 'success',
+        icon: 'bolt',
+        title: `New Inverter Added: ${newInv.brand} ${newInv.model}`,
+        description: `${newInv.capacity} (${newInv.phase}) solar inverter published to hardware catalog.`,
+        targetTab: 'hardware_master'
+      });
+    }
+    setShowAddInverterModal(false);
+    triggerToast(`Added ${newInv.brand} ${newInv.model} to catalog!`);
+    setInverterForm({
+      brand: '',
+      model: '',
+      capacity: '5 kW',
+      phase: '3-Phase 415V',
+      efficiency: '98.4%',
+      warranty: '10 Years'
+    });
   };
 
   return (
@@ -56,15 +151,15 @@ export default function HardwareMaster() {
             <span>Bulk Price Update</span>
           </button>
           <button
-            onClick={() => triggerToast('Add Inverter Model modal opened')}
-            className="flex items-center gap-1.5 px-3.5 py-2 border border-inverse-surface bg-surface-container-lowest text-inverse-surface font-label-md rounded-lg hover:bg-surface-container-low transition-colors shadow-sm"
+            onClick={() => setShowAddInverterModal(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 border border-inverse-surface bg-surface-container-lowest text-inverse-surface font-label-md rounded-lg hover:bg-surface-container-low transition-colors shadow-sm cursor-pointer"
           >
             <span className="material-symbols-outlined">add</span>
             <span>+ Add Inverter Model</span>
           </button>
           <button
-            onClick={() => triggerToast('Add Solar Module modal opened')}
-            className="flex items-center gap-1.5 px-4 py-2 bg-primary-container hover:bg-primary text-on-primary font-label-md font-bold rounded-lg shadow-sm transition-colors"
+            onClick={() => setShowAddModuleModal(true)}
+            className="flex items-center gap-1.5 px-4 py-2 bg-primary-container hover:bg-primary text-on-primary font-label-md font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined">add_circle</span>
             <span>+ Add Solar Module</span>
@@ -574,12 +669,221 @@ export default function HardwareMaster() {
             <span className="font-body-sm text-body-sm text-secondary">Hardware additions immediately reflect inside the dealer quotation calculation engine for all active DISCOM regions.</span>
           </div>
         </div>
-        <div className="flex items-center gap-3 text-right">
-          <div className="px-3 py-1.5 rounded-lg bg-surface-container-low border border-surface-container-highest font-mono text-label-xs text-secondary">
-            Catalog Master Hash <strong className="text-inverse-surface">#SV-CAT-2025-08</strong> • <span className="text-primary font-semibold">MNRE ALMM v4.2</span>
+      </div>
+
+      {/* ADD SOLAR MODULE MODAL */}
+      {showAddModuleModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-surface-container-lowest rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-surface-container-high animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-4 border-b border-surface-container-high">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[20px]">solar_power</span>
+                </span>
+                <h3 className="font-headline-sm text-lg font-bold text-on-surface">Add Solar PV Module</h3>
+              </div>
+              <button
+                onClick={() => setShowAddModuleModal(false)}
+                className="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-xl">close</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveModule} className="py-4 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-secondary mb-1">OEM Brand / Make *</label>
+                  <input
+                    required
+                    type="text"
+                    value={moduleForm.brand}
+                    onChange={(e) => setModuleForm({ ...moduleForm, brand: e.target.value })}
+                    placeholder="e.g. Adani Solar / Waaree"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-surface-container-highest bg-surface-container-lowest focus:ring-1 focus:ring-primary-container"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-secondary mb-1">Model Name &amp; Series *</label>
+                  <input
+                    required
+                    type="text"
+                    value={moduleForm.model}
+                    onChange={(e) => setModuleForm({ ...moduleForm, model: e.target.value })}
+                    placeholder="e.g. Shine 600WP TOPCon"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-surface-container-highest bg-surface-container-lowest focus:ring-1 focus:ring-primary-container"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-secondary mb-1">Wattage (W) *</label>
+                  <input
+                    required
+                    type="number"
+                    value={moduleForm.wattage}
+                    onChange={(e) => setModuleForm({ ...moduleForm, wattage: e.target.value })}
+                    placeholder="550"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-surface-container-highest bg-surface-container-lowest focus:ring-1 focus:ring-primary-container"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-secondary mb-1">Efficiency %</label>
+                  <input
+                    type="text"
+                    value={moduleForm.efficiency}
+                    onChange={(e) => setModuleForm({ ...moduleForm, efficiency: e.target.value })}
+                    placeholder="22.6%"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-surface-container-highest bg-surface-container-lowest focus:ring-1 focus:ring-primary-container"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-secondary mb-1">Rate (₹/Wp)</label>
+                  <input
+                    type="text"
+                    value={moduleForm.ratePerWp}
+                    onChange={(e) => setModuleForm({ ...moduleForm, ratePerWp: e.target.value })}
+                    placeholder="19.20"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-surface-container-highest bg-surface-container-lowest focus:ring-1 focus:ring-primary-container"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-secondary mb-1">Cell Tech</label>
+                <select
+                  value={moduleForm.cellTech}
+                  onChange={(e) => setModuleForm({ ...moduleForm, cellTech: e.target.value })}
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-surface-container-highest bg-surface-container-lowest focus:ring-1 focus:ring-primary-container"
+                >
+                  <option value="TOPCon Mono Bifacial">TOPCon Mono Bifacial (Recommended)</option>
+                  <option value="Mono PERC">Mono PERC Half-Cut</option>
+                  <option value="HJT Ultra-Efficiency">HJT Ultra-Efficiency</option>
+                  <option value="Polycrystalline DCR">Polycrystalline DCR</option>
+                </select>
+              </div>
+
+              <div className="pt-3 border-t border-surface-container-high flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModuleModal(false)}
+                  className="px-4 py-2 text-xs font-semibold text-secondary hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-bold bg-primary-container text-surface-container-lowest hover:bg-primary rounded-lg transition-all shadow-sm cursor-pointer"
+                >
+                  Publish to Catalog &amp; Notify Dealers
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* ADD INVERTER MODEL MODAL */}
+      {showAddInverterModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-surface-container-lowest rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-surface-container-high animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-4 border-b border-surface-container-high">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[20px]">bolt</span>
+                </span>
+                <h3 className="font-headline-sm text-lg font-bold text-on-surface">Add Inverter Model</h3>
+              </div>
+              <button
+                onClick={() => setShowAddInverterModal(false)}
+                className="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-xl">close</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveInverter} className="py-4 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-secondary mb-1">Brand / OEM Make *</label>
+                  <input
+                    required
+                    type="text"
+                    value={inverterForm.brand}
+                    onChange={(e) => setInverterForm({ ...inverterForm, brand: e.target.value })}
+                    placeholder="e.g. Sungrow / Solis / Sunvine"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-surface-container-highest bg-surface-container-lowest focus:ring-1 focus:ring-primary-container"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-secondary mb-1">Model Name *</label>
+                  <input
+                    required
+                    type="text"
+                    value={inverterForm.model}
+                    onChange={(e) => setInverterForm({ ...inverterForm, model: e.target.value })}
+                    placeholder="e.g. SG10RT 3-Phase Multi-MPPT"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-surface-container-highest bg-surface-container-lowest focus:ring-1 focus:ring-primary-container"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-secondary mb-1">Rated Capacity *</label>
+                  <input
+                    required
+                    type="text"
+                    value={inverterForm.capacity}
+                    onChange={(e) => setInverterForm({ ...inverterForm, capacity: e.target.value })}
+                    placeholder="10 kW"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-surface-container-highest bg-surface-container-lowest focus:ring-1 focus:ring-primary-container"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-secondary mb-1">Phase</label>
+                  <select
+                    value={inverterForm.phase}
+                    onChange={(e) => setInverterForm({ ...inverterForm, phase: e.target.value })}
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-surface-container-highest bg-surface-container-lowest focus:ring-1 focus:ring-primary-container"
+                  >
+                    <option value="3-Phase 415V">3-Phase 415V</option>
+                    <option value="1-Phase 230V">1-Phase 230V</option>
+                    <option value="Hybrid Battery-Ready">Hybrid Battery-Ready</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-secondary mb-1">Efficiency</label>
+                  <input
+                    type="text"
+                    value={inverterForm.efficiency}
+                    onChange={(e) => setInverterForm({ ...inverterForm, efficiency: e.target.value })}
+                    placeholder="98.5%"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-surface-container-highest bg-surface-container-lowest focus:ring-1 focus:ring-primary-container"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-surface-container-high flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddInverterModal(false)}
+                  className="px-4 py-2 text-xs font-semibold text-secondary hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-bold bg-primary-container text-surface-container-lowest hover:bg-primary rounded-lg transition-all shadow-sm cursor-pointer"
+                >
+                  Publish to Catalog &amp; Notify Dealers
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

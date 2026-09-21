@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 
 export default function PricingMaster() {
-  const { pricingMaster, updatePricingMaster } = useApp();
+  const { pricingMaster, updatePricingMaster, addNotification } = useApp();
 
   const [activeTab, setActiveTab] = useState('base');
   const [toastMessage, setToastMessage] = useState('');
@@ -46,6 +46,15 @@ export default function PricingMaster() {
           ifscCode,
           branch,
         }
+      });
+    }
+    if (addNotification) {
+      addNotification({
+        type: 'info',
+        icon: 'bolt',
+        title: 'Master EPC Pricing & Presets Published',
+        description: `Admin revised benchmark rates: 1-3kW at ₹${Number(rate1to3).toLocaleString('en-IN')}/kW, 3-10kW at ₹${Number(rate3to10).toLocaleString('en-IN')}/kW.`,
+        targetTab: 'pricing_master'
       });
     }
     triggerToast('Master pricing & presets published successfully to 48 dealers!');

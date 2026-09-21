@@ -3,6 +3,7 @@ import { AppProvider, useApp } from './context/AppContext';
 import SplashScreen from './components/SplashScreen';
 import Navigation from './components/Navigation';
 import AppUpdateModal from './components/Shared/AppUpdateModal';
+import UpdateNotificationPopup from './components/Shared/UpdateNotificationPopup';
 
 // Authentication Views
 import DealerLogin from './components/Auth/DealerLogin';
@@ -106,6 +107,9 @@ function MainApp() {
     <div className="min-h-screen bg-[#F6F8F7] text-[#0F1B2E] font-sans antialiased">
       {/* Navigation Layout */}
       <Navigation />
+
+      {/* Real-Time Update Notification Popup */}
+      <UpdateNotificationPopup />
 
       {/* Main Content Area */}
       <main className="md:pl-64 pt-16 pb-24 md:pb-8 transition-all w-full">

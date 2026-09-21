@@ -39,7 +39,7 @@ export default function PDFTemplate({ quotation, activePage = 'all' }) {
       {/* ========================================================
           PAGE 1: EXACT ORIGINAL MIRANA TECHNOCAST COVER PAGE
           ======================================================== */}
-      <div className={`pdf-page pdf-page-cover relative w-[210mm] h-[297mm] max-h-[297mm] mx-auto bg-white border border-gray-300 shadow-xl print:!border-none print:!shadow-none print:!m-0 print:!mb-0 print:!p-0 mb-8 overflow-hidden items-center justify-center box-border ${activePage === 'all' || activePage === 1 ? 'flex' : 'hidden print:flex'}`}>
+      <div className={`pdf-page pdf-page-cover relative w-[210mm] h-[297mm] max-h-[297mm] mx-auto bg-white border border-gray-300 shadow-xl print:!border-none print:!shadow-none print:!m-0 print:!mb-0 print:!p-0 print:!h-[296mm] print:!max-h-[296mm] mb-8 overflow-hidden items-center justify-center box-border ${activePage === 'all' || activePage === 1 ? 'flex' : 'hidden print:flex'}`}>
         <img
           src="/mirana_page1_original.jpg"
           alt="Sunvine Quotation Cover"
