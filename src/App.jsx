@@ -4,6 +4,9 @@ import SplashScreen from './components/SplashScreen';
 import Navigation from './components/Navigation';
 import AppUpdateModal from './components/Shared/AppUpdateModal';
 import UpdateNotificationPopup from './components/Shared/UpdateNotificationPopup';
+import ErrorBoundary from './components/Shared/ErrorBoundary';
+import { ToastProvider } from './components/Shared/Toast';
+import NetworkStatusBanner from './components/Shared/NetworkStatusBanner';
 
 // Authentication Views
 import DealerLogin from './components/Auth/DealerLogin';
@@ -118,6 +121,9 @@ function MainApp() {
         </div>
       </main>
 
+      {/* Real-time Network Offline / Restored Status Banner */}
+      <NetworkStatusBanner />
+
       {/* 1-Second Splash on first arrival */}
       {!splashFinished && <SplashScreen onFinish={handleSplashFinish} />}
     </div>
@@ -126,9 +132,13 @@ function MainApp() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <MainApp />
-      <AppUpdateModal />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <ToastProvider>
+          <MainApp />
+          <AppUpdateModal />
+        </ToastProvider>
+      </AppProvider>
+    </ErrorBoundary>
   );
 }

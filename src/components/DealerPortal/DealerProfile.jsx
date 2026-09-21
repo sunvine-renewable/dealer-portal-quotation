@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
+import { APP_VERSION } from '../../config/version';
 
 export default function DealerProfile() {
   const { currentDealer, updateDealerProfile } = useApp();
@@ -124,7 +125,7 @@ export default function DealerProfile() {
             title="Check for PWA updates & changelog"
           >
             <span className="material-symbols-outlined text-[15px] text-primary shrink-0">system_update</span>
-            <span className="whitespace-nowrap">App v1.3.0 • Check Updates</span>
+            <span className="whitespace-nowrap">App v{APP_VERSION} • Check Updates</span>
           </button>
         </div>
       </div>

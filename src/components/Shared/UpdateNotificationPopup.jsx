@@ -4,41 +4,48 @@ import { useApp } from '../../context/AppContext';
 export default function UpdateNotificationPopup() {
   const {
     notifications,
-    unreadNotificationsCount,
     markNotificationAsRead,
-    setActiveTab
+    setActiveTab,
+    dismissedPopupIds,
+    dismissPopupNotification
   } = useApp();
 
-  const [dismissedId, setDismissedId] = useState(null);
   const [visible, setVisible] = useState(false);
+  const [sessionDismissed, setSessionDismissed] = useState(false);
 
-  // Find the most recent unread notification
-  const latestUnread = notifications.find((n) => !n.read);
+  // Focus popup on the latest announcement/notification
+  const latestUnread = notifications && notifications.length > 0 ? notifications[0] : null;
+  const isEligible = Boolean(
+    latestUnread &&
+    !latestUnread.read &&
+    !dismissedPopupIds?.includes(latestUnread.id) &&
+    !sessionDismissed
+  );
 
-  // Automatically show popup when there is an unread notification that hasn't been dismissed in this view
   useEffect(() => {
-    if (latestUnread && latestUnread.id !== dismissedId) {
-      setVisible(true);
-    } else {
-      setVisible(false);
-    }
-  }, [latestUnread, dismissedId]);
+    setVisible(isEligible);
+  }, [isEligible]);
 
   if (!visible || !latestUnread) return null;
 
   const handleClose = (e) => {
-    e.stopPropagation();
-    // Dismiss the popup card without marking the notification as read
-    setDismissedId(latestUnread.id);
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (latestUnread) {
+      dismissPopupNotification(latestUnread.id);
+    }
+    setSessionDismissed(true);
     setVisible(false);
   };
 
   const handleAction = () => {
-    // User clicked to view the update -> mark as read and navigate
-    markNotificationAsRead(latestUnread.id);
-    setVisible(false);
-    if (latestUnread.targetTab) {
-      setActiveTab(latestUnread.targetTab);
+    if (latestUnread) {
+      markNotificationAsRead(latestUnread.id);
+      dismissPopupNotification(latestUnread.id);
+      setSessionDismissed(true);
+      setVisible(false);
+      if (latestUnread.targetTab) {
+        setActiveTab(latestUnread.targetTab);
+      }
     }
   };
 

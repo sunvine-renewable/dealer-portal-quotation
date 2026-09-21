@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import {
   DEFAULT_PRICING_MASTER,
   DEFAULT_MODULES,
@@ -11,7 +11,7 @@ import {
   SUNVINE_OFFICIAL_PROFILE
 } from '../data/defaultPresets';
 
-const DB_VERSION = 'sunvine_gujarat_ledger_1430_v2';
+const DB_VERSION = 'sunvine_gujarat_ledger_200_v1';
 
 const AppContext = createContext();
 
@@ -330,15 +330,91 @@ export const AppProvider = ({ children }) => {
     });
   };
 
-  // Notification Actions
-  const unreadNotificationsCount = notifications.filter(n => !n.read).length;
+  // Persistent read state IDs keyed by role
+  const [readNotifIds, setReadNotifIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`sunvine_read_notifs_${role}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  // Keep readNotifIds in sync if role changes
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`sunvine_read_notifs_${role}`);
+      setReadNotifIds(saved ? JSON.parse(saved) : []);
+    } catch (e) {
+      setReadNotifIds([]);
+    }
+  }, [role]);
+
+  // Persistent dismissed popup IDs keyed by role
+  const [dismissedPopupIds, setDismissedPopupIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`sunvine_dismissed_popups_${role}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`sunvine_dismissed_popups_${role}`);
+      setDismissedPopupIds(saved ? JSON.parse(saved) : []);
+    } catch (e) {
+      setDismissedPopupIds([]);
+    }
+  }, [role]);
+
+  const persistReadIds = (ids) => {
+    setReadNotifIds(ids);
+    try {
+      localStorage.setItem(`sunvine_read_notifs_${role}`, JSON.stringify(ids));
+    } catch (e) {}
+  };
+
+  const dismissPopupNotification = (id) => {
+    setDismissedPopupIds(prev => {
+      if (prev.includes(id)) return prev;
+      const updated = [...prev, id];
+      try {
+        localStorage.setItem(`sunvine_dismissed_popups_${role}`, JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+  };
+
+  // Role-partitioned visible notifications with real-time persistent read status
+  const visibleNotifications = useMemo(() => {
+    return notifications
+      .filter(n => {
+        const aud = n.audience || 'all';
+        if (aud === 'all') return true;
+        return aud === role;
+      })
+      .map(n => ({
+        ...n,
+        read: readNotifIds.includes(n.id)
+      }));
+  }, [notifications, role, readNotifIds]);
+
+  const unreadNotificationsCount = useMemo(() => {
+    return visibleNotifications.filter(n => !n.read).length;
+  }, [visibleNotifications]);
 
   const markNotificationAsRead = (id) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    if (!readNotifIds.includes(id)) {
+      persistReadIds([...readNotifIds, id]);
+    }
   };
 
   const markAllNotificationsAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    const allVisibleIds = visibleNotifications.map(n => n.id);
+    const merged = Array.from(new Set([...readNotifIds, ...allVisibleIds]));
+    persistReadIds(merged);
   };
 
   const deleteNotification = (id) => {
@@ -346,14 +422,19 @@ export const AppProvider = ({ children }) => {
   };
 
   const clearAllNotifications = () => {
-    setNotifications([]);
+    setNotifications(prev => prev.filter(n => {
+      const aud = n.audience || 'all';
+      if (aud === 'all') return false;
+      return aud !== role;
+    }));
   };
 
   const addNotification = (notif) => {
     const newNotif = {
       id: `notif-${Date.now()}`,
-      timestamp: 'Just now',
-      read: false,
+      createdAt: new Date().toISOString(),
+      audience: notif.audience || (role === 'admin' ? 'admin' : 'dealer'),
+      type: notif.type || 'info',
       ...notif
     };
     setNotifications(prev => [newNotif, ...prev]);
@@ -395,13 +476,15 @@ export const AppProvider = ({ children }) => {
         updateQuotationStatus,
         previewQuotation,
         setPreviewQuotation,
-        notifications,
+        notifications: visibleNotifications,
         unreadNotificationsCount,
         markNotificationAsRead,
         markAllNotificationsAsRead,
         deleteNotification,
         clearAllNotifications,
         addNotification,
+        dismissedPopupIds,
+        dismissPopupNotification,
         pdfBosMatrix: PDF_BOS_PRICE_MATRIX,
         pdfBomSpecs: PDF_BOM_SPECIFICATIONS,
         officialProfile: SUNVINE_OFFICIAL_PROFILE

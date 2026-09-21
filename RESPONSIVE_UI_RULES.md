@@ -129,11 +129,51 @@ $$\text{KPI Count} \equiv \text{Table Total Count} \equiv \sum \text{Status Pill
 Prior to pushing code to production or merging branches, run the automated Puppeteer audit suite:
 
 ```bash
-node scripts/test_admin_dashboard.cjs
+node scripts/test_production_hardening.cjs
 ```
 
 The automated audit asserts:
 1. **Zero Viewport Overflows**: Inspects `document.documentElement.scrollWidth <= window.innerWidth` across all 14 standard viewports.
 2. **Element Out-of-Bounds Detection**: Checks that no child elements bleed past the horizontal viewport boundary.
 3. **Zero Console Errors / Warnings**: Captures and validates clean console output with zero unhandled exceptions.
-4. **Data Contract Compliance**: Validates KPI math and filter array counts against active database records.
+4. **Data Contract Compliance**: Validates KPI math, filter array counts, persistent notifications, and real version metadata.
+
+---
+
+## 6. Permanent Production Reliability & Architecture Standards
+
+From this point onward, every new feature, page, component, modal, form, table, API integration, dashboard, quotation workflow, notification, or design change MUST preserve the application's production responsiveness and reliability standards automatically.
+
+### Rule 6.1: Zero-FOUC Boot Sequence & Font Protection
+1. Root containers (`#root`) must provide an inline branded shell so no raw HTML, unstyled text, or layout jumps occur during initial script download.
+2. Material Symbols icon ligatures must be hidden (`letter-spacing: -9999px` or `color: transparent`) until `document.fonts.ready` confirms the font is loaded, preventing words like `calendar_month` from flashing.
+
+### Rule 6.2: Mandatory Skeleton Loaders
+Never display empty white boxes or jarring layout shifts while data is loading. Every async data view must render a matching skeleton component (`KpiCardSkeleton`, `TableSkeleton`, `FormSkeleton`, `LeaderboardSkeleton`).
+
+### Rule 6.3: Form Submission State Machine
+Every form and primary action button must implement explicit states:
+`IDLE` → `LOADING` (disabled + loading spinner) → `SUCCESS` (toast feedback) → `ERROR` (actionable guidance).
+- Accidental double-clicks and duplicate API submissions must be blocked (`disabled={isSubmitting}`).
+- Unsaved user input must be preserved on network failure.
+
+### Rule 6.4: Offline & Low-Network Resilience
+1. Listen to `online` and `offline` events globally (`NetworkStatusBanner`).
+2. Provide clear offline indication without blocking local cached proposals or operations.
+3. Show confirmation when connectivity is restored.
+
+### Rule 6.5: Role-Partitioned Persistent Notifications
+1. Notifications must be partitioned by role (`audience: 'admin' | 'dealer' | 'all'`). Dealers must never receive admin operational alerts, and admins must never receive dealer-scoped draft alerts.
+2. Read state must be persisted immediately (`localStorage.setItem('sunvine_read_notifs_${role}', ...)`). Refreshing the page must NEVER revert a read notification to unread or regenerate duplicate notifications.
+3. Popup dismissals must persist across sessions (`sunvine_dismissed_popups_${role}`).
+
+### Rule 6.6: Single-Source Semantic Versioning
+1. The authoritative version must reside in `src/config/version.js` (`APP_VERSION`), strictly following `MAJOR.MINOR.PATCH`.
+2. All UI components (Update modal, profile header, footers, package.json) must consume this single source.
+3. Changelog entries must only contain verified features, improvements, and fixes derived from actual Git commits. Never fabricate release history or use simulated timer loops for progress indicators.
+
+### Rule 6.7: Error Boundaries & Containment
+All top-level views must be wrapped in `ErrorBoundary` to prevent unhandled React exceptions from crashing the application into a blank screen. Fallback screens must provide "Reload Application" and "Return to Dashboard" recovery actions.
+
+### Rule 6.8: Zero Fake Data Policy
+Never fabricate dummy statistics, fake progress bars, simulated logs, or fake backend states. All telemetry must reflect verified system state.

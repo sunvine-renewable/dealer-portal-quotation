@@ -90,66 +90,81 @@ export const INITIAL_DEALERS = GUJARAT_DEALERS;
 // Gujarat Quotations Master Dataset
 export const INITIAL_QUOTATIONS = GUJARAT_QUOTATIONS;
 
-// Gujarat System & Compliance Notifications
+// Gujarat System & Compliance Notifications (Role-partitioned: 'admin' | 'dealer' | 'all')
 export const DEFAULT_NOTIFICATIONS = [
+  // Super Admin Alerts
   {
-    id: 'notif-1',
+    id: 'notif-adm-001',
+    audience: 'admin',
     type: 'success',
     icon: 'check_circle',
-    title: 'Quotation #SV-2026-Q801 approved by PGVCL',
-    description: 'Rooftop solar quotation for MIRANA TECHNOCAST PVT.LTD. (Metoda GIDC, Rajkot) verified by DISCOM.',
-    timestamp: '5m ago',
-    read: false,
+    title: 'DISCOM Clearance: MIRANA TECHNOCAST (PGVCL)',
+    description: 'Grid-tie synchronization approved for 120.0 kW HT industrial system at Metoda GIDC, Rajkot.',
+    createdAt: '2026-09-22T08:30:00.000Z',
     targetTab: 'all_quotes'
   },
   {
-    id: 'notif-2',
-    type: 'info',
-    icon: 'bolt',
-    title: 'GEDA Solar Policy 2025-26 active across Gujarat',
-    description: 'Net-metering clearance expedited for Saurashtra (PGVCL) and South Gujarat (DGVCL) circles.',
-    timestamp: '35m ago',
-    read: false,
-    targetTab: 'pricing_master'
-  },
-  {
-    id: 'notif-3',
+    id: 'notif-adm-002',
+    audience: 'admin',
     type: 'warning',
     icon: 'shield',
-    title: 'Gujarat Dealer Margin Cap Policy Enforced',
-    description: 'Admin enforced maximum dealer margin ceiling of ₹6,000/kW for Gold EPC and ₹7,500/kW for Platinum partners.',
-    timestamp: '1h ago',
-    read: false,
+    title: 'Gujarat Margin Benchmark Cap Enforced',
+    description: 'Central operations policy enforced: Max margin ceiling of ₹6,000/kW for Gold and ₹7,500/kW for Platinum partners.',
+    createdAt: '2026-09-22T07:15:00.000Z',
     targetTab: 'dealers_mgmt'
   },
   {
-    id: 'notif-4',
+    id: 'notif-adm-003',
+    audience: 'admin',
     type: 'info',
-    icon: 'solar_power',
-    title: 'New Hardware Specs Added from PDF Catalog',
-    description: 'APS 600WP TOPCon Bifacial panels and Waaree HyperIon 585WP published to Gujarat catalog.',
-    timestamp: '2h ago',
-    read: true,
-    targetTab: 'hardware_master'
-  },
-  {
-    id: 'notif-5',
-    type: 'success',
-    icon: 'verified_user',
-    title: 'Sunvine Renewable Official GSTIN Verified',
-    description: 'GSTIN 24AFPFS7402A1Z7 (Rajkot, Gujarat) linked to PDF quotation generator footer.',
-    timestamp: '1d ago',
-    read: true,
-    targetTab: 'admin_settings'
-  },
-  {
-    id: 'notif-6',
-    type: 'info',
-    icon: 'account_balance',
-    title: 'PM Surya Ghar DBT National Portal Subsidy Synced',
-    description: 'Direct Benefit Transfer slab (₹78,000 for >=3kW) synchronized with Discom consumer billing ledger.',
-    timestamp: '2d ago',
-    read: true,
+    icon: 'tune',
+    title: 'Central PM Surya Ghar DBT Cap Synced',
+    description: 'Direct Benefit Transfer cap of ₹78,000 (>=3kW) validated against MNRE National Portal ledger.',
+    createdAt: '2026-09-21T18:00:00.000Z',
     targetTab: 'pricing_master'
+  },
+
+  // Dealer Alerts
+  {
+    id: 'notif-dlr-001',
+    audience: 'dealer',
+    type: 'success',
+    icon: 'verified',
+    title: 'Quotation #SV-2026-Q801 Approved',
+    description: 'Your proposal for 5.0 kW residential rooftop solar has been approved by Sunvine Operations.',
+    createdAt: '2026-09-22T08:45:00.000Z',
+    targetTab: 'my_quotes'
+  },
+  {
+    id: 'notif-dlr-002',
+    audience: 'dealer',
+    type: 'info',
+    icon: 'bolt',
+    title: 'New Hardware Added: Waaree TOPCon Bifacial',
+    description: 'Waaree 585WP TOPCon Bifacial panels are now available in your quotation component picker.',
+    createdAt: '2026-09-22T06:30:00.000Z',
+    targetTab: 'create_quote'
+  },
+  {
+    id: 'notif-dlr-003',
+    audience: 'dealer',
+    type: 'info',
+    icon: 'phone_in_talk',
+    title: 'Sunvine EPC Gujarat Helpline Active',
+    description: 'Toll-free dealer dispatch and DISCOM meter tracking available via +91 80000 50580.',
+    createdAt: '2026-09-21T14:00:00.000Z',
+    targetTab: 'dashboard'
+  },
+
+  // General System Broadcast
+  {
+    id: 'notif-sys-001',
+    audience: 'all',
+    type: 'info',
+    icon: 'system_update',
+    title: 'Platform v2.0.0 Online',
+    description: 'Production hardening, Gujarat ledger sync, and offline network support activated.',
+    createdAt: '2026-09-22T09:00:00.000Z',
+    targetTab: 'dashboard'
   }
 ];

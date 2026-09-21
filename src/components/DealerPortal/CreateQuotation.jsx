@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { quotationService } from '../../services/quotationService';
+import { useToast } from '../Shared/Toast';
 
 const formatINR = (val) => {
   if (val === undefined || val === null || isNaN(val)) return '₹\u00A00';
@@ -19,6 +20,9 @@ export default function CreateQuotation() {
     addNotification,
     pricingPresets
   } = useApp();
+
+  const { addToast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Step 1.1 Customer Details (Empty by default for dealer input)
   const [custName, setCustName] = useState('');
@@ -131,6 +135,15 @@ export default function CreateQuotation() {
   };
 
   const handleSaveDraft = async () => {
+    if (!custName.trim()) {
+      addToast({
+        title: 'Customer Name Required',
+        message: 'Please enter the customer name before saving the draft.',
+        type: 'warning'
+      });
+      return;
+    }
+
     const isEdit = Boolean(editingQuotation?.id);
     const quotePayload = {
       id: isEdit ? editingQuotation.id : `SV-2026-Q${Math.floor(100 + Math.random() * 900)}`,
@@ -159,18 +172,43 @@ export default function CreateQuotation() {
       dealerName: currentDealer?.firmName || 'Rajesh Solar Solutions'
     };
 
+    setIsSubmitting(true);
     setSaveStatus('Saving quotation...');
-    if (isEdit && updateQuotation) {
-      updateQuotation(quotePayload);
-    } else if (addQuotation) {
-      addQuotation(quotePayload);
+    try {
+      if (isEdit && updateQuotation) {
+        updateQuotation(quotePayload);
+      } else if (addQuotation) {
+        addQuotation(quotePayload);
+      }
+      await quotationService.saveQuotation(quotePayload);
+      setSaveStatus(isEdit ? 'Quotation updated successfully!' : 'Draft saved successfully to cloud!');
+      addToast({
+        title: isEdit ? 'Quotation Updated' : 'Draft Saved',
+        message: `Quotation #${quotePayload.id} for ${custName} saved successfully.`,
+        type: 'success'
+      });
+      setTimeout(() => setSaveStatus(''), 3000);
+    } catch (e) {
+      addToast({
+        title: 'Save Failed',
+        message: 'Could not save quotation to storage.',
+        type: 'error'
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    await quotationService.saveQuotation(quotePayload);
-    setSaveStatus(isEdit ? 'Quotation updated successfully!' : 'Draft saved successfully to cloud!');
-    setTimeout(() => setSaveStatus(''), 3000);
   };
 
   const handlePreview = () => {
+    if (!custName.trim()) {
+      addToast({
+        title: 'Customer Name Required',
+        message: 'Please specify the customer name before generating proposal preview.',
+        type: 'warning'
+      });
+      return;
+    }
+
     const isEdit = Boolean(editingQuotation?.id);
     const quotePayload = {
       id: isEdit ? editingQuotation.id : `SV-2026-Q${Math.floor(100 + Math.random() * 900)}`,
@@ -761,15 +799,17 @@ export default function CreateQuotation() {
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={handleSaveDraft}
-            className="h-9 sm:h-10 px-2.5 sm:px-4 md:px-5 rounded-lg bg-surface-container-lowest text-on-secondary-fixed hover:bg-surface-container-low font-label-md transition-colors border border-surface-container-high shadow-xs cursor-pointer text-xs sm:text-sm shrink-0"
+            disabled={isSubmitting}
+            className="h-9 sm:h-10 px-2.5 sm:px-4 md:px-5 rounded-lg bg-surface-container-lowest text-on-secondary-fixed hover:bg-surface-container-low font-label-md transition-colors border border-surface-container-high shadow-xs cursor-pointer text-xs sm:text-sm shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
             type="button"
           >
-            <span className="hidden sm:inline">Save Draft</span>
-            <span className="sm:hidden">Save</span>
+            <span className="hidden sm:inline">{isSubmitting ? 'Saving...' : 'Save Draft'}</span>
+            <span className="sm:hidden">{isSubmitting ? '...' : 'Save'}</span>
           </button>
           <button
             onClick={handlePreview}
-            className="h-9 sm:h-10 px-3 sm:px-5 md:px-6 rounded-lg bg-[#6CBF3D] hover:bg-[#4F9A2C] active:scale-[0.99] text-on-primary font-label-md transition-all shadow-md hover:shadow-lg flex items-center gap-1.5 sm:gap-2 cursor-pointer font-semibold text-xs sm:text-sm shrink-0"
+            disabled={isSubmitting}
+            className="h-9 sm:h-10 px-3 sm:px-5 md:px-6 rounded-lg bg-[#6CBF3D] hover:bg-[#4F9A2C] active:scale-[0.99] text-on-primary font-label-md transition-all shadow-md hover:shadow-lg flex items-center gap-1.5 sm:gap-2 cursor-pointer font-semibold text-xs sm:text-sm shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
             type="button"
           >
             <span className="hidden sm:inline">Preview Quotation</span>
