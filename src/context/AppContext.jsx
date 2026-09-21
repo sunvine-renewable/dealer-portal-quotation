@@ -5,8 +5,13 @@ import {
   DEFAULT_INVERTERS,
   INITIAL_DEALERS,
   INITIAL_QUOTATIONS,
-  DEFAULT_NOTIFICATIONS
+  DEFAULT_NOTIFICATIONS,
+  PDF_BOS_PRICE_MATRIX,
+  PDF_BOM_SPECIFICATIONS,
+  SUNVINE_OFFICIAL_PROFILE
 } from '../data/defaultPresets';
+
+const DB_VERSION = 'sunvine_gujarat_550_v1';
 
 const AppContext = createContext();
 
@@ -91,37 +96,53 @@ export const AppProvider = ({ children }) => {
     }
   }, [isAuthenticated, activeTab]);
   
-  // Current Dealer Profile
+  const isDbUpToDate = typeof window !== 'undefined' && localStorage.getItem('sunvine_db_version') === DB_VERSION;
+
+  // Current Dealer Profile (Gujarat default)
   const [currentDealer, setCurrentDealer] = useState(() => {
+    if (!isDbUpToDate) return INITIAL_DEALERS[0];
     const saved = localStorage.getItem('sunvine_current_dealer');
     return saved ? JSON.parse(saved) : INITIAL_DEALERS[0];
   });
 
-  // Master Pricing Presets (Configurable by Admin)
+  // Master Pricing Presets (Configurable by Admin & synced with PDF)
   const [pricingMaster, setPricingMaster] = useState(() => {
+    if (!isDbUpToDate) return DEFAULT_PRICING_MASTER;
     const saved = localStorage.getItem('sunvine_pricing_master');
     return saved ? JSON.parse(saved) : DEFAULT_PRICING_MASTER;
   });
 
-  // Solar Hardware Catalogs
+  // Solar Hardware Catalogs (from PDF)
   const [modulesList, setModulesList] = useState(() => {
+    if (!isDbUpToDate) return DEFAULT_MODULES;
     const saved = localStorage.getItem('sunvine_modules');
     return saved ? JSON.parse(saved) : DEFAULT_MODULES;
   });
 
   const [invertersList, setInvertersList] = useState(() => {
+    if (!isDbUpToDate) return DEFAULT_INVERTERS;
     const saved = localStorage.getItem('sunvine_inverters');
     return saved ? JSON.parse(saved) : DEFAULT_INVERTERS;
   });
 
-  // Dealers Directory
+  // Dealers Directory (550 Gujarat Dealers Only)
   const [dealers, setDealers] = useState(() => {
+    if (!isDbUpToDate) return INITIAL_DEALERS;
     const saved = localStorage.getItem('sunvine_dealers');
-    return saved ? JSON.parse(saved) : INITIAL_DEALERS;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length >= 500) {
+          return parsed;
+        }
+      } catch (e) {}
+    }
+    return INITIAL_DEALERS;
   });
 
-  // Quotations List
+  // Quotations List (All in Gujarat)
   const [quotations, setQuotations] = useState(() => {
+    if (!isDbUpToDate) return INITIAL_QUOTATIONS;
     const saved = localStorage.getItem('sunvine_quotations');
     if (saved) {
       try {
@@ -136,6 +157,7 @@ export const AppProvider = ({ children }) => {
 
   // Active quotation loaded in 4-Page Preview
   const [previewQuotation, setPreviewQuotation] = useState(() => {
+    if (!isDbUpToDate) return INITIAL_QUOTATIONS[0];
     const saved = localStorage.getItem('sunvine_preview_quotation');
     return saved ? JSON.parse(saved) : INITIAL_QUOTATIONS[0];
   });
@@ -145,6 +167,7 @@ export const AppProvider = ({ children }) => {
 
   // System & Compliance Notifications
   const [notifications, setNotifications] = useState(() => {
+    if (!isDbUpToDate) return DEFAULT_NOTIFICATIONS;
     const saved = localStorage.getItem('sunvine_notifications');
     if (saved) {
       try {
@@ -156,6 +179,10 @@ export const AppProvider = ({ children }) => {
     }
     return DEFAULT_NOTIFICATIONS;
   });
+
+  useEffect(() => {
+    localStorage.setItem('sunvine_db_version', DB_VERSION);
+  }, []);
 
   // Synchronize state with localStorage
   useEffect(() => {
@@ -345,7 +372,10 @@ export const AppProvider = ({ children }) => {
         markAllNotificationsAsRead,
         deleteNotification,
         clearAllNotifications,
-        addNotification
+        addNotification,
+        pdfBosMatrix: PDF_BOS_PRICE_MATRIX,
+        pdfBomSpecs: PDF_BOM_SPECIFICATIONS,
+        officialProfile: SUNVINE_OFFICIAL_PROFILE
       }}
     >
       {children}

@@ -144,7 +144,7 @@ export default function DealerDashboard() {
         subsidy: q.subsidyAmount ? `₹\u00A0${Number(q.subsidyAmount).toLocaleString('en-IN')} Subsidy` : (q.subsidy || 'Subsidy Eligible'),
         status: q.status || 'Active / Sent',
         statusClass: q.statusClass || 'bg-primary/15 text-primary',
-        location: q.location || (q.city ? `${q.city}, ${q.state || 'Maharashtra'}` : 'Pune, Maharashtra')
+        location: q.location || (q.city ? `${q.city}, ${q.state || 'Gujarat'}` : 'Rajkot, Gujarat')
       }))
     : [];
 
@@ -164,10 +164,10 @@ export default function DealerDashboard() {
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-1.5 text-secondary text-[10px] sm:text-label-xs font-semibold tracking-wider uppercase truncate">
               <span className="inline-block w-2 h-2 rounded-full bg-primary-container shrink-0"></span>
-              <span className="truncate">{currentDealer.firmName || 'Surya Solar Tech'} • {currentDealer.city || 'Pune West Hub'}</span>
+              <span className="truncate">{currentDealer.firmName || 'Rajkot Solar Tech'} • {currentDealer.city || 'Rajkot Hub'}</span>
             </div>
             <h1 className="font-headline-xl text-xl sm:text-2xl lg:text-headline-xl text-on-secondary-fixed tracking-tight font-bold truncate">
-              Welcome back, {currentDealer.contactPerson || 'Rajesh Kumar'}
+              Welcome back, {currentDealer.contactPerson || 'Rajesh Patel'}
             </h1>
             <p className="text-xs sm:text-body-md text-secondary mt-0.5">
               Here's an overview of your quotation activity and solar installations pipeline.
@@ -508,7 +508,7 @@ export default function DealerDashboard() {
       <footer className="mt-space-sm p-space-md bg-surface-container-low rounded-xl flex items-center justify-between flex-wrap gap-space-sm">
         <div className="flex items-center gap-space-sm text-secondary font-body-sm">
           <span className="material-symbols-outlined text-tertiary text-[20px]">info</span>
-          <span>DISCOM subsidy slabs for PM Surya Ghar: Muft Bijli Yojana have been refreshed for Maharashtra &amp; Gujarat circles.</span>
+          <span>DISCOM subsidy slabs for PM Surya Ghar: Muft Bijli Yojana have been refreshed for Gujarat circles (PGVCL, DGVCL, MGVCL, UGVCL, Torrent).</span>
         </div>
         <div className="flex items-center gap-space-md text-label-xs font-label-xs">
           <a className="text-primary hover:underline cursor-pointer" onClick={() => setActiveTab('create_quote')}>

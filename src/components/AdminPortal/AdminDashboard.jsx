@@ -6,11 +6,24 @@ export default function AdminDashboard() {
   const [filterStatus, setFilterStatus] = useState('all');
 
   // Compute metrics from actual data or realistic fallbacks
-  const totalDealersCount = dealers?.length || 48;
-  const totalQuotesCount = (quotations?.length || 0) + 1420;
-  const totalCapacityMW = (
-    (quotations?.reduce((acc, q) => acc + (Number(q.systemCapacityKW) || 0), 0) / 1000) + 5.84
-  ).toFixed(2);
+  const totalDealersCount = dealers?.length || 550;
+  const totalQuotesCount = quotations?.length || 20;
+  const totalQuotedValue = quotations?.reduce((acc, q) => acc + (q.grandTotalCustomer || q.totalAmount || 0), 0) || 7850000;
+  const totalCapacityKW = (
+    quotations?.reduce((acc, q) => acc + (Number(q.systemCapacityKW || q.capacity) || 0), 0) || 118.5
+  );
+  const totalCapacityMW = (totalCapacityKW / 1000).toFixed(2);
+
+  const pendingCount = (quotations || []).filter(q => (q.status || '').toLowerCase().includes('pending') || (q.status || '').toLowerCase().includes('draft') || (q.status || '').toLowerCase().includes('review')).length;
+  const approvedCount = (quotations || []).filter(q => (q.status || '').toLowerCase().includes('approved') || (q.status || '').toLowerCase().includes('sanction')).length;
+  const commCount = (quotations || []).filter(q => (q.status || '').toLowerCase().includes('commission') || (q.status || '').toLowerCase().includes('install')).length;
+
+  const filteredFeedQuotes = (quotations || []).filter(q => {
+    if (filterStatus === 'pending') return (q.status || '').toLowerCase().includes('pending') || (q.status || '').toLowerCase().includes('draft') || (q.status || '').toLowerCase().includes('review');
+    if (filterStatus === 'approved') return (q.status || '').toLowerCase().includes('approved') || (q.status || '').toLowerCase().includes('sanction');
+    if (filterStatus === 'commissioned') return (q.status || '').toLowerCase().includes('commission') || (q.status || '').toLowerCase().includes('install');
+    return true;
+  }).slice(0, 6);
 
   const handleViewQuote = (q) => {
     if (setPreviewQuotation) {
@@ -26,16 +39,17 @@ export default function AdminDashboard() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h1 className="font-headline-xl text-headline-xl text-on-surface font-bold tracking-tight">
-              National Operations Overview
+              Gujarat Operations Overview
             </h1>
             <span className="px-2.5 py-0.5 rounded-full bg-primary-container/15 text-primary font-label-xs text-label-xs font-semibold">
-              Q4 Fiscal Ledger
+              Gujarat State Ledger
             </span>
           </div>
           <p className="font-body-md text-body-md text-secondary">
-            Real-time EPC quotation pipeline, dealer throughput, and grid interconnection dispatch.
+            Real-time EPC quotation pipeline across 550 Gujarat dealers and PGVCL, DGVCL, MGVCL, UGVCL, Torrent Power.
           </p>
         </div>
+
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <div className="flex items-center bg-surface-container-lowest border border-surface-container-highest rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-secondary font-label-md text-xs sm:text-sm">
             <span className="material-symbols-outlined text-[16px] sm:text-[18px] mr-1.5 sm:mr-2 text-primary">calendar_month</span>
@@ -73,8 +87,8 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-surface-container-high flex items-center justify-between text-secondary font-body-sm text-body-sm">
-            <span>+6 onboarding this month</span>
-            <span className="font-medium text-on-surface font-label-xs">GJ, MH, RJ</span>
+            <span>+18 onboarding this month</span>
+            <span className="font-medium text-on-surface font-label-xs">Gujarat State (100%)</span>
           </div>
         </div>
 
@@ -91,12 +105,12 @@ export default function AdminDashboard() {
             </div>
             <div className="mt-3 flex items-baseline gap-3">
               <span className="font-headline-xl text-headline-xl font-bold text-on-surface">{totalQuotesCount.toLocaleString()}</span>
-              <span className="font-label-sm text-label-sm text-secondary font-medium">₹18.42 Cr value</span>
+              <span className="font-label-sm text-label-sm text-secondary font-medium">₹{(totalQuotedValue / 100000).toFixed(2)} L value</span>
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-surface-container-high flex items-center justify-between text-secondary font-body-sm text-body-sm">
-            <span>+88 issued this week</span>
-            <span className="text-primary font-semibold font-label-xs">+6.4% WoW</span>
+            <span>+12 issued this week</span>
+            <span className="text-primary font-semibold font-label-xs">+8.4% WoW</span>
           </div>
         </div>
 
@@ -113,12 +127,12 @@ export default function AdminDashboard() {
             </div>
             <div className="mt-3 flex items-baseline gap-3">
               <span className="font-headline-xl text-headline-xl font-bold text-on-surface">{totalCapacityMW} MW</span>
-              <span className="font-label-sm text-label-sm text-secondary font-medium">Avg 4.1 kW/deal</span>
+              <span className="font-label-sm text-label-sm text-secondary font-medium">Avg 4.8 kW/deal</span>
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-surface-container-high flex items-center justify-between text-secondary font-body-sm text-body-sm">
-            <span>94% rooftop residential</span>
-            <span className="font-medium text-on-surface font-label-xs">Mono PERC</span>
+            <span>Gujarat Rooftop (BOS Matrix)</span>
+            <span className="font-medium text-on-surface font-label-xs">Waaree &amp; Adani</span>
           </div>
         </div>
 
@@ -134,15 +148,15 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-3">
-              <span className="font-headline-xl text-headline-xl font-bold text-on-surface">384</span>
+              <span className="font-headline-xl text-headline-xl font-bold text-on-surface">{commCount || 14}</span>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-label-xs font-semibold bg-tertiary/15 text-tertiary">
-                68.2% Conv.
+                70% Conv.
               </span>
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-surface-container-high flex items-center justify-between text-secondary font-body-sm text-body-sm">
-            <span>₹4.8 Cr Commissioned</span>
-            <span className="text-primary font-semibold font-label-xs">Current QTR</span>
+            <span>₹{(totalQuotedValue * 0.7 / 100000).toFixed(2)} L Installed</span>
+            <span className="text-primary font-semibold font-label-xs">PGVCL &amp; DGVCL</span>
           </div>
         </div>
       </section>
@@ -163,6 +177,7 @@ export default function AdminDashboard() {
                 </p>
               </div>
               {/* Filter Status Pills */}
+              {/* Filter Status Pills */}
               <div className="flex items-center bg-surface-container-low p-1 rounded-lg border border-surface-container-highest font-label-sm text-label-sm overflow-x-auto max-w-full shrink-0">
                 <button
                   onClick={() => setFilterStatus('all')}
@@ -172,7 +187,7 @@ export default function AdminDashboard() {
                       : 'text-secondary hover:text-on-surface'
                   }`}
                 >
-                  All (1,420)
+                  All ({totalQuotesCount})
                 </button>
                 <button
                   onClick={() => setFilterStatus('pending')}
@@ -182,7 +197,7 @@ export default function AdminDashboard() {
                       : 'text-secondary hover:text-on-surface'
                   }`}
                 >
-                  Pending (24)
+                  Pending ({pendingCount})
                 </button>
                 <button
                   onClick={() => setFilterStatus('approved')}
@@ -192,7 +207,7 @@ export default function AdminDashboard() {
                       : 'text-secondary hover:text-on-surface'
                   }`}
                 >
-                  Approved (312)
+                  Approved ({approvedCount})
                 </button>
                 <button
                   onClick={() => setFilterStatus('commissioned')}
@@ -202,7 +217,7 @@ export default function AdminDashboard() {
                       : 'text-secondary hover:text-on-surface'
                   }`}
                 >
-                  Commissioned (384)
+                  Commissioned ({commCount})
                 </button>
               </div>
             </div>
@@ -224,265 +239,78 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-surface-container-highest font-body-sm text-body-sm">
-                  {/* Row 1 */}
-                  <tr className="bg-surface-container-lowest hover:bg-surface-container-low transition-colors duration-150">
-                    <td className="px-4 py-3.5 font-label-md font-semibold text-primary">#SV-2025-Q408</td>
-                    <td className="px-4 py-3.5 text-secondary whitespace-nowrap">24 Oct 2025</td>
-                    <td className="px-4 py-3.5">
-                      <div className="font-medium text-on-surface">Surya Solar Tech</div>
-                      <div className="text-[11px] text-secondary">Rajesh Kumar</div>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="font-medium text-on-surface">Anand Sharma</div>
-                      <div className="text-[11px] text-secondary">Pune, MH</div>
-                    </td>
-                    <td className="px-4 py-3.5 text-right font-semibold text-on-surface tabular-nums">5.0 kW</td>
-                    <td className="px-4 py-3.5 text-right font-semibold text-on-surface tabular-nums">₹3,25,000</td>
-                    <td className="px-4 py-3.5 text-right tabular-nums">
-                      <div className="text-primary font-semibold">₹26,000</div>
-                      <div className="text-[10px] text-secondary">(8.0%)</div>
-                    </td>
-                    <td className="px-4 py-3.5 text-center whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-xs font-semibold bg-primary-container/20 text-primary">
-                        Approved
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1 text-secondary">
-                        <button
-                          onClick={() => handleViewQuote({
-                            quoteNumber: 'SV-2025-Q408',
-                            customerName: 'Anand Sharma',
-                            city: 'Pune',
-                            state: 'Maharashtra',
-                            systemCapacityKW: 5.0,
-                            grandTotalCustomer: 325000,
-                            dealerMarginPerKW: 5200,
-                            dealerTotalMargin: 26000,
-                            date: '2025-10-24'
-                          })}
-                          className="p-1 hover:text-primary hover:bg-surface-container rounded"
-                          title="View Details"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">visibility</span>
-                        </button>
-                        <button
-                          onClick={() => handleViewQuote({
-                            quoteNumber: 'SV-2025-Q408',
-                            customerName: 'Anand Sharma',
-                            city: 'Pune',
-                            state: 'Maharashtra',
-                            systemCapacityKW: 5.0,
-                            grandTotalCustomer: 325000,
-                            date: '2025-10-24'
-                          })}
-                          className="p-1 hover:text-primary hover:bg-surface-container rounded"
-                          title="Download PDF"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
-                        </button>
-                        <button className="p-1 hover:text-primary hover:bg-surface-container rounded" title="Audit Trail">
-                          <span className="material-symbols-outlined text-[18px]">history</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                  {filteredFeedQuotes.map((q, idx) => {
+                    const quoteId = q.quoteNumber || q.id || `#SV-GJ-2025-${idx + 101}`;
+                    const marginAmt = q.dealerTotalMargin || (q.dealerMarginPerKW ? Math.round(q.dealerMarginPerKW * (q.systemCapacityKW || 5)) : 24000);
+                    const totalAmt = q.grandTotalCustomer || q.totalAmount || 320000;
+                    const marginPct = ((marginAmt / totalAmt) * 100).toFixed(1);
+                    const statusStr = q.status || 'Approved';
 
-                  {/* Row 2 */}
-                  <tr className="bg-surface hover:bg-surface-container-low transition-colors duration-150">
-                    <td className="px-4 py-3.5 font-label-md font-semibold text-primary">#SV-2025-Q407</td>
-                    <td className="px-4 py-3.5 text-secondary whitespace-nowrap">23 Oct 2025</td>
-                    <td className="px-4 py-3.5">
-                      <div className="font-medium text-on-surface">SunRay Energies</div>
-                      <div className="text-[11px] text-secondary">Amit Patel</div>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="font-medium text-on-surface">Kavita Patel</div>
-                      <div className="text-[11px] text-secondary">Surat, GJ</div>
-                    </td>
-                    <td className="px-4 py-3.5 text-right font-semibold text-on-surface tabular-nums">3.0 kW</td>
-                    <td className="px-4 py-3.5 text-right font-semibold text-on-surface tabular-nums">₹1,98,000</td>
-                    <td className="px-4 py-3.5 text-right tabular-nums">
-                      <div className="text-primary font-semibold">₹16,500</div>
-                      <div className="text-[10px] text-secondary">(8.3%)</div>
-                    </td>
-                    <td className="px-4 py-3.5 text-center whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-xs font-semibold bg-secondary-container text-on-secondary-container">
-                        Pending Inspection
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1 text-secondary">
-                        <button
-                          onClick={() => handleViewQuote({
-                            quoteNumber: 'SV-2025-Q407',
-                            customerName: 'Kavita Patel',
-                            city: 'Surat',
-                            state: 'Gujarat',
-                            systemCapacityKW: 3.0,
-                            grandTotalCustomer: 198000,
-                            date: '2025-10-23'
-                          })}
-                          className="p-1 hover:text-primary hover:bg-surface-container rounded"
-                          title="View Details"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">visibility</span>
-                        </button>
-                        <button className="p-1 hover:text-primary hover:bg-surface-container rounded" title="Download PDF">
-                          <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
-                        </button>
-                        <button className="p-1 hover:text-primary hover:bg-surface-container rounded" title="Audit Trail">
-                          <span className="material-symbols-outlined text-[18px]">history</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-
-                  {/* Row 3 */}
-                  <tr className="bg-surface-container-lowest hover:bg-surface-container-low transition-colors duration-150">
-                    <td className="px-4 py-3.5 font-label-md font-semibold text-primary">#SV-2025-Q406</td>
-                    <td className="px-4 py-3.5 text-secondary whitespace-nowrap">21 Oct 2025</td>
-                    <td className="px-4 py-3.5">
-                      <div className="font-medium text-on-surface">Saur Urja Solutions</div>
-                      <div className="text-[11px] text-secondary">Nilesh Shah</div>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="font-medium text-on-surface">Mehta Textiles Ltd</div>
-                      <div className="text-[11px] text-secondary">Ahmedabad, GJ</div>
-                    </td>
-                    <td className="px-4 py-3.5 text-right font-semibold text-on-surface tabular-nums">10.0 kW</td>
-                    <td className="px-4 py-3.5 text-right font-semibold text-on-surface tabular-nums">₹6,40,000</td>
-                    <td className="px-4 py-3.5 text-right tabular-nums">
-                      <div className="text-primary font-semibold">₹48,000</div>
-                      <div className="text-[10px] text-secondary">(7.5%)</div>
-                    </td>
-                    <td className="px-4 py-3.5 text-center whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-xs font-semibold bg-tertiary/20 text-tertiary">
-                        Commissioned
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1 text-secondary">
-                        <button
-                          onClick={() => handleViewQuote({
-                            quoteNumber: 'SV-2025-Q406',
-                            customerName: 'Mehta Textiles Ltd',
-                            city: 'Ahmedabad',
-                            state: 'Gujarat',
-                            systemCapacityKW: 10.0,
-                            grandTotalCustomer: 640000,
-                            date: '2025-10-21'
-                          })}
-                          className="p-1 hover:text-primary hover:bg-surface-container rounded"
-                          title="View Details"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">visibility</span>
-                        </button>
-                        <button className="p-1 hover:text-primary hover:bg-surface-container rounded" title="Download PDF">
-                          <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
-                        </button>
-                        <button className="p-1 hover:text-primary hover:bg-surface-container rounded" title="Audit Trail">
-                          <span className="material-symbols-outlined text-[18px]">history</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-
-                  {/* Row 4 */}
-                  <tr className="bg-surface hover:bg-surface-container-low transition-colors duration-150">
-                    <td className="px-4 py-3.5 font-label-md font-semibold text-primary">#SV-2025-Q405</td>
-                    <td className="px-4 py-3.5 text-secondary whitespace-nowrap">19 Oct 2025</td>
-                    <td className="px-4 py-3.5">
-                      <div className="font-medium text-on-surface">Marwar Solar EPC</div>
-                      <div className="text-[11px] text-secondary">Vikram Rathore</div>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="font-medium text-on-surface">Vikram Rathore</div>
-                      <div className="text-[11px] text-secondary">Jaipur, RJ</div>
-                    </td>
-                    <td className="px-4 py-3.5 text-right font-semibold text-on-surface tabular-nums">7.5 kW</td>
-                    <td className="px-4 py-3.5 text-right font-semibold text-on-surface tabular-nums">₹4,85,000</td>
-                    <td className="px-4 py-3.5 text-right tabular-nums">
-                      <div className="text-primary font-semibold">₹37,500</div>
-                      <div className="text-[10px] text-secondary">(7.7%)</div>
-                    </td>
-                    <td className="px-4 py-3.5 text-center whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-xs font-semibold bg-primary-container/20 text-primary">
-                        Approved
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1 text-secondary">
-                        <button className="p-1 hover:text-primary hover:bg-surface-container rounded" title="View Details">
-                          <span className="material-symbols-outlined text-[18px]">visibility</span>
-                        </button>
-                        <button className="p-1 hover:text-primary hover:bg-surface-container rounded" title="Download PDF">
-                          <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
-                        </button>
-                        <button className="p-1 hover:text-primary hover:bg-surface-container rounded" title="Audit Trail">
-                          <span className="material-symbols-outlined text-[18px]">history</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-
-                  {/* Row 5 */}
-                  <tr className="bg-surface-container-lowest hover:bg-surface-container-low transition-colors duration-150">
-                    <td className="px-4 py-3.5 font-label-md font-semibold text-primary">#SV-2025-Q404</td>
-                    <td className="px-4 py-3.5 text-secondary whitespace-nowrap">18 Oct 2025</td>
-                    <td className="px-4 py-3.5">
-                      <div className="font-medium text-on-surface">Deccan Solar Tech</div>
-                      <div className="text-[11px] text-secondary">Dr. Nair</div>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="font-medium text-on-surface">Suresh Nair</div>
-                      <div className="text-[11px] text-secondary">Bangalore, KA</div>
-                    </td>
-                    <td className="px-4 py-3.5 text-right font-semibold text-on-surface tabular-nums">4.0 kW</td>
-                    <td className="px-4 py-3.5 text-right font-semibold text-on-surface tabular-nums">₹2,60,000</td>
-                    <td className="px-4 py-3.5 text-right tabular-nums">
-                      <div className="text-primary font-semibold">₹21,000</div>
-                      <div className="text-[10px] text-secondary">(8.1%)</div>
-                    </td>
-                    <td className="px-4 py-3.5 text-center whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-xs font-semibold bg-surface-container-highest text-secondary">
-                        Draft
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1 text-secondary">
-                        <button className="p-1 hover:text-primary hover:bg-surface-container rounded" title="View Details">
-                          <span className="material-symbols-outlined text-[18px]">visibility</span>
-                        </button>
-                        <button className="p-1 hover:text-primary hover:bg-surface-container rounded" title="Download PDF">
-                          <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
-                        </button>
-                        <button className="p-1 hover:text-primary hover:bg-surface-container rounded" title="Audit Trail">
-                          <span className="material-symbols-outlined text-[18px]">history</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                    return (
+                      <tr key={q.id || idx} className={`hover:bg-surface-container-low transition-colors duration-150 ${idx % 2 === 1 ? 'bg-surface' : 'bg-surface-container-lowest'}`}>
+                        <td className="px-4 py-3.5 font-label-md font-semibold text-primary">{quoteId}</td>
+                        <td className="px-4 py-3.5 text-secondary whitespace-nowrap">{q.date || '24 Oct 2025'}</td>
+                        <td className="px-4 py-3.5">
+                          <div className="font-medium text-on-surface">{q.dealerName || 'Gujarat Solar Tech'}</div>
+                          <div className="text-[11px] text-secondary">{q.contactPerson || q.dealerId || 'Rajkot Branch'}</div>
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <div className="font-medium text-on-surface">{q.customerName}</div>
+                          <div className="text-[11px] text-secondary">{q.city || 'Rajkot'}, GJ ({q.discom || 'PGVCL'})</div>
+                        </td>
+                        <td className="px-4 py-3.5 text-right font-semibold text-on-surface tabular-nums">{q.systemCapacityKW || 5.0} kW</td>
+                        <td className="px-4 py-3.5 text-right font-semibold text-on-surface tabular-nums">₹{totalAmt.toLocaleString('en-IN')}</td>
+                        <td className="px-4 py-3.5 text-right tabular-nums">
+                          <div className="text-primary font-semibold">₹{marginAmt.toLocaleString('en-IN')}</div>
+                          <div className="text-[10px] text-secondary">({marginPct}%)</div>
+                        </td>
+                        <td className="px-4 py-3.5 text-center whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-label-xs font-semibold ${
+                            statusStr.toLowerCase().includes('approved') ? 'bg-primary-container/20 text-primary' :
+                            statusStr.toLowerCase().includes('commission') ? 'bg-tertiary/20 text-tertiary' :
+                            'bg-secondary-container text-on-secondary-container'
+                          }`}>
+                            {statusStr}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1 text-secondary">
+                            <button
+                              onClick={() => handleViewQuote(q)}
+                              className="p-1 hover:text-primary hover:bg-surface-container rounded"
+                              title="View Details"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">visibility</span>
+                            </button>
+                            <button
+                              onClick={() => handleViewQuote(q)}
+                              className="p-1 hover:text-primary hover:bg-surface-container rounded"
+                              title="Download PDF"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                            </button>
+                            <button className="p-1 hover:text-primary hover:bg-surface-container rounded" title="Audit Trail">
+                              <span className="material-symbols-outlined text-[18px]">history</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
 
             {/* Table Footer Pagination */}
             <div className="p-4 border-t border-surface-container-highest flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-secondary font-label-sm text-label-sm">
-              <span>Showing <span className="font-semibold text-on-surface">1 to 5</span> of <span className="font-semibold text-on-surface">{totalQuotesCount.toLocaleString()}</span> entries</span>
-              <div className="flex items-center gap-1">
-                <button className="p-1.5 rounded border border-surface-container-highest text-secondary hover:bg-surface-container transition-colors disabled:opacity-50">
-                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-                </button>
-                <button className="px-3 py-1 rounded bg-primary text-on-primary font-semibold">1</button>
-                <button className="px-3 py-1 rounded hover:bg-surface-container text-on-surface transition-colors">2</button>
-                <button className="px-3 py-1 rounded hover:bg-surface-container text-on-surface transition-colors">3</button>
-                <span className="px-1 text-secondary">...</span>
-                <button className="px-3 py-1 rounded hover:bg-surface-container text-on-surface transition-colors">284</button>
-                <button className="p-1.5 rounded border border-surface-container-highest text-secondary hover:bg-surface-container transition-colors">
-                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-                </button>
-              </div>
+              <span>Showing <span className="font-semibold text-on-surface">1 to {filteredFeedQuotes.length}</span> of <span className="font-semibold text-on-surface">{totalQuotesCount.toLocaleString()}</span> entries</span>
+              <button
+                onClick={() => setActiveTab('all_quotations')}
+                className="px-3 py-1.5 rounded-lg border border-primary/30 text-primary font-semibold hover:bg-primary-container/10 transition-colors flex items-center gap-1"
+              >
+                <span>View All {totalQuotesCount} Proposals</span>
+                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+              </button>
             </div>
           </div>
         </section>
@@ -545,8 +373,8 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-3">
                   <div className="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-label-xs">1</div>
                   <div>
-                    <div className="font-label-md text-label-md font-bold text-on-surface">Surya Solar Tech</div>
-                    <div className="text-secondary font-body-sm text-[11px]">Pune, MH • 480 kW Quoted</div>
+                    <div className="font-label-md text-label-md font-bold text-on-surface">Rajkot Solar Tech</div>
+                    <div className="text-secondary font-body-sm text-[11px]">Rajkot, GJ • 480 kW Quoted</div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -587,8 +415,8 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-3">
                   <div className="w-6 h-6 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center font-bold text-label-xs">4</div>
                   <div>
-                    <div className="font-label-md text-label-md font-bold text-on-surface">Marwar Solar EPC</div>
-                    <div className="text-secondary font-body-sm text-[11px]">Jaipur, RJ • 290 kW Quoted</div>
+                    <div className="font-label-md text-label-md font-bold text-on-surface">Morbi Solar EPC</div>
+                    <div className="text-secondary font-body-sm text-[11px]">Morbi, GJ • 290 kW Quoted</div>
                   </div>
                 </div>
                 <div className="text-right">

@@ -2,26 +2,28 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 
 export default function PricingMaster() {
-  const { pricingMaster, updatePricingMaster, addNotification } = useApp();
+  const { pricingMaster, updatePricingMaster, addNotification, pdfBosMatrix, pdfBomSpecs, officialProfile, dealers } = useApp();
 
   const [activeTab, setActiveTab] = useState('base');
   const [toastMessage, setToastMessage] = useState('');
+
+  const totalDealersCount = dealers?.length || 550;
 
   // Form states initialized with pricingMaster or realistic defaults
   const [rate1to3, setRate1to3] = useState(pricingMaster?.baseRates?.tier1to3kw || 62000);
   const [rate3to10, setRate3to10] = useState(pricingMaster?.baseRates?.tier3to10kw || 58000);
   const [rateCommercial, setRateCommercial] = useState(pricingMaster?.baseRates?.tier10to50kw || 24000);
 
-  // Bank details
+  // Bank details matching official PDF
   const [beneficiaryName, setBeneficiaryName] = useState(pricingMaster?.bankDetails?.accountName || 'SUNVINE RENEWABLE');
   const [bankName, setBankName] = useState(pricingMaster?.bankDetails?.bankName || 'HDFC BANK LTD.');
   const [accountNumber, setAccountNumber] = useState(pricingMaster?.bankDetails?.accountNumber || '99998000050580');
   const [ifscCode, setIfscCode] = useState(pricingMaster?.bankDetails?.ifscCode || 'HDFC0002012');
   const [branch, setBranch] = useState(pricingMaster?.bankDetails?.branch || 'METODA GIDC BRANCH, RAJKOT - 360021 (GUJARAT)');
 
-  // Terms
-  const [paymentMilestones, setPaymentMilestones] = useState('10% Advance with PO, 90% before material dispatch');
-  const [deliveryTimeline, setDeliveryTimeline] = useState('30 Calendar Days from CEIG/Discom sanction approval');
+  // Terms matching official PDF
+  const [paymentMilestones, setPaymentMilestones] = useState('10% Advance with PO, 90% before material dispatch (All Prices GST Included)');
+  const [deliveryTimeline, setDeliveryTimeline] = useState('Transport & Installation: Dealer Scope | Documents: Light Bill, Bank Detail, Aadhar, Mobile');
   const [validityDays, setValidityDays] = useState('15 Days from generation date due to commodity pricing');
 
   const triggerToast = (msg) => {
@@ -53,11 +55,11 @@ export default function PricingMaster() {
         type: 'info',
         icon: 'bolt',
         title: 'Master EPC Pricing & Presets Published',
-        description: `Admin revised benchmark rates: 1-3kW at ₹${Number(rate1to3).toLocaleString('en-IN')}/kW, 3-10kW at ₹${Number(rate3to10).toLocaleString('en-IN')}/kW.`,
+        description: `Admin revised benchmark rates: 1-3kW at ₹${Number(rate1to3).toLocaleString('en-IN')}/kW, 3-10kW at ₹${Number(rate3to10).toLocaleString('en-IN')}/kW. Synced across ${totalDealersCount} Gujarat dealers.`,
         targetTab: 'pricing_master'
       });
     }
-    triggerToast('Master pricing & presets published successfully to 48 dealers!');
+    triggerToast(`Master pricing & presets published successfully to ${totalDealersCount} Gujarat dealers!`);
   };
 
   return (
@@ -86,7 +88,7 @@ export default function PricingMaster() {
             Quotation Presets &amp; Master Pricing Engine
           </h1>
           <p className="font-body-md text-body-md text-secondary mt-1 max-w-3xl">
-            Configure baseline turnkey equipment pricing, DBT subsidy matrices, standard Bill of Materials (BOM), banking instruments, and commercial terms enforced across all authorized dealer proposals.
+            Configure baseline turnkey equipment pricing from official Sunvine BOS Price List, DBT subsidy matrices, standard BOM, banking instruments, and commercial terms enforced across {totalDealersCount} authorized Gujarat dealers.
           </p>
         </div>
         {/* Header Action Controls */}
@@ -109,7 +111,7 @@ export default function PricingMaster() {
           >
             <span className="material-symbols-outlined text-lg">cloud_sync</span>
             <span>Save &amp; Publish Changes</span>
-            <span className="ml-1 text-[10px] font-bold uppercase bg-surface-container-lowest/20 px-1.5 py-0.5 rounded">48 Dealers</span>
+            <span className="ml-1 text-[10px] font-bold uppercase bg-surface-container-lowest/20 px-1.5 py-0.5 rounded">{totalDealersCount} Dealers</span>
           </button>
         </div>
       </div>
@@ -157,6 +159,64 @@ export default function PricingMaster() {
       <div className="grid grid-cols-12 gap-6 mt-6 items-start">
         {/* LEFT CONFIGURATION STACK (8 Cols) */}
         <div className="col-span-12 xl:col-span-8 flex flex-col gap-6">
+          {/* OFFICIAL PDF BOS PRICE LIST MATRIX */}
+          <div className="bg-surface-container-lowest border border-surface-container-highest rounded-xl p-6 shadow-sm overflow-hidden">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-surface-container-low gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary-container/10 text-primary">
+                  <span className="material-symbols-outlined text-xl">table_chart</span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-headline-md text-headline-md text-inverse-surface font-bold">
+                      Sunvine Official BOS Price List Matrix
+                    </h2>
+                    <span className="px-2 py-0.5 rounded-full bg-primary-container/20 text-primary text-[11px] font-bold">
+                      Official PDF Matrix
+                    </span>
+                  </div>
+                  <p className="font-body-sm text-body-sm text-secondary mt-0.5">
+                    GST Included • Transport &amp; Fitting Dealer Scope • Light Bill, Bank Detail, Aadhar, Mobile Required
+                  </p>
+                </div>
+              </div>
+              <span className="font-label-xs text-label-xs bg-surface-container-low text-secondary px-2.5 py-1 rounded border border-surface-container-highest self-start sm:self-center">
+                Ref: GSTIN 24AFPFS7402A1Z7 (Rajkot)
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[720px]">
+                <thead>
+                  <tr className="bg-inverse-surface text-surface-container-lowest text-label-sm font-semibold h-10 border-none">
+                    <th className="px-3 py-2 text-xs">KW</th>
+                    <th className="px-3 py-2 text-xs">Modules</th>
+                    <th className="px-3 py-2 text-xs">Inverter</th>
+                    <th className="px-3 py-2 text-xs text-right">Adani Bi-Fi</th>
+                    <th className="px-3 py-2 text-xs text-right">APS Bi-Fi</th>
+                    <th className="px-3 py-2 text-xs text-right">Rayzone</th>
+                    <th className="px-3 py-2 text-xs text-right">Waaree 585W TOPCon</th>
+                    <th className="px-3 py-2 text-xs text-right">APS TOPCon 600W</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-surface-container-highest font-body-sm text-xs text-on-surface">
+                  {(pdfBosMatrix || []).map((row, idx) => (
+                    <tr key={idx} className={`hover:bg-surface-container-low/60 transition-colors ${idx % 2 === 1 ? 'bg-surface-container-low/20' : ''}`}>
+                      <td className="px-3 py-2.5 font-bold font-mono text-inverse-surface">{row.capacityKW}</td>
+                      <td className="px-3 py-2.5 font-semibold text-primary font-mono">{row.modules}</td>
+                      <td className="px-3 py-2.5 font-mono">{row.inverter}</td>
+                      <td className="px-3 py-2.5 text-right font-mono font-semibold">₹ {row.adaniBiFi?.toLocaleString('en-IN')}</td>
+                      <td className="px-3 py-2.5 text-right font-mono font-semibold">₹ {row.apsBiFi?.toLocaleString('en-IN')}</td>
+                      <td className="px-3 py-2.5 text-right font-mono font-semibold">₹ {row.rayzone?.toLocaleString('en-IN')}</td>
+                      <td className="px-3 py-2.5 text-right font-mono font-bold text-primary">₹ {row.waaree585Topcon?.toLocaleString('en-IN')}</td>
+                      <td className="px-3 py-2.5 text-right font-mono font-bold text-[#256676]">₹ {row.apsTopcon600?.toLocaleString('en-IN')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           {/* SECTION A: Base Turnkey Pricing per kW */}
           <div className="bg-surface-container-lowest border border-surface-container-highest rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between pb-4 mb-4 border-b border-surface-container-low">
@@ -346,19 +406,21 @@ export default function PricingMaster() {
                   <div>
                     <label className="font-body-sm text-body-sm text-secondary block mb-1">Assigned Make &amp; Model</label>
                     <select className="w-full py-2 px-3 bg-surface-container-lowest border border-surface-container-highest rounded-lg text-body-md font-body-md text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container">
-                      <option>Sunvine / Premier Energies TOPCon Bifacial (600 WP)</option>
-                      <option>Waaree Bi-55 Dual Glass 540 WP</option>
-                      <option>Adani Solar Shine Series Mono PERC 545 WP</option>
+                      <option>Waaree 585W TOPCon Bifacial (ALMM List-I)</option>
+                      <option>APS 600W TOPCon Bifacial (ALMM List-I)</option>
+                      <option>Adani Bi-Fi 550W Vertex Mono PERC</option>
+                      <option>APS Bi-Fi 550W Mono Bifacial</option>
+                      <option>Rayzone 550W Bifacial TOPCon</option>
                     </select>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="font-body-sm text-body-sm text-secondary block mb-1">Module Rating</label>
-                      <input className="w-full py-2 px-3 bg-surface-container-lowest border border-surface-container-highest rounded-lg text-body-md font-body-md text-on-surface" type="text" defaultValue="600 WP Mono Bifacial Half-Cut"/>
+                      <input className="w-full py-2 px-3 bg-surface-container-lowest border border-surface-container-highest rounded-lg text-body-md font-body-md text-on-surface" type="text" defaultValue="585 WP TOPCon Bifacial Half-Cut"/>
                     </div>
                     <div>
                       <label className="font-body-sm text-body-sm text-secondary block mb-1">Module Efficiency</label>
-                      <input className="w-full py-2 px-3 bg-surface-container-lowest border border-surface-container-highest rounded-lg text-body-md font-body-md text-on-surface" type="text" defaultValue="22.8% STC Peak"/>
+                      <input className="w-full py-2 px-3 bg-surface-container-lowest border border-surface-container-highest rounded-lg text-body-md font-body-md text-on-surface" type="text" defaultValue="22.6% STC Peak"/>
                     </div>
                   </div>
                   <div>
@@ -381,15 +443,15 @@ export default function PricingMaster() {
                   <div>
                     <label className="font-body-sm text-body-sm text-secondary block mb-1">Assigned Make &amp; Series</label>
                     <select className="w-full py-2 px-3 bg-surface-container-lowest border border-surface-container-highest rounded-lg text-body-md font-body-md text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container">
-                      <option>Sunvine Smart Series (Solaryaan / Solis MPPT Dual)</option>
-                      <option>Growatt MIN 3-Phase Residential Series</option>
-                      <option>Polycab Solar Grid-Tied Inverter</option>
+                      <option>Sunvine Solaryaan 5.0G (1-Phase 2 MPPT)</option>
+                      <option>Solis S6 Pro Series 5kW 3-Phase</option>
+                      <option>Sungrow SG5.0RS Residential Grid-Tied</option>
                     </select>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="font-body-sm text-body-sm text-secondary block mb-1">Topology &amp; Interface</label>
-                      <input className="w-full py-2 px-3 bg-surface-container-lowest border border-surface-container-highest rounded-lg text-body-md font-body-md text-on-surface" type="text" defaultValue="3-Phase Grid-Tied Cloud Wi-Fi"/>
+                      <input className="w-full py-2 px-3 bg-surface-container-lowest border border-surface-container-highest rounded-lg text-body-md font-body-md text-on-surface" type="text" defaultValue="1-Phase / 3-Phase Grid-Tied Cloud Wi-Fi"/>
                     </div>
                     <div>
                       <label className="font-body-sm text-body-sm text-secondary block mb-1">Peak Efficiency</label>
@@ -414,7 +476,7 @@ export default function PricingMaster() {
                 </div>
                 <div>
                   <h2 className="font-headline-md text-headline-md text-inverse-surface">Official Remittance Account (Customer Quotation Footer)</h2>
-                  <p className="font-body-sm text-body-sm text-secondary">Verified Sunvine bank details automatically injected into payment schedules and PDF footers.</p>
+                  <p className="font-body-sm text-body-sm text-secondary">Verified Sunvine bank details automatically injected into payment schedules and PDF footers (from official PDF).</p>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 px-2.5 py-1 bg-primary-container/15 text-primary rounded-full font-label-xs text-label-xs font-semibold">
@@ -480,7 +542,7 @@ export default function PricingMaster() {
                 </div>
                 <div>
                   <h2 className="font-headline-md text-headline-md text-inverse-surface">Commercial Milestones &amp; Legal Terms</h2>
-                  <p className="font-body-sm text-body-sm text-secondary">Default clause presets appended to dealer quotation terms.</p>
+                  <p className="font-body-sm text-body-sm text-secondary">Default clause presets appended to dealer quotation terms from Sunvine price matrix.</p>
                 </div>
               </div>
             </div>
@@ -532,18 +594,18 @@ export default function PricingMaster() {
                 <h3 className="font-headline-sm text-headline-sm text-inverse-surface">Live Proposal Preview</h3>
               </div>
               <span className="font-label-xs text-label-xs bg-inverse-surface text-surface-container-lowest px-2 py-0.5 rounded font-mono">
-                Simulated Output
+                Gujarat Simulated
               </span>
             </div>
             <p className="font-body-sm text-body-sm text-secondary mb-4 leading-relaxed">
-              Real-time test of how these master rates render inside dealer quotation builders before you broadcast changes across the partner portal.
+              Real-time test of how these master rates render inside dealer quotation builders before you broadcast changes across {totalDealersCount} partner portal accounts.
             </p>
 
             {/* Scenario A */}
             <div className="rounded-lg border border-surface-container-highest p-4 bg-surface-container-low mb-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="font-label-md text-label-md font-bold text-inverse-surface">Scenario A: 5.0 kW Residential</span>
-                <span className="font-label-xs text-label-xs bg-surface-container px-2 py-0.5 rounded text-secondary font-medium">Pune Circle</span>
+                <span className="font-label-xs text-label-xs bg-surface-container px-2 py-0.5 rounded text-secondary font-medium">Rajkot Circle (PGVCL)</span>
               </div>
               <div className="space-y-1.5 text-body-sm text-body-sm pt-2 border-t border-surface-container-highest/60">
                 <div className="flex justify-between text-secondary">
@@ -588,7 +650,7 @@ export default function PricingMaster() {
             <div className="rounded-lg border border-surface-container-highest p-4 bg-surface-container-low mb-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="font-label-md text-label-md font-bold text-inverse-surface">Scenario B: 280 kW C&amp;I Rooftop</span>
-                <span className="font-label-xs text-label-xs bg-surface-container px-2 py-0.5 rounded text-secondary font-medium">Gujarat GIDC</span>
+                <span className="font-label-xs text-label-xs bg-surface-container px-2 py-0.5 rounded text-secondary font-medium">Gujarat GIDC (Metoda)</span>
               </div>
               <div className="space-y-1.5 text-body-sm text-body-sm pt-2 border-t border-surface-container-highest/60">
                 <div className="flex justify-between text-secondary">
@@ -617,11 +679,11 @@ export default function PricingMaster() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-body-sm text-body-sm text-on-surface">
                   <span className="material-symbols-outlined text-primary-container text-base" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                  <span>48 Authorized Dealers Ready to Receive</span>
+                  <span>{totalDealersCount} Authorized Gujarat Dealers Ready to Receive</span>
                 </div>
                 <div className="flex items-center gap-2 text-body-sm text-body-sm text-on-surface">
                   <span className="material-symbols-outlined text-primary-container text-base" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                  <span>Discom Tariff Grids Synced (PGVCL/MSEDCL)</span>
+                  <span>Discom Tariff Grids Synced (PGVCL / DGVCL / UGVCL / MGVCL)</span>
                 </div>
                 <div className="flex items-center gap-2 text-body-sm text-body-sm text-on-surface">
                   <span className="material-symbols-outlined text-primary-container text-base" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>

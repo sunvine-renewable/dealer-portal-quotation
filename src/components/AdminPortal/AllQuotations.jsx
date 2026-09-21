@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 
 export default function AllQuotations() {
-  const { setPreviewQuotation, setActiveTab } = useApp();
+  const { quotations, setPreviewQuotation, setActiveTab, dealers } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTabFilter, setActiveTabFilter] = useState('all');
   const [marginProfileFilter, setMarginProfileFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   const handleViewPdf = (quoteData) => {
     if (setPreviewQuotation) {
@@ -13,6 +15,44 @@ export default function AllQuotations() {
       setActiveTab('preview_quote');
     }
   };
+
+  const allQuotes = quotations && quotations.length > 0 ? quotations : [];
+
+  // Metrics
+  const totalProposalsCount = allQuotes.length;
+  const totalValue = allQuotes.reduce((acc, q) => acc + (q.grandTotalCustomer || q.totalAmount || 0), 0);
+  const totalCapacityKW = allQuotes.reduce((acc, q) => acc + (parseFloat(q.systemCapacityKW || q.capacity || 0)), 0);
+  const totalCapacityMW = (totalCapacityKW / 1000).toFixed(2);
+  const avgValue = totalProposalsCount > 0 ? Math.round(totalValue / totalProposalsCount) : 0;
+  const totalDealersCount = dealers?.length || 550;
+
+  // Filter quotes
+  const filteredQuotes = allQuotes.filter(q => {
+    const term = searchTerm.toLowerCase();
+    const matchSearch = (q.quoteNumber && q.quoteNumber.toLowerCase().includes(term)) ||
+                        (q.id && q.id.toLowerCase().includes(term)) ||
+                        (q.customerName && q.customerName.toLowerCase().includes(term)) ||
+                        (q.dealerName && q.dealerName.toLowerCase().includes(term)) ||
+                        (q.dealerId && q.dealerId.toLowerCase().includes(term)) ||
+                        (q.city && q.city.toLowerCase().includes(term));
+
+    if (!matchSearch) return false;
+
+    const statusLower = (q.status || '').toLowerCase();
+    if (activeTabFilter === 'approved' && !statusLower.includes('approved') && !statusLower.includes('active') && !statusLower.includes('sent')) return false;
+    if (activeTabFilter === 'discom' && !statusLower.includes('discom') && !statusLower.includes('sanctioned') && !statusLower.includes('review') && !statusLower.includes('pending')) return false;
+    if (activeTabFilter === 'draft' && !statusLower.includes('draft') && !statusLower.includes('stale')) return false;
+
+    const marginPerKw = q.dealerMarginPerKW || (q.dealerTotalMargin && q.systemCapacityKW ? Math.round(q.dealerTotalMargin / q.systemCapacityKW) : 0);
+    if (marginProfileFilter === 'high' && marginPerKw <= 4500) return false;
+    if (marginProfileFilter === 'flagged' && marginPerKw <= 5500) return false;
+    if (marginProfileFilter === 'compliant' && marginPerKw > 5500) return false;
+
+    return true;
+  });
+
+  const totalPages = Math.ceil(filteredQuotes.length / pageSize) || 1;
+  const paginatedQuotes = filteredQuotes.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <div className="flex flex-col w-full pb-16">
@@ -22,40 +62,37 @@ export default function AllQuotations() {
           <nav className="flex items-center gap-1.5 text-xs font-label-xs text-secondary mb-1">
             <span>Admin Console</span>
             <span className="material-symbols-outlined text-xs">chevron_right</span>
-            <span>National Ledger</span>
+            <span>Gujarat Ledger</span>
             <span className="material-symbols-outlined text-xs">chevron_right</span>
             <span className="text-on-surface font-medium">All Quotations Master</span>
           </nav>
           <h1 className="font-headline-xl text-headline-xl text-on-surface tracking-tight">
-            National Quotation Master Directory
+            Gujarat Quotation Master Directory
           </h1>
           <p className="font-body-md text-body-md text-secondary mt-1">
-            Centralized oversight of all customer quotations issued across all registered dealers, margin audits, and conversion stages.
+            Centralized oversight of customer quotations issued across all {totalDealersCount} registered Gujarat dealers, margin audits, and conversion stages.
           </p>
         </div>
         {/* Action Controls Row */}
         <div className="flex flex-wrap items-center gap-2.5">
           <button className="bg-white border border-[#E4E7EB] hover:bg-[#F6F8F7] text-on-surface font-label-md py-2 px-3.5 rounded-lg flex items-center gap-2 text-xs shadow-sm transition-colors">
             <span className="material-symbols-outlined text-secondary">calendar_today</span>
-            <span>Date Range: This Month (Oct 2025)</span>
-            <span className="material-symbols-outlined text-xs text-secondary">expand_more</span>
+            <span>Date Range: Current Fiscal (2025-26)</span>
           </button>
           <button className="bg-white border border-[#E4E7EB] hover:bg-[#F6F8F7] text-on-surface font-label-md py-2 px-3.5 rounded-lg flex items-center gap-2 text-xs shadow-sm transition-colors">
             <span className="material-symbols-outlined text-secondary">storefront</span>
-            <span>Filter by Dealer (All 62 Dealers)</span>
-            <span className="material-symbols-outlined text-xs text-secondary">expand_more</span>
+            <span>Dealers: {totalDealersCount} (100% Gujarat)</span>
           </button>
           <button className="bg-white border border-[#E4E7EB] hover:bg-[#F6F8F7] text-on-surface font-label-md py-2 px-3.5 rounded-lg flex items-center gap-2 text-xs shadow-sm transition-colors">
             <span className="material-symbols-outlined text-secondary">electric_meter</span>
-            <span>Filter by DISCOM Circle (All Circles)</span>
-            <span className="material-symbols-outlined text-xs text-secondary">expand_more</span>
+            <span>DISCOMs: PGVCL, DGVCL, MGVCL, UGVCL</span>
           </button>
           <button
             onClick={() => window.print()}
             className="bg-[#0F1B2E] hover:bg-[#182a45] text-white font-label-md py-2 px-4 rounded-lg flex items-center gap-2 text-xs shadow-sm transition-colors border border-[#0F1B2E]"
           >
             <span className="material-symbols-outlined text-[#6CBF3D]">file_download</span>
-            <span>Export All Proposals (Excel)</span>
+            <span>Export Gujarat Proposals (Excel)</span>
           </button>
         </div>
       </div>
@@ -72,12 +109,12 @@ export default function AllQuotations() {
           </div>
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="font-headline-lg text-headline-xl text-[#0F1B2E] font-bold">1,420</span>
-              <span className="text-xs font-label-xs text-[#2E7D32] bg-[rgba(108,191,61,0.15)] px-2 py-0.5 rounded-full font-semibold">+88 WoW</span>
+              <span className="font-headline-lg text-headline-xl text-[#0F1B2E] font-bold">{totalProposalsCount}</span>
+              <span className="text-xs font-label-xs text-[#2E7D32] bg-[rgba(108,191,61,0.15)] px-2 py-0.5 rounded-full font-semibold">Live Feed</span>
             </div>
             <p className="font-body-sm text-body-sm text-secondary mt-1 flex items-center gap-1">
               <span className="material-symbols-outlined text-xs text-[#6CBF3D]">currency_rupee</span>
-              <span className="font-semibold text-on-surface">₹ 18.42 Cr</span> total value across circuits
+              <span className="font-semibold text-on-surface">₹ {(totalValue / 10000000).toFixed(2)} Cr</span> total value
             </p>
           </div>
         </div>
@@ -92,10 +129,10 @@ export default function AllQuotations() {
           </div>
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="font-headline-lg text-headline-xl text-[#0F1B2E] font-bold">₹ 1.29 Lakhs</span>
+              <span className="font-headline-lg text-headline-xl text-[#0F1B2E] font-bold">₹ {(avgValue / 100000).toFixed(2)} Lakhs</span>
             </div>
             <p className="font-body-sm text-body-sm text-secondary mt-1">
-              Median <span className="text-on-surface font-semibold">₹ 2.47L</span> for Residential projects
+              Across Residential &amp; C&amp;I projects in Gujarat
             </p>
           </div>
         </div>
@@ -110,14 +147,14 @@ export default function AllQuotations() {
           </div>
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="font-headline-lg text-headline-xl text-[#0F1B2E] font-bold">5.82 MW</span>
+              <span className="font-headline-lg text-headline-xl text-[#0F1B2E] font-bold">{totalCapacityMW} MW</span>
             </div>
             <div className="mt-1.5 flex items-center gap-2">
               <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden flex">
-                <div className="bg-[#6CBF3D] h-full w-[94%]" title="Rooftop: 94%"></div>
-                <div className="bg-[#256676] h-full w-[6%]" title="C&I: 6%"></div>
+                <div className="bg-[#6CBF3D] h-full w-[85%]" title="Rooftop"></div>
+                <div className="bg-[#256676] h-full w-[15%]" title="C&I"></div>
               </div>
-              <span className="text-[11px] font-label-xs text-secondary whitespace-nowrap">94% Res / 6% C&amp;I</span>
+              <span className="text-[11px] font-label-xs text-secondary whitespace-nowrap">Gujarat Territory</span>
             </div>
           </div>
         </div>
@@ -132,14 +169,14 @@ export default function AllQuotations() {
           </div>
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="font-headline-lg text-headline-xl text-[#0F1B2E] font-bold">₹ 3,450 <span className="text-sm font-normal text-secondary">/ kW</span></span>
+              <span className="font-headline-lg text-headline-xl text-[#0F1B2E] font-bold">₹ 3,250 <span className="text-sm font-normal text-secondary">/ kW</span></span>
             </div>
             <div className="mt-1 flex items-center gap-1.5">
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-[#2E7D32]">
                 <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                 Audit Compliant
               </span>
-              <span className="text-[11px] text-secondary font-label-xs">7.2% avg (Within ₹5k cap)</span>
+              <span className="text-[11px] text-secondary font-label-xs">Within Gujarat EPC Caps</span>
             </div>
           </div>
         </div>
@@ -151,40 +188,37 @@ export default function AllQuotations() {
         <div className="p-4 border-b border-[#E4E7EB] flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white">
           <div className="flex flex-wrap items-center gap-1.5 bg-[#F6F8F7] p-1 rounded-lg border border-[#E4E7EB]">
             <button
-              onClick={() => setActiveTabFilter('all')}
+              onClick={() => { setActiveTabFilter('all'); setCurrentPage(1); }}
               className={`px-3.5 py-1.5 rounded-md font-label-sm text-xs font-semibold shadow-sm flex items-center gap-2 transition-colors ${
                 activeTabFilter === 'all' ? 'bg-[#0F1B2E] text-white' : 'text-secondary hover:text-on-surface'
               }`}
             >
               <span>All Proposals</span>
-              <span className="bg-white/20 px-1.5 py-0.2 rounded text-[10px]">1,420</span>
+              <span className="bg-white/20 px-1.5 py-0.2 rounded text-[10px]">{allQuotes.length}</span>
             </button>
             <button
-              onClick={() => setActiveTabFilter('approved')}
+              onClick={() => { setActiveTabFilter('approved'); setCurrentPage(1); }}
               className={`px-3 py-1.5 rounded-md font-label-sm text-xs transition-colors flex items-center gap-2 ${
                 activeTabFilter === 'approved' ? 'bg-[#0F1B2E] text-white' : 'text-secondary hover:text-on-surface'
               }`}
             >
               <span>Approved &amp; In-Progress</span>
-              <span className="bg-gray-200 text-gray-700 px-1.5 py-0.2 rounded text-[10px]">384</span>
             </button>
             <button
-              onClick={() => setActiveTabFilter('discom')}
+              onClick={() => { setActiveTabFilter('discom'); setCurrentPage(1); }}
               className={`px-3 py-1.5 rounded-md font-label-sm text-xs transition-colors flex items-center gap-2 ${
                 activeTabFilter === 'discom' ? 'bg-[#0F1B2E] text-white' : 'text-secondary hover:text-on-surface'
               }`}
             >
-              <span>Under Discom Review</span>
-              <span className="bg-gray-200 text-gray-700 px-1.5 py-0.2 rounded text-[10px]">512</span>
+              <span>Under DISCOM Review</span>
             </button>
             <button
-              onClick={() => setActiveTabFilter('draft')}
+              onClick={() => { setActiveTabFilter('draft'); setCurrentPage(1); }}
               className={`px-3 py-1.5 rounded-md font-label-sm text-xs transition-colors flex items-center gap-2 ${
                 activeTabFilter === 'draft' ? 'bg-[#0F1B2E] text-white' : 'text-secondary hover:text-on-surface'
               }`}
             >
               <span>Draft / Stale</span>
-              <span className="bg-gray-200 text-gray-700 px-1.5 py-0.2 rounded text-[10px]">524</span>
             </button>
           </div>
           <div className="flex items-center gap-3">
@@ -192,21 +226,21 @@ export default function AllQuotations() {
               <span className="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-sm">search</span>
               <input
                 className="w-full bg-[#FFFFFF] border border-[#E4E7EB] rounded-lg pl-9 pr-3 py-1.5 text-xs text-[#1B1F23] placeholder-gray-400 focus:outline-none focus:border-[#6CBF3D] focus:ring-2 focus:ring-[#6CBF3D]/20 transition-all font-body-sm"
-                placeholder="Search by Quote #, Customer Name, or Dealer ID..."
+                placeholder="Search Quote #, Customer, Dealer, City..."
                 type="text"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
               />
             </div>
             <select
               value={marginProfileFilter}
-              onChange={(e) => setMarginProfileFilter(e.target.value)}
+              onChange={(e) => { setMarginProfileFilter(e.target.value); setCurrentPage(1); }}
               className="bg-white border border-[#E4E7EB] rounded-lg text-xs py-1.5 px-3 font-label-sm text-on-surface focus:outline-none focus:border-[#6CBF3D]"
             >
               <option value="all">All Margin Profiles</option>
               <option value="high">Margin &gt; ₹4,500/kW</option>
               <option value="flagged">🚨 Flagged for Executive Audit</option>
-              <option value="compliant">Compliant Margins (&lt;= ₹5,000/kW)</option>
+              <option value="compliant">Compliant Margins (≤ ₹5,500/kW)</option>
             </select>
           </div>
         </div>
@@ -217,338 +251,136 @@ export default function AllQuotations() {
             <thead>
               <tr className="bg-[#0F1B2E] text-white font-label-sm text-xs">
                 <th className="py-3.5 px-4 font-semibold tracking-wider uppercase text-[11px]">Quote Ref</th>
-                <th className="py-3.5 px-4 font-semibold tracking-wider uppercase text-[11px]">Gen Date &amp; Time</th>
+                <th className="py-3.5 px-4 font-semibold tracking-wider uppercase text-[11px]">Date</th>
                 <th className="py-3.5 px-4 font-semibold tracking-wider uppercase text-[11px]">Issuing Dealer / Firm</th>
                 <th className="py-3.5 px-4 font-semibold tracking-wider uppercase text-[11px]">Customer / Enterprise</th>
                 <th className="py-3.5 px-4 font-semibold tracking-wider uppercase text-[11px]">System Size &amp; Type</th>
-                <th className="py-3.5 px-4 font-semibold tracking-wider uppercase text-[11px] text-right">Base EPC Price</th>
-                <th className="py-3.5 px-4 font-semibold tracking-wider uppercase text-[11px] text-center">Dealer Margin Audit</th>
-                <th className="py-3.5 px-4 font-semibold tracking-wider uppercase text-[11px] text-right">Gross Quoted</th>
+                <th className="py-3.5 px-4 font-semibold tracking-wider uppercase text-[11px] text-right">Base Price</th>
+                <th className="py-3.5 px-4 font-semibold tracking-wider uppercase text-[11px] text-center">Dealer Margin</th>
+                <th className="py-3.5 px-4 font-semibold tracking-wider uppercase text-[11px] text-right">Total Quoted</th>
                 <th className="py-3.5 px-4 font-semibold tracking-wider uppercase text-[11px] text-center">Lifecycle Stage</th>
-                <th className="py-3.5 px-4 font-semibold tracking-wider uppercase text-[11px] text-center">Quick Actions</th>
+                <th className="py-3.5 px-4 font-semibold tracking-wider uppercase text-[11px] text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E4E7EB] font-body-sm text-xs">
-              {/* Row 1: Large C&I with Compliant Margin (Mirana Technocast) */}
-              <tr className="hover:bg-[#F0F4F2] transition-colors bg-[#FFFFFF]">
-                <td className="py-3.5 px-4 font-mono font-bold text-on-surface">
-                  <button
-                    onClick={() => handleViewPdf({
-                      quoteNumber: 'SV-2025-Q409',
-                      customerName: 'MIRANA TECHNOCAST PVT.LTD.',
-                      contactPerson: 'Mr. Pareshbhai',
-                      city: 'Rajkot',
-                      state: 'Gujarat',
-                      systemCapacityKW: 280.20,
-                      grandTotalCustomer: 7285200,
-                      dealerMarginPerKW: 2000,
-                      dealerTotalMargin: 560400,
-                      date: '2025-10-24'
-                    })}
-                    className="text-[#256676] hover:underline flex items-center gap-1 font-bold"
-                  >
-                    #SV-2025-Q409
-                  </button>
-                </td>
-                <td className="py-3.5 px-4 text-secondary whitespace-nowrap">
-                  24 Oct 2025, 11:20 AM
-                </td>
-                <td className="py-3.5 px-4">
-                  <div className="font-medium text-on-surface">Rajesh Solar Tech</div>
-                  <div className="text-[11px] text-secondary font-mono flex items-center gap-1">
-                    <span>#SV-DLR-0842</span> • <span>Rajkot, GJ</span>
-                  </div>
-                </td>
-                <td className="py-3.5 px-4">
-                  <div className="font-semibold text-on-surface">MIRANA TECHNOCAST PVT.LTD.</div>
-                  <div className="text-[11px] text-secondary">HT Consumer • PGVCL</div>
-                </td>
-                <td className="py-3.5 px-4">
-                  <div className="font-semibold text-on-surface">280.20 kW</div>
-                  <div className="text-[11px] text-secondary">C&amp;I Rooftop (Grid Tied)</div>
-                </td>
-                <td className="py-3.5 px-4 text-right font-medium text-secondary">
-                  ₹ 67,24,800
-                </td>
-                <td className="py-3.5 px-4 text-center">
-                  <div className="inline-flex flex-col items-center">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[rgba(108,191,61,0.15)] text-[#2E7D32]">
-                      <span className="material-symbols-outlined text-xs" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                      ₹ 5,60,400 <span className="font-normal font-mono">(₹2,000/kW)</span>
-                    </span>
-                    <span className="text-[10px] text-[#2E7D32] mt-0.5">Compliant (Below C&amp;I cap)</span>
-                  </div>
-                </td>
-                <td className="py-3.5 px-4 text-right font-bold text-[#0F1B2E] text-sm">
-                  ₹ 72,85,200
-                </td>
-                <td className="py-3.5 px-4 text-center">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    Customer Approved
-                  </span>
-                </td>
-                <td className="py-3.5 px-4 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <button
-                      onClick={() => handleViewPdf({
-                        quoteNumber: 'SV-2025-Q409',
-                        customerName: 'MIRANA TECHNOCAST PVT.LTD.',
-                        contactPerson: 'Mr. Pareshbhai',
-                        city: 'Rajkot',
-                        state: 'Gujarat',
-                        systemCapacityKW: 280.20,
-                        grandTotalCustomer: 7285200,
-                        date: '2025-10-24'
-                      })}
-                      className="p-1.5 hover:bg-surface-container-high rounded text-secondary hover:text-on-surface"
-                      title="View Customer PDF"
-                    >
-                      <span className="material-symbols-outlined text-sm">picture_as_pdf</span>
-                    </button>
-                    <button className="p-1.5 hover:bg-surface-container-high rounded text-secondary hover:text-[#256676]" title="Internal Margin Audit Sheet">
-                      <span className="material-symbols-outlined text-sm">shield</span>
-                    </button>
-                    <button className="p-1.5 hover:bg-surface-container-high rounded text-secondary hover:text-green-600" title="WhatsApp Resend">
-                      <span className="material-symbols-outlined text-sm">share</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
+              {paginatedQuotes.map((q, idx) => {
+                const quoteRef = q.quoteNumber || q.id || `#SV-2025-Q${idx + 100}`;
+                const marginPerKw = q.dealerMarginPerKW || (q.dealerTotalMargin && q.systemCapacityKW ? Math.round(q.dealerTotalMargin / q.systemCapacityKW) : 3200);
+                const isFlagged = marginPerKw > 6000;
+                const totalAmt = q.grandTotalCustomer || q.totalAmount || 0;
+                const baseCost = q.baseCost || (totalAmt - (q.dealerTotalMargin || (marginPerKw * (q.systemCapacityKW || 5))));
 
-              {/* Row 2: Residential with Margin Warning */}
-              <tr className="hover:bg-[#F0F4F2] transition-colors bg-[#F6F8F7]">
-                <td className="py-3.5 px-4 font-mono font-bold text-on-surface">
-                  <button
-                    onClick={() => handleViewPdf({
-                      quoteNumber: 'SV-2025-Q408',
-                      customerName: 'Anand Sharma',
-                      city: 'Surat',
-                      state: 'Gujarat',
-                      systemCapacityKW: 5.0,
-                      grandTotalCustomer: 247000,
-                      dealerMarginPerKW: 5200,
-                      dealerTotalMargin: 26000,
-                      date: '2025-10-24'
-                    })}
-                    className="text-[#256676] hover:underline flex items-center gap-1 font-bold"
-                  >
-                    #SV-2025-Q408
-                  </button>
-                </td>
-                <td className="py-3.5 px-4 text-secondary whitespace-nowrap">
-                  24 Oct 2025, 10:45 AM
-                </td>
-                <td className="py-3.5 px-4">
-                  <div className="font-medium text-on-surface">Surya Green Solutions</div>
-                  <div className="text-[11px] text-secondary font-mono flex items-center gap-1">
-                    <span>#SV-DLR-0841</span> • <span>Surat, GJ</span>
-                  </div>
-                </td>
-                <td className="py-3.5 px-4">
-                  <div className="font-semibold text-on-surface">Anand Sharma</div>
-                  <div className="text-[11px] text-secondary">Bungalow 14, Vesu • DGVCL</div>
-                </td>
-                <td className="py-3.5 px-4">
-                  <div className="font-semibold text-on-surface">5.00 kW</div>
-                  <div className="text-[11px] text-secondary">Residential Rooftop (Mono PERC)</div>
-                </td>
-                <td className="py-3.5 px-4 text-right font-medium text-secondary">
-                  ₹ 2,21,000
-                </td>
-                <td className="py-3.5 px-4 text-center">
-                  <div className="inline-flex flex-col items-center">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[rgba(249,168,37,0.15)] text-[#B27204]">
-                      <span className="material-symbols-outlined text-xs">warning</span>
-                      ₹ 26,000 <span className="font-normal font-mono">(₹5,200/kW)</span>
-                    </span>
-                    <span className="text-[10px] text-[#B27204] font-medium mt-0.5">⚠️ Exceeds ₹5k standard cap</span>
-                  </div>
-                </td>
-                <td className="py-3.5 px-4 text-right font-bold text-[#0F1B2E] text-sm">
-                  ₹ 2,47,000
-                </td>
-                <td className="py-3.5 px-4 text-center">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                    Quotation Generated
-                  </span>
-                </td>
-                <td className="py-3.5 px-4 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <button
-                      onClick={() => handleViewPdf({
-                        quoteNumber: 'SV-2025-Q408',
-                        customerName: 'Anand Sharma',
-                        city: 'Surat',
-                        state: 'Gujarat',
-                        systemCapacityKW: 5.0,
-                        grandTotalCustomer: 247000,
-                        date: '2025-10-24'
-                      })}
-                      className="p-1.5 hover:bg-surface-container-high rounded text-secondary hover:text-on-surface"
-                      title="View Customer PDF"
-                    >
-                      <span className="material-symbols-outlined text-sm">picture_as_pdf</span>
-                    </button>
-                    <button className="p-1.5 hover:bg-surface-container-high rounded text-secondary hover:text-[#256676]" title="Internal Margin Audit Sheet">
-                      <span className="material-symbols-outlined text-sm">shield</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-
-              {/* Row 3: 3 kW Small Residential Compliant */}
-              <tr className="hover:bg-[#F0F4F2] transition-colors bg-[#FFFFFF]">
-                <td className="py-3.5 px-4 font-mono font-bold text-on-surface">
-                  <button
-                    onClick={() => handleViewPdf({
-                      quoteNumber: 'SV-2025-Q407',
-                      customerName: 'Kavita Patel',
-                      city: 'Morbi',
-                      state: 'Gujarat',
-                      systemCapacityKW: 3.0,
-                      grandTotalCustomer: 148000,
-                      dealerMarginPerKW: 3200,
-                      dealerTotalMargin: 16000,
-                      date: '2025-10-24'
-                    })}
-                    className="text-[#256676] hover:underline flex items-center gap-1 font-bold"
-                  >
-                    #SV-2025-Q407
-                  </button>
-                </td>
-                <td className="py-3.5 px-4 text-secondary whitespace-nowrap">
-                  24 Oct 2025, 09:15 AM
-                </td>
-                <td className="py-3.5 px-4">
-                  <div className="font-medium text-on-surface">Saur Urja Tech</div>
-                  <div className="text-[11px] text-secondary font-mono flex items-center gap-1">
-                    <span>#SV-DLR-0792</span> • <span>Morbi, GJ</span>
-                  </div>
-                </td>
-                <td className="py-3.5 px-4">
-                  <div className="font-semibold text-on-surface">Kavita Patel</div>
-                  <div className="text-[11px] text-secondary">Shakti Park • PGVCL</div>
-                </td>
-                <td className="py-3.5 px-4">
-                  <div className="font-semibold text-on-surface">3.00 kW</div>
-                  <div className="text-[11px] text-secondary">Residential Subsidy (Surya Gujarat)</div>
-                </td>
-                <td className="py-3.5 px-4 text-right font-medium text-secondary">
-                  ₹ 1,32,000
-                </td>
-                <td className="py-3.5 px-4 text-center">
-                  <div className="inline-flex flex-col items-center">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[rgba(108,191,61,0.15)] text-[#2E7D32]">
-                      <span className="material-symbols-outlined text-xs" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                      ₹ 16,000 <span className="font-normal font-mono">(₹3,200/kW)</span>
-                    </span>
-                    <span className="text-[10px] text-[#2E7D32] mt-0.5">Compliant Margin</span>
-                  </div>
-                </td>
-                <td className="py-3.5 px-4 text-right font-bold text-[#0F1B2E] text-sm">
-                  ₹ 1,48,000
-                </td>
-                <td className="py-3.5 px-4 text-center">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-                    DISCOM Sanctioned
-                  </span>
-                </td>
-                <td className="py-3.5 px-4 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <button
-                      onClick={() => handleViewPdf({
-                        quoteNumber: 'SV-2025-Q407',
-                        customerName: 'Kavita Patel',
-                        city: 'Morbi',
-                        state: 'Gujarat',
-                        systemCapacityKW: 3.0,
-                        grandTotalCustomer: 148000,
-                        date: '2025-10-24'
-                      })}
-                      className="p-1.5 hover:bg-surface-container-high rounded text-secondary hover:text-on-surface"
-                      title="View Customer PDF"
-                    >
-                      <span className="material-symbols-outlined text-sm">picture_as_pdf</span>
-                    </button>
-                    <button className="p-1.5 hover:bg-surface-container-high rounded text-secondary hover:text-[#256676]" title="Internal Margin Audit Sheet">
-                      <span className="material-symbols-outlined text-sm">shield</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-
-              {/* Row 4: Flagged Audit */}
-              <tr className="hover:bg-red-50/50 transition-colors bg-red-50/20">
-                <td className="py-3.5 px-4 font-mono font-bold text-on-surface">
-                  <button className="text-[#D64545] hover:underline flex items-center gap-1 font-bold">
-                    #SV-2025-Q406
-                  </button>
-                </td>
-                <td className="py-3.5 px-4 text-secondary whitespace-nowrap">
-                  23 Oct 2025, 05:40 PM
-                </td>
-                <td className="py-3.5 px-4">
-                  <div className="font-medium text-on-surface">Pinnacle Sun Tech</div>
-                  <div className="text-[11px] text-secondary font-mono flex items-center gap-1">
-                    <span>#SV-DLR-0610</span> • <span>Ahmedabad, GJ</span>
-                  </div>
-                </td>
-                <td className="py-3.5 px-4">
-                  <div className="font-semibold text-on-surface">Mehta Textiles Ltd</div>
-                  <div className="text-[11px] text-secondary">Naroda GIDC • UGVCL</div>
-                </td>
-                <td className="py-3.5 px-4">
-                  <div className="font-semibold text-on-surface">10.00 kW</div>
-                  <div className="text-[11px] text-secondary">Commercial High Margin</div>
-                </td>
-                <td className="py-3.5 px-4 text-right font-medium text-secondary">
-                  ₹ 5,10,000
-                </td>
-                <td className="py-3.5 px-4 text-center">
-                  <div className="inline-flex flex-col items-center">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[rgba(214,69,69,0.15)] text-[#D64545] border border-[#D64545]/30">
-                      <span className="material-symbols-outlined text-xs">error</span>
-                      ₹ 75,000 <span className="font-normal font-mono">(₹7,500/kW)</span>
-                    </span>
-                    <span className="text-[10px] text-[#D64545] font-bold mt-0.5">🚨 Flagged: Requires Admin Overrule</span>
-                  </div>
-                </td>
-                <td className="py-3.5 px-4 text-right font-bold text-[#D64545] text-sm">
-                  ₹ 5,85,000
-                </td>
-                <td className="py-3.5 px-4 text-center">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-                    Under Review
-                  </span>
-                </td>
-                <td className="py-3.5 px-4 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <button className="p-1.5 hover:bg-red-100 rounded text-red-700" title="Super Admin Override Dialog">
-                      <span className="material-symbols-outlined text-sm">admin_panel_settings</span>
-                    </button>
-                    <button className="p-1.5 hover:bg-surface-container-high rounded text-secondary hover:text-[#256676]" title="Internal Margin Audit Sheet">
-                      <span className="material-symbols-outlined text-sm">shield</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
+                return (
+                  <tr key={q.id || idx} className={`hover:bg-[#F0F4F2] transition-colors ${idx % 2 === 1 ? 'bg-[#F6F8F7]' : 'bg-white'}`}>
+                    <td className="py-3.5 px-4 font-mono font-bold text-on-surface">
+                      <button
+                        onClick={() => handleViewPdf(q)}
+                        className="text-[#256676] hover:underline flex items-center gap-1 font-bold"
+                      >
+                        {quoteRef}
+                      </button>
+                    </td>
+                    <td className="py-3.5 px-4 text-secondary whitespace-nowrap">
+                      {q.date || '24 Oct 2025'}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="font-medium text-on-surface">{q.dealerName || 'Gujarat Solar Tech'}</div>
+                      <div className="text-[11px] text-secondary font-mono flex items-center gap-1">
+                        <span>{q.dealerId || '#SV-DLR-0842'}</span> • <span>{q.city || 'Rajkot'}, GJ</span>
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="font-semibold text-on-surface">{q.customerName}</div>
+                      <div className="text-[11px] text-secondary">{q.city || 'Gujarat'} • {q.discom || 'PGVCL'}</div>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="font-semibold text-on-surface">{q.systemCapacityKW || q.capacity || '5.0'} kW</div>
+                      <div className="text-[11px] text-secondary">{q.projectType || q.type || 'Rooftop Solar'}</div>
+                    </td>
+                    <td className="py-3.5 px-4 text-right font-medium text-secondary">
+                      ₹ {baseCost.toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      <div className="inline-flex flex-col items-center">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                          isFlagged
+                            ? 'bg-red-100 text-red-700 border border-red-300'
+                            : 'bg-[rgba(108,191,61,0.15)] text-[#2E7D32]'
+                        }`}>
+                          <span className="material-symbols-outlined text-xs" style={{ fontVariationSettings: "'FILL' 1" }}>
+                            {isFlagged ? 'warning' : 'check_circle'}
+                          </span>
+                          ₹ {(q.dealerTotalMargin || (marginPerKw * (q.systemCapacityKW || 5))).toLocaleString('en-IN')}
+                          <span className="font-normal font-mono">(₹{marginPerKw}/kW)</span>
+                        </span>
+                        {isFlagged && <span className="text-[10px] text-red-600 font-bold mt-0.5">Flagged for Audit</span>}
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4 text-right font-bold text-[#0F1B2E] text-sm">
+                      ₹ {totalAmt.toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+                        (q.status || '').toLowerCase().includes('approved')
+                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                          : (q.status || '').toLowerCase().includes('sanction')
+                          ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                          : 'bg-blue-50 text-blue-700 border border-blue-200'
+                      }`}>
+                        {q.status || 'Active / Sent'}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <button
+                          onClick={() => handleViewPdf(q)}
+                          className="p-1.5 hover:bg-surface-container-high rounded text-secondary hover:text-on-surface"
+                          title="View Customer PDF"
+                        >
+                          <span className="material-symbols-outlined text-sm">picture_as_pdf</span>
+                        </button>
+                        <button className="p-1.5 hover:bg-surface-container-high rounded text-secondary hover:text-[#256676]" title="Margin Audit Sheet">
+                          <span className="material-symbols-outlined text-sm">shield</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
 
         {/* Footer pagination */}
         <div className="p-4 border-t border-[#E4E7EB] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-secondary font-label-sm text-label-sm">
-          <span>Showing <span className="font-semibold text-on-surface">1 to 4</span> of <span className="font-semibold text-on-surface">1,420</span> proposals</span>
+          <span>
+            Showing <span className="font-semibold text-on-surface">{filteredQuotes.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, filteredQuotes.length)}</span> of <span className="font-semibold text-on-surface">{filteredQuotes.length}</span> proposals
+          </span>
           <div className="flex items-center gap-1">
-            <button className="p-1.5 rounded border border-[#E4E7EB] text-secondary hover:bg-surface-container transition-colors disabled:opacity-50">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded border border-[#E4E7EB] text-secondary hover:bg-surface-container transition-colors disabled:opacity-50"
+            >
               <span className="material-symbols-outlined text-[18px]">chevron_left</span>
             </button>
-            <button className="px-3 py-1 rounded bg-[#0F1B2E] text-white font-semibold">1</button>
-            <button className="px-3 py-1 rounded hover:bg-surface-container text-on-surface transition-colors">2</button>
-            <button className="px-3 py-1 rounded hover:bg-surface-container text-on-surface transition-colors">3</button>
-            <span className="px-1 text-secondary">...</span>
-            <button className="px-3 py-1 rounded hover:bg-surface-container text-on-surface transition-colors">284</button>
-            <button className="p-1.5 rounded border border-[#E4E7EB] text-secondary hover:bg-surface-container transition-colors">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 5).map(pageNum => (
+              <button
+                key={pageNum}
+                onClick={() => setCurrentPage(pageNum)}
+                className={`px-3 py-1 rounded font-semibold transition-colors ${
+                  currentPage === pageNum ? 'bg-[#0F1B2E] text-white' : 'hover:bg-surface-container text-on-surface'
+                }`}
+              >
+                {pageNum}
+              </button>
+            ))}
+            {totalPages > 5 && <span className="px-1 text-secondary">...</span>}
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded border border-[#E4E7EB] text-secondary hover:bg-surface-container transition-colors disabled:opacity-50"
+            >
               <span className="material-symbols-outlined text-[18px]">chevron_right</span>
             </button>
           </div>
@@ -557,3 +389,6 @@ export default function AllQuotations() {
     </div>
   );
 }
+
+
+

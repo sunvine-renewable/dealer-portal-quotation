@@ -7,11 +7,11 @@ export default function DealerSettings() {
   const [saved, setSaved] = useState(false);
 
   const [form, setForm] = useState({
-    agencyName: currentDealer?.agencyName || 'Surya Solar Tech Private Limited',
-    contactPerson: currentDealer?.contactPerson || 'Rajesh Kumar',
+    agencyName: currentDealer?.agencyName || 'Rajkot Solar Tech Private Limited',
+    contactPerson: currentDealer?.contactPerson || 'Rajesh Patel',
     phone: currentDealer?.phone || '+91 98765 43210',
-    email: currentDealer?.email || 'rajesh@suryasolartech.in',
-    gstin: '27AABCS1429B1Z8',
+    email: currentDealer?.email || 'rajesh@rajkotsolartech.in',
+    gstin: '24AFPFS7402A1Z7',
     pan: 'AABCS1429B',
     defaultDiscom: 'PGVCL (Paschim Gujarat Vij Company Ltd)',
     discomDivision: 'Rajkot Rural Division / Metoda Sub-division',
@@ -314,7 +314,6 @@ export default function DealerSettings() {
                     <option value="MGVCL (Madhya Gujarat Vij Company Ltd)">MGVCL (Madhya Gujarat Vij Company Ltd)</option>
                     <option value="DGVCL (Dakshin Gujarat Vij Company Ltd)">DGVCL (Dakshin Gujarat Vij Company Ltd)</option>
                     <option value="Torrent Power (Ahmedabad / Surat)">Torrent Power (Ahmedabad / Surat)</option>
-                    <option value="MSEDCL (Maharashtra State Electricity)">MSEDCL (Maharashtra State Electricity)</option>
                   </select>
                 </div>
 

@@ -43,7 +43,7 @@ export default function CreateQuotation() {
       if (editingQuotation.customerName) setCustName(editingQuotation.customerName);
       if (editingQuotation.customerPhone) setCustPhone(editingQuotation.customerPhone);
       if (editingQuotation.location || editingQuotation.city) {
-        setCustLocation(editingQuotation.location || `${editingQuotation.city || 'Pune'}, Maharashtra`);
+        setCustLocation(editingQuotation.location || `${editingQuotation.city || 'Rajkot'}, Gujarat`);
       }
       const rawKw = parseFloat(editingQuotation.systemCapacityKW || editingQuotation.capacity || 5);
       if (!isNaN(rawKw)) setSystemCapacity(String(rawKw));
@@ -130,8 +130,8 @@ export default function CreateQuotation() {
       customerName: custName,
       customerPhone: custPhone,
       location: custLocation,
-      city: custLocation.split(',')[0]?.trim() || 'Pune',
-      state: 'Maharashtra',
+      city: custLocation.split(',')[0]?.trim() || 'Rajkot',
+      state: 'Gujarat',
       systemCapacityKW: kw,
       panelType: panelBrand,
       solarModule: panelBrand,
@@ -170,8 +170,8 @@ export default function CreateQuotation() {
       customerName: custName,
       customerPhone: custPhone,
       location: custLocation,
-      city: custLocation.split(',')[0]?.trim() || 'Pune',
-      state: 'Maharashtra',
+      city: custLocation.split(',')[0]?.trim() || 'Rajkot',
+      state: 'Gujarat',
       systemCapacityKW: kw,
       solarModule: panelBrand,
       moduleCount: moduleCount,
@@ -326,7 +326,7 @@ export default function CreateQuotation() {
                   <input
                     className="w-full h-10 pl-10 pr-3 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md outline-none shadow-sm border border-surface-container-high focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all"
                     id="custLocation"
-                    placeholder="e.g. Pune, 411038"
+                    placeholder="e.g. Rajkot, 360004"
                     type="text"
                     value={custLocation}
                     onChange={(e) => setCustLocation(e.target.value)}

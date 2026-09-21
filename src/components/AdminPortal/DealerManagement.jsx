@@ -5,35 +5,43 @@ export default function DealerManagement() {
   const { dealers, addDealer, toggleDealerStatus } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTabFilter, setActiveTabFilter] = useState('all');
+  const [discomFilter, setDiscomFilter] = useState('all');
+  const [tierFilter, setTierFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 15;
   const [showAddModal, setShowAddModal] = useState(false);
 
-  // New dealer form states
-  const [newFirm, setNewFirm] = useState('Surya Solar Tech Private Limited');
-  const [newContact, setNewContact] = useState('Rajesh Kumar');
-  const [newMobile, setNewMobile] = useState('+91 98765 43210');
-  const [newEmail, setNewEmail] = useState('rajesh@suryasolartech.in');
-  const [newZone, setNewZone] = useState('Rajkot & Saurashtra Zone (Western Gujarat)');
-  const [newAddress, setNewAddress] = useState('Shop No. 12, Aditya Commercial Complex, Kalawad Road, Rajkot - 360005, Gujarat');
-  const [newGstin, setNewGstin] = useState('24AABCS1429B1Z8');
-  const [newPan, setNewPan] = useState('AABCS1429B');
-  const [newDiscomCode, setNewDiscomCode] = useState('VND-PGVCL-8821');
-  const [newTier, setNewTier] = useState('Gold EPC Partner (Quarterly Cap: 1.5 MW)');
-  const [newCap, setNewCap] = useState('5,000 / kW cap');
+  // Dynamic Metrics from real Gujarat dealers
+  const totalDealersCount = (dealers || []).length;
+  const activeDealersCount = (dealers || []).filter(d => d.status === 'Active').length;
+  const pendingDealersCount = (dealers || []).filter(d => d.status === 'Pending').length;
+  const suspendedDealersCount = (dealers || []).filter(d => d.status === 'Suspended').length;
+  const totalCapacityMw = ((dealers || []).reduce((acc, d) => acc + (d.totalCapacityKw || 0), 0) / 1000).toFixed(1);
 
-  // Filter dealers
+  // Filter dealers across Gujarat
   const filteredDealers = (dealers || []).filter((d) => {
-    const term = searchTerm.toLowerCase();
+    const term = searchTerm.toLowerCase().trim();
     const matchSearch =
+      !term ||
       (d.firmName && d.firmName.toLowerCase().includes(term)) ||
       (d.contactPerson && d.contactPerson.toLowerCase().includes(term)) ||
-      (d.city && d.city.toLowerCase().includes(term));
+      (d.city && d.city.toLowerCase().includes(term)) ||
+      (d.id && d.id.toLowerCase().includes(term)) ||
+      (d.gstin && d.gstin.toLowerCase().includes(term));
 
     if (!matchSearch) return false;
-    if (activeTabFilter === 'active') return d.status === 'Active';
-    if (activeTabFilter === 'pending') return d.status === 'Pending';
-    if (activeTabFilter === 'suspended') return d.status === 'Suspended';
+    if (activeTabFilter === 'active' && d.status !== 'Active') return false;
+    if (activeTabFilter === 'pending' && d.status !== 'Pending') return false;
+    if (activeTabFilter === 'suspended' && d.status !== 'Suspended') return false;
+
+    if (discomFilter !== 'all' && !(d.discom || '').toLowerCase().includes(discomFilter.toLowerCase())) return false;
+    if (tierFilter !== 'all' && d.tier !== tierFilter) return false;
+
     return true;
   });
+
+  const totalPages = Math.ceil(filteredDealers.length / pageSize) || 1;
+  const paginatedDealers = filteredDealers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const handleCreateDealer = (e) => {
     e.preventDefault();
@@ -45,7 +53,7 @@ export default function DealerManagement() {
       contactPerson: newContact,
       mobile: newMobile || '+91 98765 43210',
       email: newEmail || 'dealer@sunvine.in',
-      city: newZone.includes('Rajkot') ? 'Rajkot' : 'Pune',
+      city: newZone.includes('Rajkot') ? 'Rajkot' : newZone.includes('Surat') ? 'Surat' : 'Ahmedabad',
       state: 'Gujarat',
       discom: 'PGVCL Circle',
       tier: 'Gold EPC',
@@ -204,7 +212,7 @@ export default function DealerManagement() {
                       <option>Ahmedabad Central &amp; Gandhinagar</option>
                       <option>Surat &amp; South Gujarat Hub</option>
                       <option>Vadodara Industrial Corridor</option>
-                      <option>Pune &amp; Western Maharashtra Division</option>
+                      <option>North Gujarat Zone (UGVCL / Mehsana)</option>
                     </select>
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-secondary">
                       <span className="material-symbols-outlined text-[20px]">unfold_more</span>
@@ -455,14 +463,14 @@ export default function DealerManagement() {
             </span>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-headline-xl font-poppins font-bold text-[#0F1B2E]">62</span>
+            <span className="text-headline-xl font-poppins font-bold text-[#0F1B2E]">{totalDealersCount}</span>
             <span className="inline-flex items-center gap-0.5 text-label-xs font-semibold text-[#2E7D32] bg-[#6CBF3D]/15 px-2 py-0.5 rounded-full">
-              <span className="material-symbols-outlined text-[14px]">arrow_upward</span> +8 this quarter
+              <span className="material-symbols-outlined text-[14px]">verified</span> 100% Gujarat
             </span>
           </div>
           <div className="mt-3 pt-3 border-t border-[#F1F4F9] flex items-center justify-between text-body-sm text-secondary">
             <span>Western Grid Region</span>
-            <span className="font-semibold text-on-surface">5 Discoms</span>
+            <span className="font-semibold text-on-surface">Gujarat (4 DISCOMs)</span>
           </div>
         </div>
 
@@ -475,15 +483,17 @@ export default function DealerManagement() {
             </span>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-headline-xl font-poppins font-bold text-[#0F1B2E]">48</span>
-            <span className="text-label-sm font-semibold text-secondary">(77.4% activation)</span>
+            <span className="text-headline-xl font-poppins font-bold text-[#0F1B2E]">{activeDealersCount}</span>
+            <span className="text-label-sm font-semibold text-secondary">
+              ({totalDealersCount > 0 ? ((activeDealersCount / totalDealersCount) * 100).toFixed(0) : 0}% activation)
+            </span>
             <span className="ml-auto inline-flex items-center text-label-xs font-semibold text-[#2E7D32]">
-              <span className="material-symbols-outlined text-[14px]">trending_up</span> +14.2%
+              <span className="material-symbols-outlined text-[14px]">trending_up</span> Live
             </span>
           </div>
-          <div className="mt-3 pt-3 border-t border-[#F1F4F9] flex items-center gap-1.5 text-body-sm text-[#2E7D32] font-medium">
-            <span className="w-2 h-2 rounded-full bg-[#6CBF3D]"></span>
-            <span>42 quotes generated today</span>
+          <div className="mt-3 pt-3 border-t border-[#F1F4F9] flex items-center justify-between text-body-sm text-secondary">
+            <span>Cumulative Capacity</span>
+            <span className="font-semibold text-[#2E7D32]">{totalCapacityMw} MW</span>
           </div>
         </div>
 
@@ -496,7 +506,7 @@ export default function DealerManagement() {
             </span>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-headline-xl font-poppins font-bold text-[#0F1B2E]">9</span>
+            <span className="text-headline-xl font-poppins font-bold text-[#0F1B2E]">{pendingDealersCount}</span>
             <span className="inline-flex items-center text-label-xs font-semibold text-[#B27204] bg-[#F9A825]/15 px-2 py-0.5 rounded-full">
               Requires Audit
             </span>
@@ -516,13 +526,13 @@ export default function DealerManagement() {
             </span>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-headline-xl font-poppins font-bold text-[#0F1B2E]">5</span>
+            <span className="text-headline-xl font-poppins font-bold text-[#0F1B2E]">{suspendedDealersCount}</span>
             <span className="inline-flex items-center text-label-xs font-medium text-secondary bg-surface-container px-2 py-0.5 rounded-full">
-              8.0% Base
+              {totalDealersCount > 0 ? ((suspendedDealersCount / totalDealersCount) * 100).toFixed(1) : 0}%
             </span>
           </div>
           <div className="mt-3 pt-3 border-t border-[#F1F4F9] text-body-sm text-secondary truncate">
-            License expired or dormant &gt;60d
+            License review or dormant
           </div>
         </div>
       </div>
@@ -534,28 +544,44 @@ export default function DealerManagement() {
             <span className="material-symbols-outlined absolute left-3 top-2.5 text-secondary text-[18px]">filter_list</span>
             <input
               className="w-full h-10 pl-9 pr-3 text-body-sm rounded-lg border border-[#E4E7EB] focus:border-[#6CBF3D] focus:ring-2 focus:ring-[#6CBF3D]/20 outline-none"
-              placeholder="Filter by Dealer, Firm Name, GSTIN, or Contact..."
+              placeholder="Search by Dealer, Firm Name, City, or GSTIN..."
               type="text"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
             />
           </div>
           <div className="flex flex-wrap items-center gap-2.5">
-            <select className="h-10 px-3 bg-white border border-[#E4E7EB] rounded-lg text-body-sm text-on-surface focus:border-[#6CBF3D] outline-none">
-              <option>Region / DISCOM Circle (All Circles)</option>
-              <option>PGVCL - Paschim Gujarat</option>
-              <option>DGVCL - Dakshin Gujarat</option>
-              <option>MGVCL - Madhya Gujarat</option>
-              <option>UGVCL - Uttar Gujarat</option>
+            <select
+              value={discomFilter}
+              onChange={(e) => { setDiscomFilter(e.target.value); setCurrentPage(1); }}
+              className="h-10 px-3 bg-white border border-[#E4E7EB] rounded-lg text-body-sm text-on-surface focus:border-[#6CBF3D] outline-none"
+            >
+              <option value="all">Region / DISCOM Circle (All Circles)</option>
+              <option value="PGVCL">PGVCL - Paschim Gujarat</option>
+              <option value="DGVCL">DGVCL - Dakshin Gujarat</option>
+              <option value="MGVCL">MGVCL - Madhya Gujarat</option>
+              <option value="UGVCL">UGVCL - Uttar Gujarat</option>
+              <option value="Torrent">Torrent Power (Ahm/Surat)</option>
             </select>
-            <select className="h-10 px-3 bg-white border border-[#E4E7EB] rounded-lg text-body-sm text-on-surface focus:border-[#6CBF3D] outline-none">
-              <option>Margin Slab Tier (All Tiers)</option>
-              <option>Platinum Partner (₹7.5k/kW)</option>
-              <option>Gold EPC (₹6.0k/kW)</option>
-              <option>Standard Tier (₹5.0k/kW)</option>
+            <select
+              value={tierFilter}
+              onChange={(e) => { setTierFilter(e.target.value); setCurrentPage(1); }}
+              className="h-10 px-3 bg-white border border-[#E4E7EB] rounded-lg text-body-sm text-on-surface focus:border-[#6CBF3D] outline-none"
+            >
+              <option value="all">Margin Slab Tier (All Tiers)</option>
+              <option value="Platinum Partner">Platinum Partner (₹7.5k/kW)</option>
+              <option value="Gold EPC Partner">Gold EPC Partner (₹6.0k/kW)</option>
+              <option value="Standard Tier">Standard Tier (₹5.0k/kW)</option>
+              <option value="Diamond Partner">Diamond Partner (₹8.0k/kW)</option>
             </select>
             <button
-              onClick={() => { setSearchTerm(''); setActiveTabFilter('all'); }}
+              onClick={() => {
+                setSearchTerm('');
+                setActiveTabFilter('all');
+                setDiscomFilter('all');
+                setTierFilter('all');
+                setCurrentPage(1);
+              }}
               className="h-10 px-3 rounded-lg text-secondary hover:text-[#0F1B2E] hover:bg-[#F6F8F7] text-label-sm flex items-center gap-1 transition-colors"
               title="Reset Filters"
             >
@@ -568,40 +594,40 @@ export default function DealerManagement() {
         <div className="pt-3 border-t border-[#F1F4F9] flex flex-wrap items-center justify-between gap-3 text-label-sm">
           <div className="flex items-center gap-1 bg-[#F6F8F7] p-1 rounded-lg">
             <button
-              onClick={() => setActiveTabFilter('all')}
+              onClick={() => { setActiveTabFilter('all'); setCurrentPage(1); }}
               className={`px-3 py-1.5 rounded-md font-semibold transition-colors ${
                 activeTabFilter === 'all' ? 'bg-white text-[#0F1B2E] shadow-xs' : 'text-secondary hover:text-on-surface'
               }`}
             >
-              All (62)
+              All ({totalDealersCount})
             </button>
             <button
-              onClick={() => setActiveTabFilter('active')}
+              onClick={() => { setActiveTabFilter('active'); setCurrentPage(1); }}
               className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
                 activeTabFilter === 'active' ? 'bg-white text-[#0F1B2E] shadow-xs' : 'text-secondary hover:text-on-surface'
               }`}
             >
-              Active (48)
+              Active ({activeDealersCount})
             </button>
             <button
-              onClick={() => setActiveTabFilter('pending')}
+              onClick={() => { setActiveTabFilter('pending'); setCurrentPage(1); }}
               className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
                 activeTabFilter === 'pending' ? 'bg-white text-[#0F1B2E] shadow-xs' : 'text-secondary hover:text-on-surface'
               }`}
             >
-              Pending KYC (9)
+              Pending KYC ({pendingDealersCount})
             </button>
             <button
-              onClick={() => setActiveTabFilter('suspended')}
+              onClick={() => { setActiveTabFilter('suspended'); setCurrentPage(1); }}
               className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
                 activeTabFilter === 'suspended' ? 'bg-white text-[#0F1B2E] shadow-xs' : 'text-secondary hover:text-on-surface'
               }`}
             >
-              Suspended (5)
+              Suspended ({suspendedDealersCount})
             </button>
           </div>
           <div className="text-body-sm text-secondary">
-            Showing <span className="font-semibold text-on-surface">1-4</span> of <span className="font-semibold text-on-surface">62</span> Dealers
+            Showing <span className="font-semibold text-on-surface">{filteredDealers.length === 0 ? 0 : (currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, filteredDealers.length)}</span> of <span className="font-semibold text-on-surface">{filteredDealers.length}</span> Gujarat Dealers
           </div>
         </div>
       </div>
@@ -624,241 +650,170 @@ export default function DealerManagement() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E4E7EB] text-body-sm">
-              {/* Row 1: Featured Authorized Partner (Surya Solar Tech) */}
-              <tr className="bg-white hover:bg-[#F0F4F2] transition-colors duration-150 group">
-                <td className="py-3 px-4">
-                  <span className="font-mono text-label-xs font-semibold text-[#0F1B2E] bg-surface-container px-2 py-1 rounded">
-                    #SV-DLR-0842
-                  </span>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-3">
-                    <img
-                      alt="Rajesh Kumar avatar"
-                      className="w-10 h-10 rounded-full object-cover ring-2 ring-[#6CBF3D]/40"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPrXHZs-qW_IfxFB32q6OMBxh9-Q8lbGsGBMHtdkNUgY_4yuNIKjzl9IouO3S3aNB09wnjzip9MP60dQxzL4kQPmGopeAc3FhmzSe-rn5i-NJoa8LROkq6pxtArBvBH1gOf32o8gNlXRFqVCbs_ran3kYrMxI68PMiaTNELo-PNmGam_oiuZjvHaBAalOT1KVsAA0nMIY8TkaF5V5g5bstz4lf60C_guBjH_ZJgQWwByqwwd7bZd8y"
-                    />
-                    <div>
-                      <div className="font-poppins font-semibold text-on-surface group-hover:text-primary transition-colors">
-                        Surya Solar Tech Pvt Ltd
-                      </div>
-                      <div className="text-[12px] text-secondary flex items-center gap-2">
-                        <span className="font-medium text-on-surface">Rajesh Kumar</span>
-                        <span className="text-outline-variant">•</span>
-                        <span>+91 98765 43210</span>
-                      </div>
-                      <div className="text-[11px] text-secondary/70">rajesh@suryasolartech.in</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="font-medium text-on-surface">Rajkot, Gujarat</div>
-                  <span className="inline-block mt-0.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-800 border border-blue-200">
-                    PGVCL Circle
-                  </span>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-                    <span className="material-symbols-outlined text-[13px]">military_tech</span> Gold EPC
-                  </div>
-                  <div className="text-[11px] text-secondary mt-1">Cap: <span className="font-semibold text-on-surface">₹6,000 / kW</span></div>
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <div className="font-semibold text-on-surface font-poppins">42 Quotes</div>
-                  <div className="text-[11px] text-[#2E7D32]">18 this month</div>
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <div className="font-bold text-on-surface font-poppins">1.42 MW</div>
-                  <div className="w-24 ml-auto mt-1.5 bg-surface-container rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-[#6CBF3D] h-full rounded-full" style={{ width: '82%' }}></div>
-                  </div>
-                  <div className="text-[10px] text-secondary mt-0.5">82% of Q2 quota</div>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-on-surface font-medium">
-                    <span>24AABCS1429B1Z8</span>
-                    <span className="material-symbols-outlined text-[15px] text-[#2E7D32]" title="GSTIN Active &amp; Verified">check_circle</span>
-                  </div>
-                  <div className="flex items-center gap-1 mt-1">
-                    <span className="px-1.5 py-0.2 rounded text-[10px] bg-green-50 text-green-700 font-semibold">PAN OK</span>
-                    <span className="px-1.5 py-0.2 rounded text-[10px] bg-green-50 text-green-700 font-semibold">Aadhaar e-KYC</span>
-                  </div>
-                </td>
-                <td className="py-3 px-4 text-center">
-                  <div className="text-[10px] font-semibold text-[#2E7D32] inline-flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-[#6CBF3D]"></span> Active
-                  </div>
-                </td>
-                <td className="py-3 px-4 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <button onClick={() => setShowAddModal(true)} className="w-7 h-7 rounded hover:bg-surface-container text-secondary hover:text-[#0F1B2E] transition-colors" title="Edit Dealer Profile">
-                      <span className="material-symbols-outlined text-[17px]">edit</span>
-                    </button>
-                    <button className="w-7 h-7 rounded hover:bg-surface-container text-secondary hover:text-[#0F1B2E] transition-colors" title="View Customer Quotes">
-                      <span className="material-symbols-outlined text-[17px]">folder_open</span>
-                    </button>
-                    <button className="w-7 h-7 rounded hover:bg-surface-container text-secondary hover:text-[#0F1B2E] transition-colors" title="Reset Portal Credentials">
-                      <span className="material-symbols-outlined text-[17px]">key</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
+              {paginatedDealers.length === 0 ? (
+                <tr>
+                  <td colSpan="9" className="py-12 text-center text-secondary">
+                    <span className="material-symbols-outlined text-4xl text-secondary/40 block mb-2">search_off</span>
+                    No Gujarat dealers match your current filter criteria.
+                  </td>
+                </tr>
+              ) : (
+                paginatedDealers.map((d) => {
+                  const isGold = d.tier.includes('Gold');
+                  const isPlat = d.tier.includes('Platinum');
+                  const isDiam = d.tier.includes('Diamond');
+                  const tierColor = isPlat
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                    : isDiam
+                    ? 'bg-purple-50 text-purple-800 border-purple-200'
+                    : isGold
+                    ? 'bg-amber-50 text-amber-800 border-amber-200'
+                    : 'bg-gray-100 text-gray-800 border-gray-300';
+                  const initials = (d.firmName || 'ST').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
 
-              {/* Row 2: Gir Green Solutions */}
-              <tr className="bg-[#F6F8F7] hover:bg-[#F0F4F2] transition-colors duration-150 group">
-                <td className="py-3 px-4">
-                  <span className="font-mono text-label-xs font-semibold text-[#0F1B2E] bg-white px-2 py-1 rounded border border-[#E4E7EB]">
-                    #SV-DLR-0841
-                  </span>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#3E7C8C] text-white font-poppins font-bold flex items-center justify-center text-xs">
-                      GG
-                    </div>
-                    <div>
-                      <div className="font-poppins font-semibold text-on-surface group-hover:text-primary transition-colors">Gir Green Solutions LLP</div>
-                      <div className="text-[12px] text-secondary flex items-center gap-2">
-                        <span className="font-medium text-on-surface">Amit Patel</span>
-                        <span className="text-outline-variant">•</span>
-                        <span>+91 94280 11982</span>
-                      </div>
-                      <div className="text-[11px] text-secondary/70">amit@girgreensolar.com</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="font-medium text-on-surface">Surat, Gujarat</div>
-                  <span className="inline-block mt-0.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-50 text-purple-800 border border-purple-200">
-                    DGVCL Circle
-                  </span>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    <span className="material-symbols-outlined text-[13px]">workspace_premium</span> Platinum Partner
-                  </div>
-                  <div className="text-[11px] text-secondary mt-1">Cap: <span className="font-semibold text-on-surface">₹7,500 / kW</span></div>
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <div className="font-semibold text-on-surface font-poppins">68 Quotes</div>
-                  <div className="text-[11px] text-[#2E7D32]">29 this month</div>
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <div className="font-bold text-on-surface font-poppins">2.85 MW</div>
-                  <div className="w-24 ml-auto mt-1.5 bg-surface-container rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-[#6CBF3D] h-full rounded-full" style={{ width: '95%' }}></div>
-                  </div>
-                  <div className="text-[10px] text-secondary mt-0.5">95% of Q2 quota</div>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-on-surface font-medium">
-                    <span>24AAEFG9921D1ZZ</span>
-                    <span className="material-symbols-outlined text-[15px] text-[#2E7D32]">check_circle</span>
-                  </div>
-                  <div className="flex items-center gap-1 mt-1">
-                    <span className="px-1.5 py-0.2 rounded text-[10px] bg-green-50 text-green-700 font-semibold">PAN OK</span>
-                    <span className="px-1.5 py-0.2 rounded text-[10px] bg-green-50 text-green-700 font-semibold">Vendor Empaneled</span>
-                  </div>
-                </td>
-                <td className="py-3 px-4 text-center">
-                  <div className="text-[10px] font-semibold text-[#2E7D32] inline-flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-[#6CBF3D]"></span> Active
-                  </div>
-                </td>
-                <td className="py-3 px-4 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <button className="w-7 h-7 rounded hover:bg-surface-container text-secondary hover:text-[#0F1B2E]"><span className="material-symbols-outlined text-[17px]">edit</span></button>
-                    <button className="w-7 h-7 rounded hover:bg-surface-container text-secondary hover:text-[#0F1B2E]"><span className="material-symbols-outlined text-[17px]">folder_open</span></button>
-                    <button className="w-7 h-7 rounded hover:bg-surface-container text-secondary hover:text-[#0F1B2E]"><span className="material-symbols-outlined text-[17px]">key</span></button>
-                  </div>
-                </td>
-              </tr>
-
-              {/* Row 3: Saurashtra Power Dynamics */}
-              <tr className="bg-white hover:bg-[#F0F4F2] transition-colors duration-150 group">
-                <td className="py-3 px-4">
-                  <span className="font-mono text-label-xs font-semibold text-[#0F1B2E] bg-surface-container px-2 py-1 rounded">
-                    #SV-DLR-0792
-                  </span>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-slate-700 text-white font-poppins font-bold flex items-center justify-center text-xs">
-                      SP
-                    </div>
-                    <div>
-                      <div className="font-poppins font-semibold text-on-surface group-hover:text-primary transition-colors">Saurashtra Power Dynamics</div>
-                      <div className="text-[12px] text-secondary flex items-center gap-2">
-                        <span className="font-medium text-on-surface">Bhavesh Vora</span>
-                        <span className="text-outline-variant">•</span>
-                        <span>+91 97234 50912</span>
-                      </div>
-                      <div className="text-[11px] text-secondary/70">bvora@saurashtrapower.in</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="font-medium text-on-surface">Morbi, Gujarat</div>
-                  <span className="inline-block mt-0.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-800 border border-blue-200">
-                    PGVCL Circle
-                  </span>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-800 border border-gray-300">
-                    <span className="material-symbols-outlined text-[13px]">shield</span> Standard Tier
-                  </div>
-                  <div className="text-[11px] text-secondary mt-1">Cap: <span className="font-semibold text-on-surface">₹5,000 / kW</span></div>
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <div className="font-semibold text-on-surface font-poppins">19 Quotes</div>
-                  <div className="text-[11px] text-[#2E7D32]">5 this month</div>
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <div className="font-bold text-on-surface font-poppins">640 kW</div>
-                  <div className="w-24 ml-auto mt-1.5 bg-surface-container rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-[#6CBF3D] h-full rounded-full" style={{ width: '58%' }}></div>
-                  </div>
-                  <div className="text-[10px] text-secondary mt-0.5">58% of Q2 quota</div>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-on-surface font-medium">
-                    <span>24AAACS9182C1ZG</span>
-                    <span className="material-symbols-outlined text-[15px] text-[#2E7D32]">check_circle</span>
-                  </div>
-                  <div className="flex items-center gap-1 mt-1">
-                    <span className="px-1.5 py-0.2 rounded text-[10px] bg-green-50 text-green-700 font-semibold">PAN OK</span>
-                    <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-50 text-amber-700 font-semibold">DISCOM Renew Due</span>
-                  </div>
-                </td>
-                <td className="py-3 px-4 text-center">
-                  <div className="text-[10px] font-semibold text-[#2E7D32] inline-flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-[#6CBF3D]"></span> Active
-                  </div>
-                </td>
-                <td className="py-3 px-4 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <button className="w-7 h-7 rounded hover:bg-surface-container text-secondary hover:text-[#0F1B2E]"><span className="material-symbols-outlined text-[17px]">edit</span></button>
-                    <button className="w-7 h-7 rounded hover:bg-surface-container text-secondary hover:text-[#0F1B2E]"><span className="material-symbols-outlined text-[17px]">folder_open</span></button>
-                    <button className="w-7 h-7 rounded hover:bg-surface-container text-secondary hover:text-[#0F1B2E]"><span className="material-symbols-outlined text-[17px]">key</span></button>
-                  </div>
-                </td>
-              </tr>
+                  return (
+                    <tr key={d.id} className="bg-white hover:bg-[#F0F4F2] transition-colors duration-150 group">
+                      <td className="py-3 px-4">
+                        <span className="font-mono text-label-xs font-semibold text-[#0F1B2E] bg-surface-container px-2 py-1 rounded">
+                          #{d.id}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          {d.avatar ? (
+                            <img
+                              alt={d.contactPerson}
+                              className="w-10 h-10 rounded-full object-cover ring-2 ring-[#6CBF3D]/40 shrink-0"
+                              src={d.avatar}
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-surface-container-high text-primary font-bold flex items-center justify-center text-xs shrink-0 border border-primary/20">
+                              {initials}
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <div className="font-poppins font-semibold text-on-surface group-hover:text-primary transition-colors truncate max-w-[220px]">
+                              {d.firmName}
+                            </div>
+                            <div className="text-[12px] text-secondary flex items-center gap-2">
+                              <span className="font-medium text-on-surface truncate">{d.contactPerson}</span>
+                              <span className="text-outline-variant">•</span>
+                              <span className="shrink-0">{d.mobile}</span>
+                            </div>
+                            <div className="text-[11px] text-secondary/70 truncate">{d.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="font-medium text-on-surface">{d.city}, Gujarat</div>
+                        <span className="inline-block mt-0.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-800 border border-blue-200">
+                          {d.discom} Circle
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${tierColor}`}>
+                          <span className="material-symbols-outlined text-[13px]">military_tech</span> {d.tier}
+                        </div>
+                        <div className="text-[11px] text-secondary mt-1">Cap: <span className="font-semibold text-on-surface">₹{(d.maxMarginCapPerKw || 5000).toLocaleString()} / kW</span></div>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="font-semibold text-on-surface font-poppins">{d.totalQuotes} Quotes</div>
+                        <div className="text-[11px] text-[#2E7D32]">Active partner</div>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="font-bold text-on-surface font-poppins">
+                          {d.totalCapacityKw >= 1000 ? `${(d.totalCapacityKw / 1000).toFixed(2)} MW` : `${d.totalCapacityKw} kW`}
+                        </div>
+                        <div className="w-24 ml-auto mt-1.5 bg-surface-container rounded-full h-1.5 overflow-hidden">
+                          <div className="bg-[#6CBF3D] h-full rounded-full" style={{ width: `${Math.min(100, Math.max(20, (d.totalCapacityKw / 30)))}%` }}></div>
+                        </div>
+                        <div className="text-[10px] text-secondary mt-0.5">Gujarat Solar Grid</div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-1.5 font-mono text-[11px] text-on-surface font-medium">
+                          <span>{d.gstin || '24AFPFS7402A1Z7'}</span>
+                          <span className="material-symbols-outlined text-[15px] text-[#2E7D32]" title="GSTIN Active & Verified">check_circle</span>
+                        </div>
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className="px-1.5 py-0.2 rounded text-[10px] bg-green-50 text-green-700 font-semibold">PAN OK</span>
+                          <span className="px-1.5 py-0.2 rounded text-[10px] bg-green-50 text-green-700 font-semibold">Aadhaar e-KYC</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <div className={`text-[10px] font-semibold inline-flex items-center gap-1 ${
+                          d.status === 'Active' ? 'text-[#2E7D32]' : d.status === 'Pending' ? 'text-amber-700' : 'text-slate-500'
+                        }`}>
+                          <span className={`w-2 h-2 rounded-full ${
+                            d.status === 'Active' ? 'bg-[#6CBF3D]' : d.status === 'Pending' ? 'bg-amber-500' : 'bg-slate-400'
+                          }`}></span> {d.status}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => toggleDealerStatus(d.id)}
+                            className={`w-7 h-7 rounded hover:bg-surface-container transition-colors ${
+                              d.status === 'Active' ? 'text-secondary hover:text-error' : 'text-primary hover:text-primary-container'
+                            }`}
+                            title={d.status === 'Active' ? 'Suspend Portal Access' : 'Activate Dealer'}
+                          >
+                            <span className="material-symbols-outlined text-[17px]">
+                              {d.status === 'Active' ? 'block' : 'check_circle'}
+                            </span>
+                          </button>
+                          <button
+                            onClick={() => setShowAddModal(true)}
+                            className="w-7 h-7 rounded hover:bg-surface-container text-secondary hover:text-[#0F1B2E] transition-colors"
+                            title="Edit Dealer Profile"
+                          >
+                            <span className="material-symbols-outlined text-[17px]">edit</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
 
-        {/* Table Footer */}
+        {/* Table Footer with real Gujarat pagination */}
         <div className="p-4 border-t border-[#E4E7EB] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-secondary font-label-sm text-label-sm">
-          <span>Showing <span className="font-semibold text-on-surface">1 to 3</span> of <span className="font-semibold text-on-surface">62</span> entries</span>
+          <span>
+            Showing <span className="font-semibold text-on-surface">{filteredDealers.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, filteredDealers.length)}</span> of <span className="font-semibold text-on-surface">{filteredDealers.length}</span> Gujarat entries
+          </span>
           <div className="flex items-center gap-1">
-            <button className="p-1.5 rounded border border-[#E4E7EB] text-secondary hover:bg-surface-container transition-colors disabled:opacity-50">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded border border-[#E4E7EB] text-secondary hover:bg-surface-container transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
               <span className="material-symbols-outlined text-[18px]">chevron_left</span>
             </button>
-            <button className="px-3 py-1 rounded bg-[#0F1B2E] text-white font-semibold">1</button>
-            <button className="px-3 py-1 rounded hover:bg-surface-container text-on-surface transition-colors">2</button>
-            <button className="px-3 py-1 rounded hover:bg-surface-container text-on-surface transition-colors">3</button>
-            <span className="px-1 text-secondary">...</span>
-            <button className="p-1.5 rounded border border-[#E4E7EB] text-secondary hover:bg-surface-container transition-colors">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum = i + 1;
+              if (totalPages > 5 && currentPage > 3) {
+                pageNum = currentPage - 2 + i;
+                if (pageNum > totalPages) pageNum = totalPages - (4 - i);
+              }
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
+                    currentPage === pageNum ? 'bg-[#0F1B2E] text-white' : 'hover:bg-surface-container text-on-surface'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded border border-[#E4E7EB] text-secondary hover:bg-surface-container transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
               <span className="material-symbols-outlined text-[18px]">chevron_right</span>
             </button>
           </div>

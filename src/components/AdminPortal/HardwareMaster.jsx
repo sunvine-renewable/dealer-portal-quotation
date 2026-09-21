@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 
 export default function HardwareMaster() {
-  const { modulesList, setModulesList, invertersList, setInvertersList, addNotification } = useApp();
+  const { modulesList, setModulesList, invertersList, setInvertersList, addNotification, pdfBomSpecs, dealers } = useApp();
   const [activeTab, setActiveTab] = useState('modules'); // 'modules' | 'inverters' | 'bos'
   const [moduleSearch, setModuleSearch] = useState('');
+  const [moduleFilter, setModuleFilter] = useState('all');
+  const [inverterSearch, setInverterSearch] = useState('');
+  const [inverterFilter, setInverterFilter] = useState('all');
+  const [bosCapacityFilter, setBosCapacityFilter] = useState('all');
   const [toastMessage, setToastMessage] = useState('');
   const [showAddModuleModal, setShowAddModuleModal] = useState(false);
   const [showAddInverterModal, setShowAddInverterModal] = useState(false);
@@ -107,6 +111,38 @@ export default function HardwareMaster() {
     });
   };
 
+  // Filtered lists
+  const filteredModules = (modulesList || []).filter(mod => {
+    const term = moduleSearch.toLowerCase();
+    const matchText = (mod.brand && mod.brand.toLowerCase().includes(term)) ||
+                      (mod.model && mod.model.toLowerCase().includes(term)) ||
+                      (mod.cellTech && mod.cellTech.toLowerCase().includes(term)) ||
+                      String(mod.wattage).includes(term);
+    if (!matchText) return false;
+    if (moduleFilter === 'topcon' && !(mod.cellTech || '').toLowerCase().includes('topcon')) return false;
+    if (moduleFilter === 'perc' && !(mod.cellTech || '').toLowerCase().includes('perc')) return false;
+    if (moduleFilter === 'commercial' && Number(mod.wattage) < 585) return false;
+    return true;
+  });
+
+  const filteredInverters = (invertersList || []).filter(inv => {
+    const term = inverterSearch.toLowerCase();
+    const matchText = (inv.brand && inv.brand.toLowerCase().includes(term)) ||
+                      (inv.model && inv.model.toLowerCase().includes(term)) ||
+                      (inv.capacity && inv.capacity.toLowerCase().includes(term));
+    if (!matchText) return false;
+    if (inverterFilter === 'single' && !(inv.phase || '').toLowerCase().includes('1-phase')) return false;
+    if (inverterFilter === 'three' && !(inv.phase || '').toLowerCase().includes('3-phase')) return false;
+    return true;
+  });
+
+  const filteredBomSpecs = (pdfBomSpecs || []).filter(spec => {
+    if (bosCapacityFilter === 'all') return true;
+    return spec.capacityKW.includes(bosCapacityFilter);
+  });
+
+  const totalDealersCount = dealers?.length || 550;
+
   return (
     <div className="flex flex-col w-full pb-16">
       {/* Toast Notification */}
@@ -127,11 +163,11 @@ export default function HardwareMaster() {
               Solar Equipment &amp; Hardware Master Catalog
             </h1>
             <span className="bg-primary-container/15 text-primary text-label-xs font-semibold px-2.5 py-0.5 rounded-full border border-primary-container/30">
-              ALMM Compliant 2025
+              ALMM Compliant 2025 • Gujarat DISCOMs
             </span>
           </div>
           <p className="font-body-md text-body-md text-secondary mt-1">
-            Manage approved solar modules, string inverters, and hardware specs available to dealers for quotation generation.
+            Manage approved solar modules, string inverters, and BOS specifications from Sunvine BOS Price Matrix.
           </p>
         </div>
         {/* Action Buttons */}
@@ -178,12 +214,12 @@ export default function HardwareMaster() {
             </span>
           </div>
           <div className="flex items-baseline gap-2 mt-3">
-            <span className="font-headline-xl text-headline-xl text-inverse-surface font-bold">12</span>
-            <span className="font-label-sm text-label-sm text-secondary font-medium">ALMM List Models</span>
+            <span className="font-headline-xl text-headline-xl text-inverse-surface font-bold">{modulesList?.length || 8}</span>
+            <span className="font-label-sm text-label-sm text-secondary font-medium">ALMM Models</span>
           </div>
           <div className="flex items-center gap-1.5 mt-2.5">
             <span className="material-symbols-outlined text-primary text-sm">verified</span>
-            <span className="font-label-xs text-label-xs text-primary font-semibold">All MNRE List-I Compliant</span>
+            <span className="font-label-xs text-label-xs text-primary font-semibold">Waaree, APS, Adani, Rayzone</span>
           </div>
         </div>
 
@@ -196,30 +232,30 @@ export default function HardwareMaster() {
             </span>
           </div>
           <div className="flex items-baseline gap-2 mt-3">
-            <span className="font-headline-xl text-headline-xl text-inverse-surface font-bold">18</span>
-            <span className="font-label-sm text-label-sm text-secondary font-medium">String &amp; Hybrid</span>
+            <span className="font-headline-xl text-headline-xl text-inverse-surface font-bold">{invertersList?.length || 9}</span>
+            <span className="font-label-sm text-label-sm text-secondary font-medium">2.2kW to 125kW</span>
           </div>
           <div className="flex items-center gap-1.5 mt-2.5">
             <span className="material-symbols-outlined text-primary text-sm">bolt</span>
-            <span className="font-label-xs text-label-xs text-secondary font-semibold">Tier-1 Certified Grid-Tie</span>
+            <span className="font-label-xs text-label-xs text-secondary font-semibold">Solaryaan, Solis, Sungrow</span>
           </div>
         </div>
 
         {/* Card 3: Avg. Module Efficiency */}
         <div className="bg-surface-container-lowest rounded-xl p-5 border border-surface-container-highest shadow-sm hover:shadow transition-shadow">
           <div className="flex items-center justify-between text-secondary">
-            <span className="font-label-sm text-label-sm font-semibold tracking-wider uppercase">Avg. Module Efficiency</span>
+            <span className="font-label-sm text-label-sm font-semibold tracking-wider uppercase">BOS BOM Profiles</span>
             <span className="p-1.5 rounded-lg bg-surface-container-low text-primary">
-              <span className="material-symbols-outlined">speed</span>
+              <span className="material-symbols-outlined">table_view</span>
             </span>
           </div>
           <div className="flex items-baseline gap-2 mt-3">
-            <span className="font-headline-xl text-headline-xl text-inverse-surface font-bold">22.4%</span>
-            <span className="font-label-xs text-label-xs text-primary font-semibold">+0.6% vs 2024</span>
+            <span className="font-headline-xl text-headline-xl text-inverse-surface font-bold">{pdfBomSpecs?.length || 9}</span>
+            <span className="font-label-xs text-label-xs text-primary font-semibold">2.16kW - 8.10kW</span>
           </div>
           <div className="flex items-center gap-1.5 mt-2.5">
             <span className="material-symbols-outlined text-secondary text-sm">tune</span>
-            <span className="font-label-xs text-label-xs text-secondary font-semibold">TOPCon Bifacial Standard</span>
+            <span className="font-label-xs text-label-xs text-secondary font-semibold">Exact PDF Specifications</span>
           </div>
         </div>
 
@@ -236,7 +272,7 @@ export default function HardwareMaster() {
           </div>
           <div className="flex items-center gap-1.5 mt-2.5">
             <span className="w-2 h-2 rounded-full bg-primary-container"></span>
-            <span className="font-label-xs text-label-xs text-secondary font-semibold">Synced across 48 Active Dealers</span>
+            <span className="font-label-xs text-label-xs text-secondary font-semibold">Synced across {totalDealersCount} Gujarat Dealers</span>
           </div>
         </div>
       </section>
@@ -254,7 +290,7 @@ export default function HardwareMaster() {
           >
             <span className="material-symbols-outlined text-primary-container">solar_power</span>
             <span>Solar PV Modules (ALMM Approved)</span>
-            <span className="bg-surface-container-lowest/20 text-surface-container-lowest text-label-xs px-2 py-0.5 rounded-full">12 Models</span>
+            <span className="bg-surface-container-lowest/20 text-surface-container-lowest text-label-xs px-2 py-0.5 rounded-full">{modulesList?.length || 8} Models</span>
           </button>
           <button
             onClick={() => setActiveTab('inverters')}
@@ -266,7 +302,7 @@ export default function HardwareMaster() {
           >
             <span className="material-symbols-outlined">settings_input_component</span>
             <span>Solar Inverters (Grid-Tied &amp; Hybrid)</span>
-            <span className="bg-surface-container-highest text-secondary text-label-xs px-2 py-0.5 rounded-full">18 Models</span>
+            <span className="bg-surface-container-highest text-secondary text-label-xs px-2 py-0.5 rounded-full">{invertersList?.length || 9} Models</span>
           </button>
           <button
             onClick={() => setActiveTab('bos')}
@@ -277,8 +313,8 @@ export default function HardwareMaster() {
             }`}
           >
             <span className="material-symbols-outlined">cable</span>
-            <span>Mounting Structures &amp; Cables</span>
-            <span className="bg-surface-container-highest text-secondary text-label-xs px-2 py-0.5 rounded-full">BOS</span>
+            <span>Bill of Materials (BOM Specs Table)</span>
+            <span className="bg-surface-container-highest text-secondary text-label-xs px-2 py-0.5 rounded-full">PDF Specs</span>
           </button>
         </div>
         <button
@@ -308,10 +344,30 @@ export default function HardwareMaster() {
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-label-xs text-secondary font-semibold uppercase mr-1">Filter:</span>
-              <button className="px-3 py-1 rounded-full bg-inverse-surface text-surface-container-lowest text-label-xs font-semibold">All (12)</button>
-              <button className="px-3 py-1 rounded-full bg-surface-container-low text-secondary hover:bg-surface-container hover:text-inverse-surface text-label-xs font-medium border border-surface-container-highest">TOPCon Bifacial</button>
-              <button className="px-3 py-1 rounded-full bg-surface-container-low text-secondary hover:bg-surface-container hover:text-inverse-surface text-label-xs font-medium border border-surface-container-highest">Mono PERC</button>
-              <button className="px-3 py-1 rounded-full bg-surface-container-low text-secondary hover:bg-surface-container hover:text-inverse-surface text-label-xs font-medium border border-surface-container-highest">Commercial 600W+</button>
+              <button
+                onClick={() => setModuleFilter('all')}
+                className={`px-3 py-1 rounded-full text-label-xs font-semibold ${moduleFilter === 'all' ? 'bg-inverse-surface text-surface-container-lowest' : 'bg-surface-container-low text-secondary border border-surface-container-highest'}`}
+              >
+                All ({modulesList?.length || 0})
+              </button>
+              <button
+                onClick={() => setModuleFilter('topcon')}
+                className={`px-3 py-1 rounded-full text-label-xs font-medium border ${moduleFilter === 'topcon' ? 'bg-inverse-surface text-surface-container-lowest' : 'bg-surface-container-low text-secondary border-surface-container-highest'}`}
+              >
+                TOPCon Bifacial
+              </button>
+              <button
+                onClick={() => setModuleFilter('perc')}
+                className={`px-3 py-1 rounded-full text-label-xs font-medium border ${moduleFilter === 'perc' ? 'bg-inverse-surface text-surface-container-lowest' : 'bg-surface-container-low text-secondary border-surface-container-highest'}`}
+              >
+                Mono PERC
+              </button>
+              <button
+                onClick={() => setModuleFilter('commercial')}
+                className={`px-3 py-1 rounded-full text-label-xs font-medium border ${moduleFilter === 'commercial' ? 'bg-inverse-surface text-surface-container-lowest' : 'bg-surface-container-low text-secondary border-surface-container-highest'}`}
+              >
+                High Wattage (≥ 585W)
+              </button>
             </div>
           </div>
           <div className="overflow-x-auto">
@@ -331,170 +387,50 @@ export default function HardwareMaster() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-container-highest font-body-md text-on-surface">
-                {/* Row 1: Premier Energies */}
-                <tr className="hover:bg-surface-container-low/60 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 rounded bg-surface-container-low text-inverse-surface font-bold text-xs flex items-center justify-center border border-surface-container-highest">PE</span>
-                      <span className="font-semibold text-inverse-surface">Premier Energies</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 font-semibold text-inverse-surface">Premier Shine 600WP Bifacial</td>
-                  <td className="px-4 py-3">
-                    <span className="inline-block px-2 py-0.5 rounded-full text-label-xs font-semibold bg-tertiary-container/20 text-tertiary">TOPCon Mono Bifacial</span>
-                  </td>
-                  <td className="px-4 py-3 text-right font-bold text-inverse-surface font-mono">600 WP</td>
-                  <td className="px-4 py-3 text-body-sm text-secondary font-mono">2278 × 1134 × 30 mm | 28.5 kg</td>
-                  <td className="px-4 py-3 text-right font-bold text-primary font-mono">22.6%</td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="font-bold text-inverse-surface font-mono">₹ 18.50 / Wp</div>
-                    <div className="text-label-xs text-secondary font-mono">₹ 11,100 / Panel</div>
-                  </td>
-                  <td className="px-4 py-3 text-body-sm text-secondary">30 Years (0.4% p.a.)</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
-                      <span className="w-2 h-2 rounded-full bg-primary-container"></span> Active
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1.5 text-secondary">
-                      <button className="p-1 hover:text-inverse-surface transition-colors" title="Edit Spec"><span className="material-symbols-outlined">edit</span></button>
-                      <button className="p-1 hover:text-error transition-colors" title="Archive Spec"><span className="material-symbols-outlined">archive</span></button>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Row 2: Waaree Energies */}
-                <tr className="bg-surface-container-low/30 hover:bg-surface-container-low/60 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 rounded bg-surface-container-low text-inverse-surface font-bold text-xs flex items-center justify-center border border-surface-container-highest">WE</span>
-                      <span className="font-semibold text-inverse-surface">Waaree Energies</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 font-semibold text-inverse-surface">TopCon HyperIon 585WP</td>
-                  <td className="px-4 py-3">
-                    <span className="inline-block px-2 py-0.5 rounded-full text-label-xs font-semibold bg-tertiary-container/20 text-tertiary">TOPCon Mono Bifacial</span>
-                  </td>
-                  <td className="px-4 py-3 text-right font-bold text-inverse-surface font-mono">585 WP</td>
-                  <td className="px-4 py-3 text-body-sm text-secondary font-mono">2278 × 1134 × 35 mm | 27.8 kg</td>
-                  <td className="px-4 py-3 text-right font-bold text-primary font-mono">22.4%</td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="font-bold text-inverse-surface font-mono">₹ 18.25 / Wp</div>
-                    <div className="text-label-xs text-secondary font-mono">₹ 10,676 / Panel</div>
-                  </td>
-                  <td className="px-4 py-3 text-body-sm text-secondary">30 Years (0.4% p.a.)</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
-                      <span className="w-2 h-2 rounded-full bg-primary-container"></span> Active
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1.5 text-secondary">
-                      <button className="p-1 hover:text-inverse-surface transition-colors"><span className="material-symbols-outlined">edit</span></button>
-                      <button className="p-1 hover:text-error transition-colors"><span className="material-symbols-outlined">archive</span></button>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Row 3: Adani Solar */}
-                <tr className="hover:bg-surface-container-low/60 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 rounded bg-surface-container-low text-inverse-surface font-bold text-xs flex items-center justify-center border border-surface-container-highest">AS</span>
-                      <span className="font-semibold text-inverse-surface">Adani Solar</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 font-semibold text-inverse-surface">Elan Bi-550W Vertex</td>
-                  <td className="px-4 py-3">
-                    <span className="inline-block px-2 py-0.5 rounded-full text-label-xs font-semibold bg-secondary-container text-on-secondary-fixed">Mono PERC Half-Cut 16-BB</span>
-                  </td>
-                  <td className="px-4 py-3 text-right font-bold text-inverse-surface font-mono">550 WP</td>
-                  <td className="px-4 py-3 text-body-sm text-secondary font-mono">2279 × 1134 × 35 mm | 28.0 kg</td>
-                  <td className="px-4 py-3 text-right font-bold text-primary font-mono">21.8%</td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="font-bold text-inverse-surface font-mono">₹ 17.80 / Wp</div>
-                    <div className="text-label-xs text-secondary font-mono">₹ 9,790 / Panel</div>
-                  </td>
-                  <td className="px-4 py-3 text-body-sm text-secondary">25 Years (0.55% p.a.)</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
-                      <span className="w-2 h-2 rounded-full bg-primary-container"></span> Active
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1.5 text-secondary">
-                      <button className="p-1 hover:text-inverse-surface transition-colors"><span className="material-symbols-outlined">edit</span></button>
-                      <button className="p-1 hover:text-error transition-colors"><span className="material-symbols-outlined">archive</span></button>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Row 4: Vikram Solar */}
-                <tr className="bg-surface-container-low/30 hover:bg-surface-container-low/60 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 rounded bg-surface-container-low text-inverse-surface font-bold text-xs flex items-center justify-center border border-surface-container-highest">VS</span>
-                      <span className="font-semibold text-inverse-surface">Vikram Solar</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 font-semibold text-inverse-surface">Suryava 550 Mono Half-Cut</td>
-                  <td className="px-4 py-3">
-                    <span className="inline-block px-2 py-0.5 rounded-full text-label-xs font-semibold bg-secondary-container text-on-secondary-fixed">Mono PERC Half-Cut 16-BB</span>
-                  </td>
-                  <td className="px-4 py-3 text-right font-bold text-inverse-surface font-mono">550 WP</td>
-                  <td className="px-4 py-3 text-body-sm text-secondary font-mono">2278 × 1134 × 30 mm | 27.5 kg</td>
-                  <td className="px-4 py-3 text-right font-bold text-primary font-mono">21.5%</td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="font-bold text-inverse-surface font-mono">₹ 17.50 / Wp</div>
-                    <div className="text-label-xs text-secondary font-mono">₹ 9,625 / Panel</div>
-                  </td>
-                  <td className="px-4 py-3 text-body-sm text-secondary">25 Years (0.55% p.a.)</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
-                      <span className="w-2 h-2 rounded-full bg-primary-container"></span> Active
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1.5 text-secondary">
-                      <button className="p-1 hover:text-inverse-surface transition-colors"><span className="material-symbols-outlined">edit</span></button>
-                      <button className="p-1 hover:text-error transition-colors"><span className="material-symbols-outlined">archive</span></button>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Row 5: Sunvine Premier */}
-                <tr className="hover:bg-surface-container-low/60 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 rounded bg-primary-container/20 text-primary font-bold text-xs flex items-center justify-center border border-primary-container/40">SP</span>
-                      <span className="font-semibold text-inverse-surface">Sunvine Premier</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 font-semibold text-inverse-surface">Sunvine UltraCell 590-BF</td>
-                  <td className="px-4 py-3">
-                    <span className="inline-block px-2 py-0.5 rounded-full text-label-xs font-semibold bg-tertiary-container/20 text-tertiary">TOPCon Mono Bifacial</span>
-                  </td>
-                  <td className="px-4 py-3 text-right font-bold text-inverse-surface font-mono">590 WP</td>
-                  <td className="px-4 py-3 text-body-sm text-secondary font-mono">2278 × 1134 × 30 mm | 28.1 kg</td>
-                  <td className="px-4 py-3 text-right font-bold text-primary font-mono">22.5%</td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="font-bold text-inverse-surface font-mono">₹ 18.00 / Wp</div>
-                    <div className="text-label-xs text-secondary font-mono">₹ 10,620 / Panel</div>
-                  </td>
-                  <td className="px-4 py-3 text-body-sm text-secondary">30 Years (0.4% p.a.)</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
-                      <span className="w-2 h-2 rounded-full bg-primary-container"></span> Active
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1.5 text-secondary">
-                      <button className="p-1 hover:text-inverse-surface transition-colors"><span className="material-symbols-outlined">edit</span></button>
-                      <button className="p-1 hover:text-error transition-colors"><span className="material-symbols-outlined">archive</span></button>
-                    </div>
-                  </td>
-                </tr>
+                {filteredModules.map((mod, idx) => {
+                  const initial = mod.brand ? mod.brand.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : 'PV';
+                  return (
+                    <tr key={mod.id || idx} className={`hover:bg-surface-container-low/60 transition-colors ${idx % 2 === 1 ? 'bg-surface-container-low/30' : ''}`}>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="w-7 h-7 rounded bg-surface-container-low text-inverse-surface font-bold text-xs flex items-center justify-center border border-surface-container-highest">
+                            {initial}
+                          </span>
+                          <span className="font-semibold text-inverse-surface">{mod.brand}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-inverse-surface">{mod.model}</td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-label-xs font-semibold ${
+                          (mod.cellTech || '').includes('TOPCon')
+                            ? 'bg-tertiary-container/20 text-tertiary'
+                            : 'bg-secondary-container text-on-secondary-fixed'
+                        }`}>
+                          {mod.cellTech || 'TOPCon Mono Bifacial'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right font-bold text-inverse-surface font-mono">{mod.wattage} WP</td>
+                      <td className="px-4 py-3 text-body-sm text-secondary font-mono">{mod.dimensions || '2278 × 1134 × 30 mm | 28 kg'}</td>
+                      <td className="px-4 py-3 text-right font-bold text-primary font-mono">{mod.efficiency || '22.4%'}</td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="font-bold text-inverse-surface font-mono">{mod.ratePerWp || '₹ 18.50 / Wp'}</div>
+                        <div className="text-label-xs text-secondary font-mono">₹ {Math.round(Number(mod.wattage || 550) * 18.5).toLocaleString()} / Panel</div>
+                      </td>
+                      <td className="px-4 py-3 text-body-sm text-secondary">{mod.warranty || '30 Years Performance'}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+                          <span className="w-2 h-2 rounded-full bg-primary-container"></span> Active
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1.5 text-secondary">
+                          <button className="p-1 hover:text-inverse-surface transition-colors" title="Edit Spec"><span className="material-symbols-outlined">edit</span></button>
+                          <button className="p-1 hover:text-error transition-colors" title="Archive Spec"><span className="material-symbols-outlined">archive</span></button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -510,17 +446,37 @@ export default function HardwareMaster() {
                 Approved String &amp; Central Inverters Master (Single &amp; Three Phase)
               </h2>
               <p className="font-body-sm text-body-sm text-secondary mt-0.5">
-                Preset efficiencies, phase configurations, and base distributor rates for automated quotes.
+                Preset efficiencies, phase configurations, and base distributor rates for Gujarat quotations.
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <button className="px-3 py-1.5 text-label-xs font-semibold rounded-lg bg-surface-container-low text-secondary border border-surface-container-highest flex items-center gap-1">
-                <span className="material-symbols-outlined text-sm">filter_list</span>
-                <span>All Capacities</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-2.5 top-2 text-secondary text-sm">search</span>
+                <input
+                  type="text"
+                  placeholder="Search inverters..."
+                  value={inverterSearch}
+                  onChange={(e) => setInverterSearch(e.target.value)}
+                  className="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-surface-container-highest"
+                />
+              </div>
+              <button
+                onClick={() => setInverterFilter('all')}
+                className={`px-3 py-1.5 text-label-xs font-semibold rounded-lg border ${inverterFilter === 'all' ? 'bg-inverse-surface text-surface-container-lowest' : 'bg-surface-container-low text-secondary border-surface-container-highest'}`}
+              >
+                All ({invertersList?.length || 0})
               </button>
-              <button className="px-3 py-1.5 text-label-xs font-semibold rounded-lg bg-surface-container-low text-secondary border border-surface-container-highest flex items-center gap-1">
-                <span className="material-symbols-outlined text-sm">bolt</span>
-                <span>Grid-Tied Only</span>
+              <button
+                onClick={() => setInverterFilter('single')}
+                className={`px-3 py-1.5 text-label-xs font-semibold rounded-lg border ${inverterFilter === 'single' ? 'bg-inverse-surface text-surface-container-lowest' : 'bg-surface-container-low text-secondary border-surface-container-highest'}`}
+              >
+                1-Phase
+              </button>
+              <button
+                onClick={() => setInverterFilter('three')}
+                className={`px-3 py-1.5 text-label-xs font-semibold rounded-lg border ${inverterFilter === 'three' ? 'bg-inverse-surface text-surface-container-lowest' : 'bg-surface-container-low text-secondary border-surface-container-highest'}`}
+              >
+                3-Phase
               </button>
             </div>
           </div>
@@ -540,119 +496,137 @@ export default function HardwareMaster() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-container-highest font-body-md text-on-surface">
-                {/* Inverter 1: Solaryaan */}
-                <tr className="hover:bg-surface-container-low/60 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 rounded bg-primary-container/20 text-primary font-bold text-xs flex items-center justify-center border border-primary-container/40">SY</span>
-                      <span className="font-semibold text-inverse-surface">Solaryaan (Sunvine Smart)</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 font-semibold text-inverse-surface">Sunvine Solaryaan 5.0G</td>
-                  <td className="px-4 py-3 text-right font-bold text-inverse-surface font-mono">5 kW</td>
-                  <td className="px-4 py-3">
-                    <span className="inline-block px-2 py-0.5 rounded-full text-label-xs font-semibold bg-surface-container-high text-on-surface">1-Phase (2 MPPT)</span>
-                  </td>
-                  <td className="px-4 py-3 text-right font-bold text-primary font-mono">98.6%</td>
-                  <td className="px-4 py-3 text-right font-bold text-inverse-surface font-mono">₹ 54,000</td>
-                  <td className="px-4 py-3 text-body-sm text-secondary">8 Years Full Comprehensive</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
-                      <span className="w-2 h-2 rounded-full bg-primary-container"></span> Active
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1.5 text-secondary">
-                      <button className="p-1 hover:text-inverse-surface transition-colors" title="Edit Spec"><span className="material-symbols-outlined">edit</span></button>
-                      <button className="p-1 hover:text-primary transition-colors" title="Specs Sheet PDF"><span className="material-symbols-outlined">picture_as_pdf</span></button>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Inverter 2: Solis */}
-                <tr className="bg-surface-container-low/30 hover:bg-surface-container-low/60 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 rounded bg-surface-container-low text-inverse-surface font-bold text-xs flex items-center justify-center border border-surface-container-highest">SL</span>
-                      <span className="font-semibold text-inverse-surface">Solis</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 font-semibold text-inverse-surface">Solis 10K-3P-4G</td>
-                  <td className="px-4 py-3 text-right font-bold text-inverse-surface font-mono">10 kW</td>
-                  <td className="px-4 py-3">
-                    <span className="inline-block px-2 py-0.5 rounded-full text-label-xs font-semibold bg-surface-container-high text-on-surface">3-Phase (2 MPPT)</span>
-                  </td>
-                  <td className="px-4 py-3 text-right font-bold text-primary font-mono">98.8%</td>
-                  <td className="px-4 py-3 text-right font-bold text-inverse-surface font-mono">₹ 92,000</td>
-                  <td className="px-4 py-3 text-body-sm text-secondary">10 Years Extended</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
-                      <span className="w-2 h-2 rounded-full bg-primary-container"></span> Active
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1.5 text-secondary">
-                      <button className="p-1 hover:text-inverse-surface transition-colors"><span className="material-symbols-outlined">edit</span></button>
-                      <button className="p-1 hover:text-primary transition-colors"><span className="material-symbols-outlined">picture_as_pdf</span></button>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Inverter 3: Sungrow */}
-                <tr className="hover:bg-surface-container-low/60 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 rounded bg-surface-container-low text-inverse-surface font-bold text-xs flex items-center justify-center border border-surface-container-highest">SG</span>
-                      <span className="font-semibold text-inverse-surface">Sungrow</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 font-semibold text-inverse-surface">Sungrow SG50CX</td>
-                  <td className="px-4 py-3 text-right font-bold text-inverse-surface font-mono">50 kW</td>
-                  <td className="px-4 py-3">
-                    <span className="inline-block px-2 py-0.5 rounded-full text-label-xs font-semibold bg-surface-container-high text-on-surface">3-Phase (4 MPPT)</span>
-                  </td>
-                  <td className="px-4 py-3 text-right font-bold text-primary font-mono">99.0%</td>
-                  <td className="px-4 py-3 text-right font-bold text-inverse-surface font-mono">₹ 2,45,000</td>
-                  <td className="px-4 py-3 text-body-sm text-secondary">10 Years Extended</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
-                      <span className="w-2 h-2 rounded-full bg-primary-container"></span> Active
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1.5 text-secondary">
-                      <button className="p-1 hover:text-inverse-surface transition-colors"><span className="material-symbols-outlined">edit</span></button>
-                      <button className="p-1 hover:text-primary transition-colors"><span className="material-symbols-outlined">picture_as_pdf</span></button>
-                    </div>
-                  </td>
-                </tr>
+                {filteredInverters.map((inv, idx) => {
+                  const initial = inv.brand ? inv.brand.slice(0, 2).toUpperCase() : 'IN';
+                  return (
+                    <tr key={inv.id || idx} className={`hover:bg-surface-container-low/60 transition-colors ${idx % 2 === 1 ? 'bg-surface-container-low/30' : ''}`}>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="w-7 h-7 rounded bg-primary-container/20 text-primary font-bold text-xs flex items-center justify-center border border-primary-container/40">
+                            {initial}
+                          </span>
+                          <span className="font-semibold text-inverse-surface">{inv.brand}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-inverse-surface">{inv.model}</td>
+                      <td className="px-4 py-3 text-right font-bold text-inverse-surface font-mono">{inv.capacity}</td>
+                      <td className="px-4 py-3">
+                        <span className="inline-block px-2 py-0.5 rounded-full text-label-xs font-semibold bg-surface-container-high text-on-surface">
+                          {inv.phase || '3-Phase'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right font-bold text-primary font-mono">{inv.efficiency || '98.6%'}</td>
+                      <td className="px-4 py-3 text-right font-bold text-inverse-surface font-mono">{inv.basePrice || '₹ 54,000'}</td>
+                      <td className="px-4 py-3 text-body-sm text-secondary">{inv.warranty || '8 Years Comprehensive'}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+                          <span className="w-2 h-2 rounded-full bg-primary-container"></span> Active
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1.5 text-secondary">
+                          <button className="p-1 hover:text-inverse-surface transition-colors" title="Edit Spec"><span className="material-symbols-outlined">edit</span></button>
+                          <button className="p-1 hover:text-primary transition-colors" title="Specs Sheet PDF"><span className="material-symbols-outlined">picture_as_pdf</span></button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
       )}
 
-      {/* SECTION 3: BOS */}
+      {/* SECTION 3: REAL PDF BOS SPECIFICATIONS TABLE */}
       {activeTab === 'bos' && (
-        <div className="mt-6 bg-surface-container-lowest rounded-xl border border-surface-container-highest shadow-sm p-6">
-          <h2 className="font-headline-sm text-headline-sm text-inverse-surface font-bold mb-4">
-            Balance of System (BOS) Standard Catalog
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-lg bg-surface-container-low border border-surface-container-highest">
-              <h3 className="font-label-md font-bold text-on-surface">Hot-Dip Galvanized Structure</h3>
-              <p className="text-body-sm text-secondary mt-1">80 Micron minimum zinc coating, withstands 150 km/h wind load.</p>
-              <div className="mt-3 text-primary font-mono font-bold">Standard Grade IS 2062</div>
+        <div className="mt-6 bg-surface-container-lowest rounded-xl border border-surface-container-highest shadow-sm overflow-hidden p-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 mb-4 border-b border-surface-container-highest gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-headline-sm text-headline-sm text-inverse-surface font-bold">
+                  BOS (Balance of System) Master Specification Table
+                </h2>
+                <span className="px-2 py-0.5 rounded-full bg-primary-container/20 text-primary text-label-xs font-bold">
+                  From Official Price List PDF
+                </span>
+              </div>
+              <p className="font-body-sm text-body-sm text-secondary mt-1">
+                Standard component bill of materials (Wires, ACDB, DCDB, Earthing, PVC, MC4) across system capacities.
+              </p>
             </div>
-            <div className="p-4 rounded-lg bg-surface-container-low border border-surface-container-highest">
-              <h3 className="font-label-md font-bold text-on-surface">Solar DC Cables (1C × 4/6 sq.mm)</h3>
-              <p className="text-body-sm text-secondary mt-1">XLPO insulated, UV resistant, electron-beam cross-linked copper.</p>
-              <div className="mt-3 text-primary font-mono font-bold">Polycab / Havells EN 50618</div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-secondary">Capacity:</span>
+              <select
+                value={bosCapacityFilter}
+                onChange={(e) => setBosCapacityFilter(e.target.value)}
+                className="px-3 py-1.5 text-xs rounded-lg border border-surface-container-highest bg-surface-container-lowest"
+              >
+                <option value="all">All Capacities (2.16kW to 8.10kW)</option>
+                <option value="2.16">2.16 kW</option>
+                <option value="2.70">2.70 kW</option>
+                <option value="3.24">3.24 kW</option>
+                <option value="3.78">3.78 kW</option>
+                <option value="4.32">4.32 kW</option>
+                <option value="4.86">4.86 kW</option>
+                <option value="5.40">5.40 kW</option>
+                <option value="5.94">5.94 kW</option>
+                <option value="8.10">8.10 kW</option>
+              </select>
             </div>
-            <div className="p-4 rounded-lg bg-surface-container-low border border-surface-container-highest">
-              <h3 className="font-label-md font-bold text-on-surface">Dual Surge Protection (SPD Type II)</h3>
-              <p className="text-body-sm text-secondary mt-1">IP65 poly-carbonate ACDB &amp; DCDB distribution junction enclosures.</p>
-              <div className="mt-3 text-primary font-mono font-bold">Hensel / Eaton / Schneider</div>
+          </div>
+
+          {/* BOS Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[1000px]">
+              <thead>
+                <tr className="bg-inverse-surface text-surface-container-lowest text-label-sm font-semibold h-11 border-b border-surface-container-lowest/10">
+                  <th className="px-3 py-2 font-label-sm">Capacity</th>
+                  <th className="px-3 py-2 font-label-sm">Modules</th>
+                  <th className="px-3 py-2 font-label-sm">Inverter</th>
+                  <th className="px-3 py-2 font-label-sm">DC Wire (1C×4)</th>
+                  <th className="px-3 py-2 font-label-sm">AC Wire</th>
+                  <th className="px-3 py-2 font-label-sm">Earthing Wire</th>
+                  <th className="px-3 py-2 font-label-sm">LA Wire</th>
+                  <th className="px-3 py-2 font-label-sm">ACDB / DCDB</th>
+                  <th className="px-3 py-2 font-label-sm">Earthing Kit</th>
+                  <th className="px-3 py-2 font-label-sm">PVC &amp; Hardware</th>
+                  <th className="px-3 py-2 font-label-sm">MC4</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-surface-container-highest font-body-sm text-xs text-on-surface">
+                {filteredBomSpecs.map((row, idx) => (
+                  <tr key={idx} className={`hover:bg-surface-container-low/60 transition-colors ${idx % 2 === 1 ? 'bg-surface-container-low/20' : ''}`}>
+                    <td className="px-3 py-3 font-bold text-inverse-surface font-mono">{row.capacityKW}</td>
+                    <td className="px-3 py-3 font-semibold text-primary">{row.modulesQty}</td>
+                    <td className="px-3 py-3">{row.inverterQty}</td>
+                    <td className="px-3 py-3 font-mono">{row.dcWire}</td>
+                    <td className="px-3 py-3 font-mono">{row.acWire}</td>
+                    <td className="px-3 py-3 font-mono">{row.earthingWire}</td>
+                    <td className="px-3 py-3 font-mono">{row.laWire}</td>
+                    <td className="px-3 py-3">{row.acdbDcdb}</td>
+                    <td className="px-3 py-3">{row.earthingKit}</td>
+                    <td className="px-3 py-3">{row.pvcHardware}</td>
+                    <td className="px-3 py-3 font-mono">{row.mc4Connectors}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Standard compliance tags */}
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-surface-container-highest">
+            <div className="p-3.5 rounded-lg bg-surface-container-low border border-surface-container-highest">
+              <div className="font-label-md font-bold text-on-surface">Galvanized Structure (IS 2062)</div>
+              <p className="text-xs text-secondary mt-1">80 Micron minimum zinc coating, withstands 150 km/h wind load.</p>
+            </div>
+            <div className="p-3.5 rounded-lg bg-surface-container-low border border-surface-container-highest">
+              <div className="font-label-md font-bold text-on-surface">Solar DC Cables (EN 50618)</div>
+              <p className="text-xs text-secondary mt-1">XLPO insulated, UV resistant, electron-beam cross-linked copper.</p>
+            </div>
+            <div className="p-3.5 rounded-lg bg-surface-container-low border border-surface-container-highest">
+              <div className="font-label-md font-bold text-on-surface">SPD Type II ACDB / DCDB (IP65)</div>
+              <p className="text-xs text-secondary mt-1">Polycarbonate distribution enclosures with surge protection.</p>
             </div>
           </div>
         </div>
