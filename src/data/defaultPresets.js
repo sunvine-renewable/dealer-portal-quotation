@@ -24,12 +24,39 @@ export {
 export const DEFAULT_PRICING_MASTER = {
   // Benchmark Quotation Presets for Admin & Dealer synchronization
   quotationPresets: {
-
     baseRatePerKw: 59800,
     subsidyCap: 78000,
     minMarginPerKw: 4000,
     lastSynced: 'Today, 09:30 AM by Ops',
     updatedBy: 'Operations Team'
+  },
+
+  // Default Commission Margins & Protective Caps by Dealer Tier
+  tierMargins: {
+    diamond: {
+      tierName: 'Diamond EPC',
+      defaultMarginPerKw: 6500,
+      maxMarginCapPerKw: 8000,
+      description: 'Premier High-Volume Partners (> 5.0 MW/quarter)'
+    },
+    platinum: {
+      tierName: 'Platinum Tier',
+      defaultMarginPerKw: 5500,
+      maxMarginCapPerKw: 7000,
+      description: 'Tier-1 Large Scale EPC (> 3.0 MW/quarter)'
+    },
+    gold: {
+      tierName: 'Gold EPC',
+      defaultMarginPerKw: 4500,
+      maxMarginCapPerKw: 6000,
+      description: 'Established Standard Installers (1.5 - 3.0 MW/quarter)'
+    },
+    silver: {
+      tierName: 'Silver Installer',
+      defaultMarginPerKw: 3500,
+      maxMarginCapPerKw: 5000,
+      description: 'Entry / Regional Empanelled Installers (< 1.5 MW/quarter)'
+    }
   },
 
   // Base EPC turnkey rates per kW

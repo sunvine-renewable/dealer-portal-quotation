@@ -61,7 +61,7 @@ export default function Navigation() {
             />
             <div className="flex flex-col">
               <span className="font-label-xs text-label-xs text-secondary-fixed-dim tracking-wider uppercase font-semibold">
-                {role === 'admin' ? 'Super Admin Portal' : 'Dealer Portal'}
+                {role === 'admin' ? 'Portal' : 'Dealer Portal'}
               </span>
             </div>
           </div>
@@ -156,7 +156,7 @@ export default function Navigation() {
               />
               <div className="hidden sm:flex flex-col text-left max-w-[90px] md:max-w-[120px] lg:max-w-[180px] truncate">
                 <span className="font-label-md text-label-md text-on-surface leading-tight truncate">
-                  {role === 'admin' ? 'Super Admin Desk' : currentDealer.firmName || 'Rajesh Solar Solutions'}
+                  {role === 'admin' ? 'Admin Desk' : currentDealer.firmName || 'Rajesh Solar Solutions'}
                 </span>
                 <span className="font-label-xs text-label-xs text-secondary leading-tight truncate">
                   {role === 'admin' ? 'System Administrator' : 'Authorized Dealer'}
@@ -172,7 +172,7 @@ export default function Navigation() {
               <div className="absolute right-0 mt-2 w-48 bg-surface-container-lowest rounded-xl shadow-lg border border-surface-container-high py-2 z-50 animate-in fade-in slide-in-from-top-1">
                 <div className="px-4 py-2 border-b border-surface-container-high">
                   <p className="font-label-md text-on-surface text-xs font-bold truncate">
-                    {role === 'admin' ? 'Super Admin' : currentDealer.contactPerson}
+                    {role === 'admin' ? 'Admin' : currentDealer.contactPerson}
                   </p>
                   <p className="font-body-sm text-secondary text-[11px] truncate">
                     {role === 'admin' ? 'admin@sunvine.in' : currentDealer.email}

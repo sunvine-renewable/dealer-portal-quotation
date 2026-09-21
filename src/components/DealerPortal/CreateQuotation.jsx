@@ -18,11 +18,18 @@ export default function CreateQuotation() {
     setActiveTab, 
     setPreviewQuotation,
     addNotification,
-    pricingPresets
+    pricingPresets,
+    tierMargins
   } = useApp();
 
   const { addToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Derive dealer tier margin configuration
+  const dealerTierKey = (currentDealer?.tier || '').toLowerCase().includes('diamond') ? 'diamond' :
+                        (currentDealer?.tier || '').toLowerCase().includes('platinum') ? 'platinum' :
+                        (currentDealer?.tier || '').toLowerCase().includes('silver') ? 'silver' : 'gold';
+  const tierConfig = tierMargins?.[dealerTierKey] || { defaultMarginPerKw: 4500, maxMarginCapPerKw: 6000 };
 
   // Step 1.1 Customer Details (Empty by default for dealer input)
   const [custName, setCustName] = useState('');
@@ -35,18 +42,21 @@ export default function CreateQuotation() {
   const [inverterModel, setInverterModel] = useState('Sunvine Solar Hybrid Inverter 5kW 3-Phase');
   const [showInverterModal, setShowInverterModal] = useState(false);
 
-  // Step 1.3 Pricing & Subsidy (Linked to Admin Pricing Presets)
+  // Step 1.3 Pricing & Subsidy (Linked to Admin Pricing Presets & Dealer Tier Margins)
   const [ratePerKw, setRatePerKw] = useState(() => pricingPresets?.baseRatePerKw || 59800);
-  const [marginMode, setMarginMode] = useState('percent'); // 'percent' | 'amount'
+  const [marginMode, setMarginMode] = useState('amount'); // default to fixed amount matching tier
   const [dealerMarginRate, setDealerMarginRate] = useState(8); // 8%
-  const [dealerMarginFixed, setDealerMarginFixed] = useState(25000); // ₹ 25,000
+  const [dealerMarginFixed, setDealerMarginFixed] = useState(() => tierConfig.defaultMarginPerKw * 5);
   const [saveStatus, setSaveStatus] = useState('');
 
   useEffect(() => {
     if (!editingQuotation && pricingPresets?.baseRatePerKw) {
       setRatePerKw(pricingPresets.baseRatePerKw);
     }
-  }, [pricingPresets?.baseRatePerKw, editingQuotation]);
+    if (!editingQuotation && tierConfig?.defaultMarginPerKw) {
+      setDealerMarginFixed(tierConfig.defaultMarginPerKw * (parseFloat(systemCapacity) || 5));
+    }
+  }, [pricingPresets?.baseRatePerKw, tierConfig?.defaultMarginPerKw, editingQuotation, systemCapacity]);
 
   // Auto-populate when editing an existing quote
   useEffect(() => {

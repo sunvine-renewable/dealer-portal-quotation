@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 
 export default function DealerManagement() {
-  const { dealers, addDealer, toggleDealerStatus } = useApp();
+  const { dealers, addDealer, toggleDealerStatus, tierMargins, updateTierMargins, addNotification } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTabFilter, setActiveTabFilter] = useState('all');
   const [discomFilter, setDiscomFilter] = useState('all');
@@ -10,6 +10,32 @@ export default function DealerManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 15;
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showTierModal, setShowTierModal] = useState(false);
+
+  // Onboarding Form States
+  const [newFirm, setNewFirm] = useState('');
+  const [newContact, setNewContact] = useState('');
+  const [newMobile, setNewMobile] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newZone, setNewZone] = useState('Rajkot & Saurashtra Zone (Western Gujarat)');
+  const [newAddress, setNewAddress] = useState('');
+  const [newGstin, setNewGstinState] = useState('');
+  const [newPan, setNewPan] = useState('');
+  const [newDiscomCode, setNewDiscomCode] = useState('PGVCL-VND-2025-0845');
+  const [newTier, setNewTier] = useState('Gold EPC Partner (Quarterly Cap: 1.5 MW)');
+  const [newCap, setNewCap] = useState('5,000');
+  const [formError, setFormError] = useState('');
+
+  // Tier Margins Quick Editor Form State
+  const [tempTierMargins, setTempTierMargins] = useState(() => tierMargins || {});
+
+  const setNewGstin = (val) => {
+    const upper = val.toUpperCase();
+    setNewGstinState(upper);
+    if (upper.length >= 12) {
+      setNewPan(upper.slice(2, 12));
+    }
+  };
 
   // Dynamic Metrics from real Gujarat dealers
   const totalDealersCount = (dealers || []).length;
@@ -44,22 +70,33 @@ export default function DealerManagement() {
   const paginatedDealers = filteredDealers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const handleCreateDealer = (e) => {
-    e.preventDefault();
-    if (!newFirm || !newContact) return;
+    if (e && e.preventDefault) e.preventDefault();
+    if (!newFirm.trim() || !newContact.trim() || !newMobile.trim()) {
+      setFormError('Please fill in required fields: Firm Name, Signatory, and Mobile Number.');
+      return;
+    }
+
+    const tierClean = newTier.includes('Diamond') ? 'Diamond EPC' :
+                      newTier.includes('Platinum') ? 'Platinum Tier' :
+                      newTier.includes('Silver') ? 'Silver Installer' : 'Gold EPC';
+
+    const cleanCap = Number(String(newCap).replace(/[^0-9]/g, '')) || 5000;
 
     const newDealerObj = {
       id: `SV-DLR-0${Math.floor(800 + Math.random() * 100)}`,
-      firmName: newFirm,
-      contactPerson: newContact,
-      mobile: newMobile || '+91 98765 43210',
-      email: newEmail || 'dealer@sunvine.in',
-      city: newZone.includes('Rajkot') ? 'Rajkot' : newZone.includes('Surat') ? 'Surat' : 'Ahmedabad',
+      firmName: newFirm.trim(),
+      contactPerson: newContact.trim(),
+      mobile: newMobile.trim(),
+      email: newEmail.trim() || 'partner@sunvinedealer.in',
+      city: newZone.includes('Rajkot') ? 'Rajkot' : newZone.includes('Surat') ? 'Surat' : newZone.includes('Vadodara') ? 'Vadodara' : 'Ahmedabad',
       state: 'Gujarat',
-      discom: 'PGVCL Circle',
-      tier: 'Gold EPC',
-      maxMarginCapPerKw: 6000,
-      totalQuotes: 1,
-      totalCapacityKw: 5.0,
+      discom: newZone.includes('Rajkot') ? 'PGVCL Circle' : newZone.includes('Surat') ? 'DGVCL Circle' : newZone.includes('Vadodara') ? 'MGVCL Circle' : 'UGVCL Circle',
+      tier: tierClean,
+      maxMarginCapPerKw: cleanCap,
+      gstin: newGstin.trim() || '24AAECB1234F1Z5',
+      pan: newPan.trim() || (newGstin.trim() ? newGstin.trim().slice(2, 12) : 'AAECB1234F'),
+      totalQuotes: 0,
+      totalCapacityKw: 0,
       status: 'Active',
       joinedDate: new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date())
     };
@@ -67,6 +104,25 @@ export default function DealerManagement() {
     if (addDealer) {
       addDealer(newDealerObj);
     }
+    if (addNotification) {
+      addNotification({
+        title: 'New EPC Dealer Onboarded',
+        description: `${newFirm.trim()} (${tierClean}) added to Gujarat Dealer Network.`,
+        type: 'success',
+        icon: 'person_add',
+        audience: 'admin'
+      });
+    }
+
+    // Reset Form
+    setNewFirm('');
+    setNewContact('');
+    setNewMobile('');
+    setNewEmail('');
+    setNewAddress('');
+    setNewGstinState('');
+    setNewPan('');
+    setFormError('');
     setShowAddModal(false);
   };
 
@@ -434,17 +490,30 @@ export default function DealerManagement() {
             Manage onboarded EPC dealers, commission tiers, login credentials, and quotation permissions.
           </p>
         </div>
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
+          <button
+            onClick={() => {
+              setTempTierMargins(tierMargins || {});
+              setShowTierModal(true);
+            }}
+            className="h-10 px-3.5 sm:px-4 bg-white border border-[#E4E7EB] hover:border-primary text-on-surface font-label-md rounded-lg hover:bg-surface-container-low transition-all duration-150 flex items-center gap-2 shadow-xs cursor-pointer text-xs sm:text-sm"
+            type="button"
+          >
+            <span className="material-symbols-outlined text-[18px] text-primary">tune</span>
+            <span>Configure Tier Margins</span>
+          </button>
           <button
             onClick={() => window.print()}
-            className="h-10 px-4 bg-white border border-[#0F1B2E] text-[#0F1B2E] font-label-md rounded-lg hover:bg-[#F6F8F7] transition-all duration-150 flex items-center gap-2 shadow-xs"
+            className="h-10 px-3.5 sm:px-4 bg-white border border-[#0F1B2E] text-[#0F1B2E] font-label-md rounded-lg hover:bg-[#F6F8F7] transition-all duration-150 flex items-center gap-2 shadow-xs text-xs sm:text-sm cursor-pointer"
+            type="button"
           >
             <span className="material-symbols-outlined text-[18px]">download</span>
             <span>Export Directory</span>
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="h-10 px-4 bg-[#6CBF3D] hover:bg-[#4F9A2C] text-white font-label-md font-semibold rounded-lg transition-all duration-150 flex items-center gap-2 shadow-sm focus:ring-2 focus:ring-primary-container focus:ring-offset-2"
+            className="h-10 px-3.5 sm:px-4 bg-[#6CBF3D] hover:bg-[#4F9A2C] text-white font-label-md font-semibold rounded-lg transition-all duration-150 flex items-center gap-2 shadow-sm focus:ring-2 focus:ring-primary-container focus:ring-offset-2 text-xs sm:text-sm cursor-pointer"
+            type="button"
           >
             <span className="material-symbols-outlined text-[20px]">person_add</span>
             <span>+ Onboard New Dealer</span>
@@ -711,10 +780,25 @@ export default function DealerManagement() {
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${tierColor}`}>
-                          <span className="material-symbols-outlined text-[13px]">military_tech</span> {d.tier}
-                        </div>
-                        <div className="text-[11px] text-secondary mt-1">Cap: <span className="font-semibold text-on-surface">₹{(d.maxMarginCapPerKw || 5000).toLocaleString()} / kW</span></div>
+                        {(() => {
+                          const tierKey = (d.tier || '').toLowerCase().includes('diamond') ? 'diamond' :
+                                          (d.tier || '').toLowerCase().includes('platinum') ? 'platinum' :
+                                          (d.tier || '').toLowerCase().includes('silver') ? 'silver' : 'gold';
+                          const conf = tierMargins?.[tierKey] || { defaultMarginPerKw: 4500, maxMarginCapPerKw: 6000 };
+                          return (
+                            <>
+                              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${tierColor}`}>
+                                <span className="material-symbols-outlined text-[13px]">military_tech</span> {d.tier || conf.tierName}
+                              </div>
+                              <div className="text-[11px] text-secondary mt-1">
+                                Margin: <strong className="text-on-surface font-semibold">₹{conf.defaultMarginPerKw.toLocaleString('en-IN')}/kW</strong>
+                              </div>
+                              <div className="text-[10px] text-secondary">
+                                Cap: ₹{(d.maxMarginCapPerKw || conf.maxMarginCapPerKw).toLocaleString('en-IN')}/kW
+                              </div>
+                            </>
+                          );
+                        })()}
                       </td>
                       <td className="py-3 px-4 text-right">
                         <div className="font-semibold text-on-surface font-poppins">{d.totalQuotes} Quotes</div>
@@ -819,6 +903,129 @@ export default function DealerManagement() {
           </div>
         </div>
       </div>
+
+      {/* Configure Tier Margins Modal */}
+      {showTierModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-surface-container-lowest rounded-2xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl border border-surface-container-high animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-surface-container-high">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <span className="material-symbols-outlined text-2xl">price_check</span>
+                </div>
+                <div>
+                  <h3 className="font-headline-sm text-lg font-bold text-on-surface">
+                    Dealer Commission Tiers &amp; Default Margins
+                  </h3>
+                  <p className="text-xs text-secondary mt-0.5">
+                    Set default quotation margins and protective ceiling caps across all partner tiers.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowTierModal(false)}
+                className="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary cursor-pointer"
+                type="button"
+              >
+                <span className="material-symbols-outlined text-xl">close</span>
+              </button>
+            </div>
+
+            <div className="py-5 space-y-4">
+              {[
+                { key: 'diamond', name: 'Diamond EPC Partner', desc: 'Premier High-Volume Partners (> 5.0 MW/quarter)', badge: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+                { key: 'platinum', name: 'Platinum Tier', desc: 'Tier-1 Large Scale EPC (> 3.0 MW/quarter)', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+                { key: 'gold', name: 'Gold EPC Partner', desc: 'Established Standard Installers (1.5 - 3.0 MW/quarter)', badge: 'bg-amber-50 text-amber-700 border-amber-200' },
+                { key: 'silver', name: 'Silver Installer', desc: 'Entry / Regional Empanelled Installers (< 1.5 MW/quarter)', badge: 'bg-slate-100 text-slate-700 border-slate-300' }
+              ].map((tier) => {
+                const currentConfig = tempTierMargins[tier.key] || tierMargins?.[tier.key] || { defaultMarginPerKw: 4500, maxMarginCapPerKw: 6000 };
+                return (
+                  <div key={tier.key} className="p-4 rounded-xl border border-surface-container-high bg-surface-container-low/40 space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${tier.badge}`}>
+                          {tier.name}
+                        </span>
+                        <span className="text-xs text-secondary hidden sm:inline">{tier.desc}</span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                      <div>
+                        <label className="block text-xs font-semibold text-on-surface mb-1">
+                          Default Commercial Margin (₹/kW)
+                        </label>
+                        <div className="relative flex items-center">
+                          <span className="absolute left-3 text-secondary font-bold text-xs">₹</span>
+                          <input
+                            type="number"
+                            value={currentConfig.defaultMarginPerKw}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setTempTierMargins((prev) => ({
+                                ...prev,
+                                [tier.key]: {
+                                  ...(prev[tier.key] || tierMargins[tier.key]),
+                                  defaultMarginPerKw: val
+                                }
+                              }));
+                            }}
+                            className="w-full h-9 pl-7 pr-3 bg-surface-container-lowest border border-surface-container-highest rounded-lg text-xs font-bold text-on-surface focus:outline-none focus:border-primary"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-on-surface mb-1">
+                          Protective Margin Cap (₹/kW)
+                        </label>
+                        <div className="relative flex items-center">
+                          <span className="absolute left-3 text-secondary font-bold text-xs">₹</span>
+                          <input
+                            type="number"
+                            value={currentConfig.maxMarginCapPerKw}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setTempTierMargins((prev) => ({
+                                ...prev,
+                                [tier.key]: {
+                                  ...(prev[tier.key] || tierMargins[tier.key]),
+                                  maxMarginCapPerKw: val
+                                }
+                              }));
+                            }}
+                            className="w-full h-9 pl-7 pr-3 bg-surface-container-lowest border border-surface-container-highest rounded-lg text-xs font-bold text-on-surface focus:outline-none focus:border-primary"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-surface-container-high">
+              <button
+                type="button"
+                onClick={() => setShowTierModal(false)}
+                className="px-4 py-2 rounded-lg text-xs font-semibold text-secondary hover:text-on-surface hover:bg-surface-container-high transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (updateTierMargins) {
+                    updateTierMargins(tempTierMargins);
+                  }
+                  setShowTierModal(false);
+                }}
+                className="px-5 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary text-xs font-bold transition-all shadow-sm cursor-pointer"
+              >
+                Save Tier Margins
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

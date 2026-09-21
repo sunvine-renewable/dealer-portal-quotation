@@ -46,6 +46,11 @@ export default function AdminLogin() {
   };
 
   const handleKeyDown = (index, e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAdminSubmit();
+      return;
+    }
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
@@ -106,8 +111,8 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row overflow-x-hidden bg-surface-container-low text-on-surface antialiased">
-      {/* LEFT SIDE: Technical Operations Brand Canvas (approx 45% width) */}
-      <div className="lg:w-[45%] w-full bg-[#0F1B2E] text-surface-container-lowest relative flex flex-col justify-between p-8 lg:p-12 border-r border-outline-variant/20 shrink-0">
+      {/* LEFT SIDE: Technical Operations Brand Canvas (Desktop only: hidden on mobile/tablet) */}
+      <div className="hidden lg:flex lg:w-[45%] bg-[#0F1B2E] text-surface-container-lowest relative flex-col justify-between p-8 lg:p-12 border-r border-outline-variant/20 shrink-0">
         {/* Ambient Lighting Radial Overlay */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(108,191,61,0.18)_0%,transparent_65%)] pointer-events-none"></div>
 
@@ -126,7 +131,7 @@ export default function AdminLogin() {
             {/* System Tag Badge */}
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-lowest/10 border border-outline-variant/30 text-primary-container font-label-xs tracking-wider">
               <span className="w-1.5 h-1.5 rounded-full bg-primary-container animate-pulse"></span>
-              SUPER ADMIN PORTAL • NATIONAL CONSOLE v2.4
+              PORTAL • OPERATIONS CONSOLE v2.0.0
             </span>
           </div>
 
@@ -198,33 +203,70 @@ export default function AdminLogin() {
         </div>
       </div>
 
-      {/* RIGHT SIDE: Authentication & 2FA Interface (approx 55% width) */}
-      <div className="lg:w-[55%] w-full bg-surface flex flex-col justify-center items-center p-6 md:p-12 lg:p-16">
+      {/* RIGHT SIDE: Authentication & 2FA Interface (clean & compact on mobile/tablet) */}
+      <div className="lg:w-[55%] w-full bg-surface flex flex-col justify-center items-center p-4 sm:p-8 md:p-12 lg:p-16">
+        {/* Mobile-only Brand Header (clean and compact like Dealer Login) */}
+        <header className="lg:hidden w-full max-w-xl flex items-center justify-between py-2 mb-3">
+          <img
+            alt="Sunvine Renewable Logo"
+            className="h-8 w-auto object-contain cursor-pointer"
+            src="/sunvine_logo_transparent.png"
+            onClick={() => setAuthView('dealer_login')}
+          />
+          <div className="flex items-center gap-1.5 bg-secondary-container/60 px-2.5 py-1 rounded-full">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            <span className="font-label-xs text-[11px] text-on-secondary-fixed uppercase tracking-wider font-semibold">
+              Admin Console
+            </span>
+          </div>
+        </header>
+
         <div className="w-full max-w-xl">
           {/* Surface Card Container */}
-          <div className="bg-surface-container-lowest border border-surface-container-highest rounded-xl shadow-sm p-6 sm:p-10">
+          <div className="bg-surface-container-lowest border border-surface-container-highest rounded-xl shadow-sm p-5 sm:p-8 md:p-10">
             {/* Header Status Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-6 border-b border-surface-container-highest">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-5 border-b border-surface-container-highest">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200/60 text-amber-800 font-label-xs text-label-xs">
                 <span className="material-symbols-outlined text-[16px] text-amber-700">lock</span>
                 RESTRICTED EXECUTIVE ACCESS
               </div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0F1B2E] text-surface-container-lowest font-label-xs text-label-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
-                SUPER ADMIN (Full Access)
+                ADMIN (Full Access)
               </div>
             </div>
 
             {/* Form Header Titles */}
-            <div className="pt-6 mb-6">
-              <h2 className="font-headline-lg text-headline-lg text-[#0F1B2E]">Super Admin Sign In</h2>
-              <p className="font-body-md text-body-md text-secondary mt-1">
-                Enter authorized executive credentials to access national pricing and dealer management.
+            <div className="pt-5 mb-4">
+              <h2 className="font-headline-lg text-2xl sm:text-headline-lg text-[#0F1B2E]">Admin Sign In</h2>
+              <p className="font-body-md text-xs sm:text-body-md text-secondary mt-1">
+                Enter authorized credentials to access national pricing and dealer operations.
               </p>
             </div>
 
+            {/* Dedicated Credentials Info Helper */}
+            <div className="mb-4 p-3 rounded-lg bg-primary/5 border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-on-surface">
+                <span className="material-symbols-outlined text-primary text-base">verified_user</span>
+                <span><strong>ID:</strong> admin@sunvinerenewable.com</span>
+                <span className="hidden sm:inline text-secondary">•</span>
+                <span><strong>OTP:</strong> 123456</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('admin@sunvinerenewable.com');
+                  setPassword('1234567890123456');
+                  setOtp(['1', '2', '3', '4', '5', '6']);
+                }}
+                className="text-[11px] font-bold text-primary hover:underline cursor-pointer self-start sm:self-auto"
+              >
+                Autofill Credentials
+              </button>
+            </div>
+
             {/* Sign-in Form */}
-            <form className="space-y-5" onSubmit={handleAdminSubmit}>
+            <form className="space-y-4 sm:space-y-5" onSubmit={handleAdminSubmit}>
               {/* Email Input */}
               <div className="space-y-1.5">
                 <label className="block font-label-md text-label-md text-on-surface">Official Executive Email / Admin ID</label>
@@ -235,6 +277,7 @@ export default function AdminLogin() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleAdminSubmit(e); }}
                   />
                   <div className="absolute right-3 flex items-center text-primary-container" title="Verified Corporate Identity">
                     <span className="material-symbols-outlined text-[20px]">check_circle</span>
@@ -257,6 +300,7 @@ export default function AdminLogin() {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleAdminSubmit(e); }}
                   />
                   <button
                     aria-label="Toggle password visibility"

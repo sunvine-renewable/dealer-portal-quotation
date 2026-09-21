@@ -119,6 +119,17 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : DEFAULT_PRICING_MASTER.quotationPresets;
   });
 
+  // Commission Margins & Protective Caps by Dealer Tier
+  const [tierMargins, setTierMargins] = useState(() => {
+    if (!isDbUpToDate) return DEFAULT_PRICING_MASTER.tierMargins;
+    const saved = localStorage.getItem('sunvine_tier_margins');
+    return saved ? JSON.parse(saved) : DEFAULT_PRICING_MASTER.tierMargins;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sunvine_tier_margins', JSON.stringify(tierMargins));
+  }, [tierMargins]);
+
   // Solar Hardware Catalogs (from PDF)
   const [modulesList, setModulesList] = useState(() => {
     if (!isDbUpToDate) return DEFAULT_MODULES;
@@ -330,6 +341,18 @@ export const AppProvider = ({ children }) => {
     });
   };
 
+  const updateTierMargins = (newTiers) => {
+    const updated = { ...tierMargins, ...newTiers };
+    setTierMargins(updated);
+    addNotification({
+      title: 'Dealer Tier Margins Updated',
+      description: `Default margin thresholds updated for Diamond, Platinum, Gold & Silver dealer tiers.`,
+      category: 'pricing',
+      icon: 'price_check',
+      audience: 'all'
+    });
+  };
+
   // Persistent read state IDs keyed by role
   const [readNotifIds, setReadNotifIds] = useState(() => {
     try {
@@ -459,6 +482,8 @@ export const AppProvider = ({ children }) => {
         updatePricingMaster,
         pricingPresets,
         updatePricingPresets,
+        tierMargins,
+        updateTierMargins,
         modulesList,
         setModulesList,
         invertersList,
