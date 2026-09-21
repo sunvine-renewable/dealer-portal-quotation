@@ -22,6 +22,16 @@ export {
 };
 
 export const DEFAULT_PRICING_MASTER = {
+  // Benchmark Quotation Presets for Admin & Dealer synchronization
+  quotationPresets: {
+
+    baseRatePerKw: 59800,
+    subsidyCap: 78000,
+    minMarginPerKw: 4000,
+    lastSynced: 'Today, 09:30 AM by Ops',
+    updatedBy: 'Operations Team'
+  },
+
   // Base EPC turnkey rates per kW
   baseRates: {
     residential_1_to_3: 62000,   // ₹62,000 / kW

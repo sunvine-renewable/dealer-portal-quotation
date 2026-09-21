@@ -16,7 +16,8 @@ export default function CreateQuotation() {
     clearEditingQuotation, 
     setActiveTab, 
     setPreviewQuotation,
-    addNotification
+    addNotification,
+    pricingPresets
   } = useApp();
 
   // Step 1.1 Customer Details (Empty by default for dealer input)
@@ -30,12 +31,18 @@ export default function CreateQuotation() {
   const [inverterModel, setInverterModel] = useState('Sunvine Solar Hybrid Inverter 5kW 3-Phase');
   const [showInverterModal, setShowInverterModal] = useState(false);
 
-  // Step 1.3 Pricing & Subsidy
-  const [ratePerKw, setRatePerKw] = useState(65000);
+  // Step 1.3 Pricing & Subsidy (Linked to Admin Pricing Presets)
+  const [ratePerKw, setRatePerKw] = useState(() => pricingPresets?.baseRatePerKw || 59800);
   const [marginMode, setMarginMode] = useState('percent'); // 'percent' | 'amount'
   const [dealerMarginRate, setDealerMarginRate] = useState(8); // 8%
   const [dealerMarginFixed, setDealerMarginFixed] = useState(25000); // ₹ 25,000
   const [saveStatus, setSaveStatus] = useState('');
+
+  useEffect(() => {
+    if (!editingQuotation && pricingPresets?.baseRatePerKw) {
+      setRatePerKw(pricingPresets.baseRatePerKw);
+    }
+  }, [pricingPresets?.baseRatePerKw, editingQuotation]);
 
   // Auto-populate when editing an existing quote
   useEffect(() => {
@@ -88,11 +95,12 @@ export default function CreateQuotation() {
   // Total Customer Quoted Project Cost (Base Cost + Dealer Margin)
   const totalCost = baseProjectCost + dealerMarginINR;
 
-  // PM Surya Ghar Central DBT Subsidy Formula
+  // PM Surya Ghar Central DBT Subsidy Formula (Linked to Admin Presets)
   const calculateSubsidy = (capacity) => {
-    if (capacity <= 1) return 30000;
-    if (capacity <= 2) return 60000;
-    return 78000; // Cap at 78,000 for 3kW+
+    const maxSubsidy = pricingPresets?.subsidyCap || 78000;
+    if (capacity <= 1) return Math.min(30000, maxSubsidy);
+    if (capacity <= 2) return Math.min(60000, maxSubsidy);
+    return maxSubsidy; // Cap at subsidyCap (default ₹78,000 for 3kW+)
   };
 
   const subsidy = calculateSubsidy(kw);
@@ -116,7 +124,7 @@ export default function CreateQuotation() {
     setCustPhone('');
     setCustLocation('');
     setSystemCapacity('5');
-    setRatePerKw(65000);
+    setRatePerKw(pricingPresets?.baseRatePerKw || 59800);
     setMarginMode('percent');
     setDealerMarginRate(8);
     setDealerMarginFixed(25000);

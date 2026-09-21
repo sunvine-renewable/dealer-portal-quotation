@@ -7,6 +7,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024
+      },
       includeAssets: ['favicon.ico', 'sunvine_logo_transparent.png', 'sunvine_logo_white.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         name: 'Sunvine Solar EPC Dealer Portal',

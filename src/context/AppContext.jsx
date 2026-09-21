@@ -11,7 +11,7 @@ import {
   SUNVINE_OFFICIAL_PROFILE
 } from '../data/defaultPresets';
 
-const DB_VERSION = 'sunvine_gujarat_550_v1';
+const DB_VERSION = 'sunvine_gujarat_ledger_1430_v2';
 
 const AppContext = createContext();
 
@@ -112,6 +112,13 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : DEFAULT_PRICING_MASTER;
   });
 
+  // Benchmark Quotation Presets (Admin & Dealer Sync)
+  const [pricingPresets, setPricingPresets] = useState(() => {
+    if (!isDbUpToDate) return DEFAULT_PRICING_MASTER.quotationPresets;
+    const saved = localStorage.getItem('sunvine_pricing_presets');
+    return saved ? JSON.parse(saved) : DEFAULT_PRICING_MASTER.quotationPresets;
+  });
+
   // Solar Hardware Catalogs (from PDF)
   const [modulesList, setModulesList] = useState(() => {
     if (!isDbUpToDate) return DEFAULT_MODULES;
@@ -204,6 +211,10 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('sunvine_pricing_master', JSON.stringify(pricingMaster));
   }, [pricingMaster]);
+
+  useEffect(() => {
+    localStorage.setItem('sunvine_pricing_presets', JSON.stringify(pricingPresets));
+  }, [pricingPresets]);
 
   useEffect(() => {
     localStorage.setItem('sunvine_modules', JSON.stringify(modulesList));
@@ -303,6 +314,22 @@ export const AppProvider = ({ children }) => {
     setPricingMaster(newMaster);
   };
 
+  const updatePricingPresets = (newPresets) => {
+    const timeStr = new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).format(new Date());
+    const updated = {
+      ...pricingPresets,
+      ...newPresets,
+      lastSynced: `Today, ${timeStr} by ${role === 'admin' ? 'Super Admin Desk' : 'Ops'}`
+    };
+    setPricingPresets(updated);
+    addNotification({
+      title: 'Quotation Presets Updated',
+      description: `Base Rate: ₹${Number(updated.baseRatePerKw).toLocaleString('en-IN')}/kW | Min Margin: ₹${Number(updated.minMarginPerKw).toLocaleString('en-IN')}/kW.`,
+      category: 'pricing',
+      icon: 'tune'
+    });
+  };
+
   // Notification Actions
   const unreadNotificationsCount = notifications.filter(n => !n.read).length;
 
@@ -349,6 +376,8 @@ export const AppProvider = ({ children }) => {
         updateDealerProfile,
         pricingMaster,
         updatePricingMaster,
+        pricingPresets,
+        updatePricingPresets,
         modulesList,
         setModulesList,
         invertersList,
