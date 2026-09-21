@@ -53,8 +53,8 @@ function MainApp() {
   if (!isAuthenticated) {
     return (
       <>
-        {!splashFinished && <SplashScreen onFinish={handleSplashFinish} />}
         {authView === 'admin_login' ? <AdminLogin /> : <DealerLogin />}
+        {!splashFinished && <SplashScreen onFinish={handleSplashFinish} />}
       </>
     );
   }
@@ -104,9 +104,6 @@ function MainApp() {
 
   return (
     <div className="min-h-screen bg-[#F6F8F7] text-[#0F1B2E] font-sans antialiased">
-      {/* 1-Second Splash on first arrival */}
-      {!splashFinished && <SplashScreen onFinish={handleSplashFinish} />}
-
       {/* Navigation Layout */}
       <Navigation />
 
@@ -116,6 +113,9 @@ function MainApp() {
           {renderView()}
         </div>
       </main>
+
+      {/* 1-Second Splash on first arrival */}
+      {!splashFinished && <SplashScreen onFinish={handleSplashFinish} />}
     </div>
   );
 }
