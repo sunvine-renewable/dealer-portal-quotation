@@ -400,12 +400,9 @@ export default function AdminLogin() {
               {/* Workstation Checkbox */}
               <div className="flex items-center justify-between py-1">
                 <label className="flex items-center gap-2.5 cursor-pointer select-none">
-                  <input defaultChecked className="w-4 h-4 rounded border-surface-container-highest text-primary-container focus:ring-primary-container accent-[#6CBF3D]" type="checkbox"/>
-                  <span className="font-body-sm text-body-sm text-on-surface">Remember this secure workstation for 30 days</span>
+                  <input defaultChecked className="w-4 h-4 rounded border-surface-container-highest text-primary-container focus:ring-primary-container accent-[#6CBF3D] cursor-pointer" type="checkbox"/>
+                  <span className="font-body-sm text-xs text-on-surface">Remember Me</span>
                 </label>
-                <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-label-xs bg-surface-container-high text-secondary border border-surface-container-highest">
-                  Cryptographic Token Stored
-                </span>
               </div>
 
               {/* Primary Action Button */}
