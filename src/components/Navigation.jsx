@@ -150,13 +150,13 @@ export default function Navigation() {
               className="flex items-center gap-2 sm:gap-space-sm cursor-pointer select-none"
             >
               <img
-                src={currentDealer.avatar || '/dealer_avatar.jpg'}
+                src={currentDealer?.avatar || '/dealer_avatar.jpg'}
                 alt="Dealer Avatar"
                 className="w-8 h-8 rounded-full object-cover shadow-sm border border-surface-container-high shrink-0"
               />
               <div className="hidden sm:flex flex-col text-left max-w-[90px] md:max-w-[120px] lg:max-w-[180px] truncate">
                 <span className="font-label-md text-label-md text-on-surface leading-tight truncate">
-                  {role === 'admin' ? 'Admin Desk' : currentDealer.firmName || 'Rajesh Solar Solutions'}
+                  {role === 'admin' ? 'Admin Desk' : currentDealer?.firmName || 'Rajesh Solar Solutions'}
                 </span>
                 <span className="font-label-xs text-label-xs text-secondary leading-tight truncate">
                   {role === 'admin' ? 'System Administrator' : 'Authorized Dealer'}
@@ -172,10 +172,10 @@ export default function Navigation() {
               <div className="absolute right-0 mt-2 w-48 bg-surface-container-lowest rounded-xl shadow-lg border border-surface-container-high py-2 z-50 animate-in fade-in slide-in-from-top-1">
                 <div className="px-4 py-2 border-b border-surface-container-high">
                   <p className="font-label-md text-on-surface text-xs font-bold truncate">
-                    {role === 'admin' ? 'Admin' : currentDealer.contactPerson}
+                    {role === 'admin' ? 'Admin' : currentDealer?.contactPerson || 'Authorized Partner'}
                   </p>
                   <p className="font-body-sm text-secondary text-[11px] truncate">
-                    {role === 'admin' ? 'admin@sunvine.in' : currentDealer.email}
+                    {role === 'admin' ? 'admin@sunvine.in' : currentDealer?.email || 'dealer@sunvine.in'}
                   </p>
                 </div>
                 {role === 'dealer' && (
@@ -254,7 +254,7 @@ export default function Navigation() {
             <img
               alt="Profile"
               className="w-7 h-7 rounded-full object-cover"
-              src={currentDealer.avatar || '/dealer_avatar.jpg'}
+              src={currentDealer?.avatar || '/dealer_avatar.jpg'}
             />
           </div>
           <button
