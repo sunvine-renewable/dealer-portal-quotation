@@ -295,13 +295,13 @@ export default function CreateQuotation() {
             <span className="bg-primary-container/20 text-on-primary-container text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wide">Active</span>
           </div>
           <div className="w-4 h-0.5 bg-surface-container-high mx-1 shrink-0"></div>
-          <button
-            onClick={handlePreview}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-secondary hover:text-on-surface font-label-sm transition-colors cursor-pointer"
+          <div
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-secondary/60 font-label-sm select-none cursor-not-allowed opacity-75"
+            title="Complete quotation details and use 'Preview & Send' button below to proceed"
           >
-            <span className="w-5 h-5 rounded-full bg-surface-container-high text-secondary flex items-center justify-center text-[10px] font-bold shrink-0">2</span>
+            <span className="w-5 h-5 rounded-full bg-surface-container-high text-secondary/60 flex items-center justify-center text-[10px] font-bold shrink-0">2</span>
             <span className="text-xs font-medium">Preview &amp; Send</span>
-          </button>
+          </div>
         </div>
       </div>
 

@@ -34,6 +34,22 @@
   text-rendering: optimizeLegibility;
 }
 
+@keyframes dropdownEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-dropdown-enter {
+  animation: dropdownEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top right;
+}
+
 /* Strict Print styling for 4-Page Quotation PDF (Guarantee EXACTLY 4 clean A4 sheets, zero blank pages) */
 @media print {
   @page {
