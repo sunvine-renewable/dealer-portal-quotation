@@ -271,7 +271,7 @@ export default function AllQuotations() {
                 const baseCost = q.baseCost || (totalAmt - (q.dealerTotalMargin || (marginPerKw * (q.systemCapacityKW || 5))));
 
                 return (
-                  <tr key={q.id || idx} className={`hover:bg-[#F0F4F2] transition-colors ${idx % 2 === 1 ? 'bg-[#F6F8F7]' : 'bg-white'}`}>
+                  <tr key={q.id || idx} className="bg-white hover:bg-[#F0F4F2] transition-colors">
                     <td className="py-3.5 px-4 font-mono font-bold text-on-surface">
                       <button
                         onClick={() => handleViewPdf(q)}
