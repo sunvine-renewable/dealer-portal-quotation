@@ -11,6 +11,13 @@ export const CURRENT_RELEASE_CHANGELOG = {
   title: 'Super Admin Portal & National Operations Overview',
   date: 'September 2026',
   type: 'MAJOR',
+  highlights: [
+    'Super Admin National Operations Overview with real-time Gujarat solar telemetry',
+    'Calibrated dataset of 1,480 Gujarat proposals and 550 verified EPC dealers',
+    'Structured 21-column CSV financial ledger export with full BOM metadata',
+    'Interactive date range filtering with FY 2025-26 and Q3/Q4 presets',
+    'Cross-module quotation presets synchronization between Super Admin and Dealer Portal'
+  ],
   categories: {
     features: [
       'Super Admin National Operations Overview with real-time Gujarat solar telemetry',
