@@ -20,7 +20,7 @@ const TAB_TO_PATH = {
   create_quote: '/new-quotation',
   preview_quote: '/preview-quotation',
   my_quotes: '/my-quotations',
-  profile: '/profile',
+  profile: '/settings',
   dealer_settings: '/settings',
   admin_dashboard: '/admin',
   dealers_mgmt: '/admin/dealers',
@@ -33,15 +33,24 @@ const TAB_TO_PATH = {
 const PATH_TO_TAB = Object.entries(TAB_TO_PATH).reduce((acc, [tab, path]) => {
   acc[path] = tab;
   return acc;
-}, {});
+}, {
+  '/profile': 'dealer_settings'
+});
 
 const getInitialTabFromUrl = () => {
   if (typeof window === 'undefined') return 'dashboard';
   const pathname = window.location.pathname;
-  if (pathname === '/' || pathname === '') {
-    return localStorage.getItem('sunvine_tab') || 'dashboard';
+  if (pathname === '/profile') {
+    window.history.replaceState({ tab: 'dealer_settings' }, '', '/settings');
+    return 'dealer_settings';
   }
-  return PATH_TO_TAB[pathname] || localStorage.getItem('sunvine_tab') || 'dashboard';
+  if (pathname === '/' || pathname === '') {
+    const saved = localStorage.getItem('sunvine_tab');
+    return saved === 'profile' ? 'dealer_settings' : saved || 'dashboard';
+  }
+  const matched = PATH_TO_TAB[pathname];
+  if (matched === 'profile') return 'dealer_settings';
+  return matched || localStorage.getItem('sunvine_tab') || 'dashboard';
 };
 
 export const AppProvider = ({ children }) => {
@@ -58,14 +67,15 @@ export const AppProvider = ({ children }) => {
   const [activeTab, setActiveTabState] = useState(getInitialTabFromUrl);
 
   const setActiveTab = (newTab, replace = false) => {
-    setActiveTabState(newTab);
+    const effectiveTab = newTab === 'profile' ? 'dealer_settings' : newTab;
+    setActiveTabState(effectiveTab);
     if (typeof window !== 'undefined') {
-      const targetPath = TAB_TO_PATH[newTab] || '/dashboard';
+      const targetPath = TAB_TO_PATH[effectiveTab] || '/dashboard';
       if (window.location.pathname !== targetPath) {
         if (replace) {
-          window.history.replaceState({ tab: newTab }, '', targetPath);
+          window.history.replaceState({ tab: effectiveTab }, '', targetPath);
         } else {
-          window.history.pushState({ tab: newTab }, '', targetPath);
+          window.history.pushState({ tab: effectiveTab }, '', targetPath);
         }
       }
     }
@@ -76,9 +86,14 @@ export const AppProvider = ({ children }) => {
     const handlePopState = () => {
       if (typeof window !== 'undefined') {
         const path = window.location.pathname;
+        if (path === '/profile') {
+          window.history.replaceState({ tab: 'dealer_settings' }, '', '/settings');
+          setActiveTabState('dealer_settings');
+          return;
+        }
         const matchedTab = PATH_TO_TAB[path];
         if (matchedTab) {
-          setActiveTabState(matchedTab);
+          setActiveTabState(matchedTab === 'profile' ? 'dealer_settings' : matchedTab);
         }
       }
     };
@@ -89,6 +104,11 @@ export const AppProvider = ({ children }) => {
   // Update URL on initial load if logged in
   useEffect(() => {
     if (isAuthenticated && typeof window !== 'undefined') {
+      if (window.location.pathname === '/profile') {
+        window.history.replaceState({ tab: 'dealer_settings' }, '', '/settings');
+        setActiveTabState('dealer_settings');
+        return;
+      }
       const targetPath = TAB_TO_PATH[activeTab] || '/dashboard';
       if (window.location.pathname !== targetPath && window.location.pathname === '/') {
         window.history.replaceState({ tab: activeTab }, '', targetPath);
@@ -171,6 +191,13 @@ const safeSetItem = (key, value) => {
     return (Array.isArray(parsed) && parsed.length >= 500) ? parsed : INITIAL_DEALERS;
   });
 
+  // Real PDF BOS Reference Data
+  const [pdfBosMatrix, setPdfBosMatrix] = useState(() => {
+    if (!isDbUpToDate) return PDF_BOS_PRICE_MATRIX;
+    const parsed = safeJsonParse('sunvine_bos_price_matrix', PDF_BOS_PRICE_MATRIX);
+    return (Array.isArray(parsed) && parsed.length > 0) ? parsed : PDF_BOS_PRICE_MATRIX;
+  });
+
   // Quotations List (All in Gujarat)
   const [quotations, setQuotations] = useState(() => {
     if (!isDbUpToDate) return INITIAL_QUOTATIONS;
@@ -222,6 +249,10 @@ const safeSetItem = (key, value) => {
   useEffect(() => {
     safeSetItem('sunvine_pricing_presets', pricingPresets);
   }, [pricingPresets]);
+
+  useEffect(() => {
+    safeSetItem('sunvine_bos_price_matrix', pdfBosMatrix);
+  }, [pdfBosMatrix]);
 
   useEffect(() => {
     safeSetItem('sunvine_modules', modulesList);
@@ -446,13 +477,18 @@ const safeSetItem = (key, value) => {
 
   const addNotification = (notif) => {
     const newNotif = {
-      id: `notif-${Date.now()}`,
+      id: notif.id || `notif-${Date.now()}`,
       createdAt: new Date().toISOString(),
       audience: notif.audience || (role === 'admin' ? 'admin' : 'dealer'),
       type: notif.type || 'info',
       ...notif
     };
-    setNotifications(prev => [newNotif, ...prev]);
+    // If a new or updated notification arrives, remove from dismissed IDs so popup shows
+    setDismissedPopupIds(prev => prev.filter(id => id !== newNotif.id));
+    setNotifications(prev => {
+      const filtered = prev.filter(n => n.id !== newNotif.id);
+      return [newNotif, ...filtered];
+    });
   };
 
   return (
@@ -502,7 +538,8 @@ const safeSetItem = (key, value) => {
         addNotification,
         dismissedPopupIds,
         dismissPopupNotification,
-        pdfBosMatrix: PDF_BOS_PRICE_MATRIX,
+        pdfBosMatrix,
+        setPdfBosMatrix,
         pdfBomSpecs: PDF_BOM_SPECIFICATIONS,
         officialProfile: SUNVINE_OFFICIAL_PROFILE
       }}

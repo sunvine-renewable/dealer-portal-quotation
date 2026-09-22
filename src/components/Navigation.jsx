@@ -31,7 +31,6 @@ export default function Navigation() {
     { id: 'dashboard', label: 'Dashboard', mobileLabel: 'Dashboard', icon: 'home' },
     { id: 'create_quote', label: 'New Quotation', mobileLabel: 'New Quote', icon: 'note_add' },
     { id: 'my_quotes', label: 'My Quotations', mobileLabel: 'My Quotes', icon: 'folder_open' },
-    { id: 'profile', label: 'Profile', mobileLabel: 'Profile', icon: 'person' },
     { id: 'dealer_settings', label: 'Settings', mobileLabel: 'Settings', icon: 'settings' },
   ];
 
@@ -87,16 +86,6 @@ export default function Navigation() {
           </nav>
         </div>
 
-        {/* Bottom Logout Item */}
-        <div className="p-space-md border-t border-white/10">
-          <button
-            onClick={logout}
-            className="w-full flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-secondary-fixed-dim hover:bg-white/5 hover:text-on-secondary transition-colors font-body-md cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[20px]">logout</span>
-            <span>Logout</span>
-          </button>
-        </div>
       </aside>
 
       {/* Desktop Top Header (Exact Stitch Design) */}
@@ -147,12 +136,16 @@ export default function Navigation() {
                 setDropdownOpen(!dropdownOpen);
                 setNotificationsOpen(false);
               }}
-              className="flex items-center gap-2 sm:gap-space-sm cursor-pointer select-none"
+              className={`flex items-center gap-2 sm:gap-space-sm cursor-pointer select-none px-2 py-1.5 rounded-xl transition-all duration-200 ${
+                dropdownOpen
+                  ? 'bg-surface-container-low ring-1 ring-primary/20'
+                  : 'hover:bg-surface-container-lowest hover:shadow-xs'
+              }`}
             >
               <img
                 src={currentDealer?.avatar || '/dealer_avatar.jpg'}
                 alt="Dealer Avatar"
-                className="w-8 h-8 rounded-full object-cover shadow-sm border border-surface-container-high shrink-0"
+                className="w-8 h-8 rounded-full object-cover shadow-xs border border-surface-container-high shrink-0 ring-1 ring-primary/30"
               />
               <div className="hidden sm:flex flex-col text-left max-w-[90px] md:max-w-[120px] lg:max-w-[180px] truncate">
                 <span className="font-label-md text-label-md text-on-surface leading-tight truncate">
@@ -162,44 +155,53 @@ export default function Navigation() {
                   {role === 'admin' ? 'System Administrator' : 'Authorized Dealer'}
                 </span>
               </div>
-              <span className="material-symbols-outlined text-secondary text-[20px] shrink-0">
+              <span
+                className={`material-symbols-outlined text-[20px] shrink-0 transition-transform duration-200 ease-out ${
+                  dropdownOpen ? 'rotate-180 text-primary' : 'rotate-0 text-secondary'
+                }`}
+              >
                 keyboard_arrow_down
               </span>
             </div>
 
-            {/* Quick Profile Dropdown */}
+            {/* Quick Profile Dropdown with Smooth Animation */}
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-surface-container-lowest rounded-xl shadow-lg border border-surface-container-high py-2 z-50 animate-in fade-in slide-in-from-top-1">
-                <div className="px-4 py-2 border-b border-surface-container-high">
+              <div className="absolute right-0 mt-2 w-56 bg-surface-container-lowest/95 backdrop-blur-xl rounded-2xl shadow-xl border border-surface-container-high/80 p-1.5 z-50 animate-dropdown-enter ring-1 ring-black/5">
+                <div className="px-3.5 py-2.5 mb-1 border-b border-surface-container-high/60 bg-surface-container-low/40 rounded-xl">
                   <p className="font-label-md text-on-surface text-xs font-bold truncate">
-                    {role === 'admin' ? 'Admin' : currentDealer?.contactPerson || 'Authorized Partner'}
+                    {role === 'admin' ? 'System Admin' : currentDealer?.contactPerson || 'Authorized Partner'}
                   </p>
                   <p className="font-body-sm text-secondary text-[11px] truncate">
                     {role === 'admin' ? 'admin@sunvine.in' : currentDealer?.email || 'dealer@sunvine.in'}
                   </p>
                 </div>
-                {role === 'dealer' && (
+
+                <div className="space-y-0.5">
+                  {/* Account Settings Option for both Dealer & Admin */}
                   <button
+                    type="button"
                     onClick={() => {
-                      setActiveTab('profile');
+                      setActiveTab(role === 'admin' ? 'admin_settings' : 'dealer_settings');
                       setDropdownOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-xs font-medium text-on-surface hover:bg-surface-container-low hover:text-primary cursor-pointer"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-on-surface hover:bg-primary/10 hover:text-primary active:scale-[0.98] cursor-pointer transition-all duration-150"
                   >
-                    <span className="material-symbols-outlined text-[16px]">account_circle</span>
-                    <span>View Profile</span>
+                    <span className="material-symbols-outlined text-[18px]">settings</span>
+                    <span>{role === 'admin' ? 'Governance Settings' : 'Account Settings'}</span>
                   </button>
-                )}
-                <button
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    logout();
-                  }}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-xs font-semibold text-error hover:bg-error-container/20 cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[16px]">logout</span>
-                  <span>Logout</span>
-                </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      logout();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-error hover:bg-error-container/20 active:scale-[0.98] cursor-pointer transition-all duration-150"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">logout</span>
+                    <span>Logout</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -248,7 +250,7 @@ export default function Navigation() {
           </div>
 
           <div
-            onClick={() => setActiveTab(role === 'admin' ? 'admin_settings' : 'profile')}
+            onClick={() => setActiveTab(role === 'admin' ? 'admin_settings' : 'dealer_settings')}
             className="relative flex items-center justify-center p-0.5 rounded-full ring-1 ring-primary/40 cursor-pointer"
           >
             <img

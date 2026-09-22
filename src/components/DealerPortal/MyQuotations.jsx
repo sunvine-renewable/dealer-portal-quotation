@@ -154,22 +154,22 @@ export default function MyQuotations() {
         ))}
       </div>
 
-      {/* Desktop View: Full Data Table (Identical structure and columns to DealerDashboard) */}
-      <div className="hidden md:block w-full overflow-x-auto rounded-xl shadow-sm bg-surface-container-lowest border border-surface-container-high/60">
+      {/* Desktop View: Full Data Table with Sticky Header & Internal Vertical Scroll */}
+      <div className="hidden md:block w-full max-h-[calc(100vh-270px)] min-h-[420px] overflow-y-auto overflow-x-auto rounded-xl shadow-sm bg-surface-container-lowest border border-surface-container-high/60 relative">
         <table className="w-full text-left border-collapse">
-          <thead>
+          <thead className="sticky top-0 z-10 bg-on-secondary-fixed shadow-xs">
             <tr className="bg-on-secondary-fixed text-on-secondary h-12 text-label-sm font-label-sm select-none">
-              <th className="px-space-lg py-space-sm font-semibold tracking-wider">Customer Name</th>
-              <th className="px-space-lg py-space-sm font-semibold tracking-wider">System Capacity</th>
-              <th className="px-space-lg py-space-sm font-semibold tracking-wider">Date</th>
-              <th className="px-space-lg py-space-sm font-semibold tracking-wider text-right">Amount</th>
-              <th className="px-space-lg py-space-sm font-semibold tracking-wider text-center">Status</th>
-              <th className="px-space-lg py-space-sm font-semibold tracking-wider text-center">Actions</th>
+              <th className="px-space-lg py-space-sm font-semibold tracking-wider bg-on-secondary-fixed">Customer Name</th>
+              <th className="px-space-lg py-space-sm font-semibold tracking-wider bg-on-secondary-fixed">System Capacity</th>
+              <th className="px-space-lg py-space-sm font-semibold tracking-wider bg-on-secondary-fixed">Date</th>
+              <th className="px-space-lg py-space-sm font-semibold tracking-wider text-right bg-on-secondary-fixed">Amount</th>
+              <th className="px-space-lg py-space-sm font-semibold tracking-wider text-center bg-on-secondary-fixed">Status</th>
+              <th className="px-space-lg py-space-sm font-semibold tracking-wider text-center bg-on-secondary-fixed">Actions</th>
             </tr>
           </thead>
           <tbody className="font-body-md text-body-md divide-y divide-surface-container">
             {filteredQuotes.map((q, idx) => (
-              <tr key={idx} className={`transition-colors ${idx % 2 === 0 ? 'bg-surface-container-lowest hover:bg-surface-container-low' : 'bg-surface-container-low hover:bg-surface-container'}`}>
+              <tr key={idx} className="bg-surface-container-lowest hover:bg-surface-container-low/80 transition-colors">
                 <td className="px-space-lg py-3.5">
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
@@ -184,9 +184,11 @@ export default function MyQuotations() {
                   </div>
                 </td>
                 <td className="px-space-lg py-3.5">
-                  <div className="flex items-center gap-1.5 font-semibold text-on-surface">
-                    <span className="material-symbols-outlined text-primary text-[18px]">solar_power</span>
-                    <span>{q.capacity}</span>
+                  <div className="flex items-center gap-2.5 font-semibold text-on-surface whitespace-nowrap">
+                    <div className="w-7 h-7 rounded-lg bg-primary-container/15 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                      <span className="material-symbols-outlined text-[16px] leading-none select-none">solar_power</span>
+                    </div>
+                    <span className="font-mono font-bold text-inverse-surface">{q.capacity}</span>
                   </div>
                 </td>
                 <td className="px-space-lg py-3.5 text-secondary font-label-xs whitespace-nowrap">
@@ -205,7 +207,7 @@ export default function MyQuotations() {
                   <div className="flex items-center justify-center gap-1">
                     <button
                       onClick={() => startEditingQuotation(q)}
-                      className="p-1.5 rounded hover:bg-primary/10 text-secondary hover:text-primary transition-colors"
+                      className="p-1.5 rounded hover:bg-primary/10 text-secondary hover:text-primary transition-colors cursor-pointer"
                       title="Edit Quotation"
                       type="button"
                     >
@@ -213,7 +215,7 @@ export default function MyQuotations() {
                     </button>
                     <button
                       onClick={() => handleOpenPDF(q)}
-                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors"
+                      className="p-1.5 rounded hover:bg-surface-container text-secondary hover:text-on-surface transition-colors cursor-pointer"
                       title="View Proposal PDF"
                       type="button"
                     >
@@ -221,7 +223,7 @@ export default function MyQuotations() {
                     </button>
                     <button
                       onClick={() => openWhatsAppChat(q)}
-                      className="p-1.5 rounded hover:bg-surface-container text-[#25D366] hover:bg-[#25D366]/15 transition-colors"
+                      className="p-1.5 rounded hover:bg-surface-container text-[#25D366] hover:bg-[#25D366]/15 transition-colors cursor-pointer"
                       title="Share via WhatsApp"
                       type="button"
                     >

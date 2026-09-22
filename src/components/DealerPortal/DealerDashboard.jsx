@@ -444,7 +444,7 @@ export default function DealerDashboard() {
             </thead>
             <tbody className="font-body-md text-body-md divide-y divide-surface-container">
               {recentQuotes.map((q, idx) => (
-                <tr key={idx} className={`transition-colors ${idx % 2 === 0 ? 'bg-surface-container-lowest hover:bg-surface-container-low' : 'bg-surface-container-low hover:bg-surface-container'}`}>
+                <tr key={idx} className="bg-surface-container-lowest hover:bg-surface-container-low/80 transition-colors">
                   <td className="px-space-lg py-3.5">
                     <div className="flex flex-col">
                       <span className="font-semibold text-on-surface">{q.customerName}</span>
@@ -452,9 +452,11 @@ export default function DealerDashboard() {
                     </div>
                   </td>
                   <td className="px-space-lg py-3.5">
-                    <div className="flex items-center gap-1.5 font-semibold text-on-surface">
-                      <span className="material-symbols-outlined text-primary text-[18px]">solar_power</span>
-                      <span>{q.capacity}</span>
+                    <div className="flex items-center gap-2.5 font-semibold text-on-surface whitespace-nowrap">
+                      <div className="w-7 h-7 rounded-lg bg-primary-container/15 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                        <span className="material-symbols-outlined text-[16px] leading-none select-none">solar_power</span>
+                      </div>
+                      <span className="font-mono font-bold text-inverse-surface">{q.capacity}</span>
                     </div>
                   </td>
                   <td className="px-space-lg py-3.5 text-secondary font-label-xs whitespace-nowrap">
@@ -515,7 +517,7 @@ export default function DealerDashboard() {
             Download Revised Rate Matrix
           </a>
           <span className="text-secondary">•</span>
-          <a className="text-secondary hover:text-on-surface cursor-pointer" onClick={() => setActiveTab('profile')}>
+          <a className="text-secondary hover:text-on-surface cursor-pointer" onClick={() => setActiveTab('dealer_settings')}>
             Contact EPC Territory Manager
           </a>
         </div>

@@ -257,9 +257,9 @@ export default function CreateQuotation() {
   };
 
   return (
-    <div className="flex flex-col w-full pb-28">
+    <div className="flex flex-col w-full pb-8 min-w-0 overflow-x-hidden">
       {/* Top Navigation Bar & Progress Track (Exact Stitch Stepper) */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col gap-3 mb-6">
         <div className="flex flex-col gap-1 min-w-0">
           <button
             onClick={() => setActiveTab('dashboard')}
@@ -268,40 +268,40 @@ export default function CreateQuotation() {
             <span className="material-symbols-outlined text-[18px] group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
             <span>Back to Dashboard</span>
           </button>
-          <div className="flex flex-wrap items-center gap-space-sm mt-1">
-            <h1 className="font-headline-xl text-headline-xl text-on-surface tracking-tight font-bold">
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl text-on-surface tracking-tight font-bold">
               {editingQuotation ? 'Edit Quotation' : 'New Quotation'}
             </h1>
-            <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-label-xs tracking-wide uppercase font-semibold">
-              {editingQuotation ? `Editing #${editingQuotation.id}` : 'Ref #SV-2025-Q408'}
+            <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-[10px] tracking-wide uppercase font-semibold shrink-0">
+              {editingQuotation ? `#${editingQuotation.id}` : 'Ref #SV-2025-Q408'}
             </span>
             {editingQuotation && (
               <button
                 onClick={handleReset}
                 type="button"
-                className="text-xs text-secondary hover:text-error underline ml-2 font-medium"
+                className="text-xs text-secondary hover:text-error underline font-medium"
               >
-                Cancel Edit / Create New
+                Cancel Edit
               </button>
             )}
           </div>
         </div>
 
         {/* Stepper Indicator */}
-        <div className="flex items-center bg-surface-container-lowest p-1.5 sm:p-2 rounded-xl shadow-sm self-start lg:self-auto border border-surface-container-high max-w-full overflow-x-auto">
-          <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg bg-primary/10 text-primary font-label-sm whitespace-nowrap">
-            <span className="w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-label-xs font-bold shrink-0">1</span>
-            <span>Details &amp; Pricing</span>
-            <span className="bg-primary-container/20 text-on-primary-container text-[10px] px-1.5 py-0.5 rounded font-label-xs uppercase tracking-wider font-semibold">Active</span>
+        <div className="flex items-center bg-surface-container-lowest p-1.5 rounded-xl shadow-sm self-start border border-surface-container-high overflow-hidden max-w-full">
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary font-label-sm">
+            <span className="w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-[10px] font-bold shrink-0">1</span>
+            <span className="text-xs font-semibold">Details &amp; Pricing</span>
+            <span className="bg-primary-container/20 text-on-primary-container text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wide">Active</span>
           </div>
-          <div className="w-4 sm:w-8 h-0.5 bg-surface-container-high mx-1 shrink-0"></div>
-          <button
-            onClick={handlePreview}
-            className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg text-secondary hover:text-on-surface font-label-sm transition-colors cursor-pointer whitespace-nowrap"
+          <div className="w-4 h-0.5 bg-surface-container-high mx-1 shrink-0"></div>
+          <div
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-secondary/60 font-label-sm select-none cursor-not-allowed opacity-75"
+            title="Complete quotation details and use 'Preview & Send' button below to proceed"
           >
-            <span className="w-5 h-5 rounded-full bg-surface-container-high text-secondary flex items-center justify-center text-label-xs font-bold shrink-0">2</span>
-            <span>Preview &amp; Send</span>
-          </button>
+            <span className="w-5 h-5 rounded-full bg-surface-container-high text-secondary/60 flex items-center justify-center text-[10px] font-bold shrink-0">2</span>
+            <span className="text-xs font-medium">Preview &amp; Send</span>
+          </div>
         </div>
       </div>
 
@@ -318,18 +318,18 @@ export default function CreateQuotation() {
         {/* Left Column: Specs & Inputs (7 cols) */}
         <div className="lg:col-span-7 flex flex-col gap-6">
           {/* Card 1: Customer Details */}
-          <section className="bg-surface-container-lowest rounded-xl p-5 md:p-6 shadow-sm border border-surface-container-high">
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-surface-container-high/60">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
-                  <span className="material-symbols-outlined text-[20px]">person</span>
+          <section className="bg-surface-container-lowest rounded-xl p-4 sm:p-5 md:p-6 shadow-sm border border-surface-container-high">
+            <div className="flex items-start justify-between pb-4 mb-4 border-b border-surface-container-high/60 gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-surface-container flex items-center justify-center text-secondary shrink-0">
+                  <span className="material-symbols-outlined text-[18px] sm:text-[20px]">person</span>
                 </div>
-                <div>
-                  <h2 className="font-headline-md text-headline-md font-bold text-on-secondary-fixed">Customer Details</h2>
-                  <p className="font-body-sm text-body-sm text-secondary">Site contact &amp; regional grid jurisdictional data</p>
+                <div className="min-w-0">
+                  <h2 className="text-sm sm:text-base font-bold text-on-secondary-fixed leading-tight">Customer Details</h2>
+                  <p className="text-xs text-secondary hidden sm:block">Site contact &amp; regional grid jurisdictional data</p>
                 </div>
               </div>
-              <span className="font-label-xs text-secondary-fixed-dim uppercase tracking-wider font-semibold">Step 1.1</span>
+              <span className="text-[10px] text-secondary-fixed-dim uppercase tracking-wider font-semibold shrink-0">Step 1.1</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -393,22 +393,22 @@ export default function CreateQuotation() {
           </section>
 
           {/* Card 2: System Details */}
-          <section className="bg-surface-container-lowest rounded-xl p-5 md:p-6 shadow-sm border border-surface-container-high">
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-surface-container-high/60">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
-                  <span className="material-symbols-outlined text-[20px]">solar_power</span>
+          <section className="bg-surface-container-lowest rounded-xl p-4 sm:p-5 md:p-6 shadow-sm border border-surface-container-high">
+            <div className="flex items-start justify-between pb-4 mb-4 border-b border-surface-container-high/60 gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-surface-container flex items-center justify-center text-secondary shrink-0">
+                  <span className="material-symbols-outlined text-[18px] sm:text-[20px]">solar_power</span>
                 </div>
-                <div>
-                  <h2 className="font-headline-md text-headline-md font-bold text-on-secondary-fixed">System Details</h2>
-                  <p className="font-body-sm text-body-sm text-secondary">Hardware configuration, inverter tier &amp; module capacity</p>
+                <div className="min-w-0">
+                  <h2 className="text-sm sm:text-base font-bold text-on-secondary-fixed leading-tight">System Details</h2>
+                  <p className="text-xs text-secondary hidden sm:block">Hardware configuration, inverter tier &amp; module capacity</p>
                 </div>
               </div>
-              <span className="font-label-xs text-secondary-fixed-dim uppercase tracking-wider font-semibold">Step 1.2</span>
+              <span className="text-[10px] text-secondary-fixed-dim uppercase tracking-wider font-semibold shrink-0">Step 1.2</span>
             </div>
 
             <div className="flex flex-col gap-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {/* Capacity Selector */}
                 <div className="flex flex-col gap-1.5">
                   <label className="font-label-sm text-label-sm text-on-surface font-semibold" htmlFor="systemCapacity">
@@ -456,22 +456,22 @@ export default function CreateQuotation() {
               {/* Inverter Configuration Card Option */}
               <div className="flex flex-col gap-2 pt-1">
                 <label className="font-label-sm text-label-sm text-on-surface font-semibold">Selected Inverter Unit</label>
-                <div className="p-3.5 rounded-lg bg-surface-container-low border border-surface-container-high flex flex-col md:flex-row md:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary shadow-xs border border-surface-container-high">
+                <div className="p-3.5 rounded-lg bg-surface-container-low border border-surface-container-high flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary shadow-xs border border-surface-container-high shrink-0">
                       <span className="material-symbols-outlined text-[22px]">developer_board</span>
                     </div>
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2">
-                        <span className="font-label-md text-label-md text-on-surface font-bold">{inverterModel}</span>
-                        <span className="px-2 py-0.5 rounded-full bg-primary-container/20 text-on-primary-container font-label-xs font-semibold">Included</span>
+                    <div className="flex flex-col min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-label-md text-label-md text-on-surface font-bold truncate">{inverterModel}</span>
+                        <span className="px-2 py-0.5 rounded-full bg-primary-container/20 text-on-primary-container font-label-xs font-semibold shrink-0">Included</span>
                       </div>
-                      <span className="font-body-sm text-body-sm text-secondary">Efficiency 98.4% • Built-in WiFi Smart Logger • IP65 Protection</span>
+                      <span className="font-body-sm text-xs sm:text-body-sm text-secondary">Efficiency 98.4% • Built-in WiFi Smart Logger • IP65 Protection</span>
                     </div>
                   </div>
                   <button
                     onClick={() => setShowInverterModal(true)}
-                    className="text-tertiary hover:text-on-tertiary-container font-label-sm text-left md:text-right self-start md:self-auto underline-offset-4 hover:underline cursor-pointer font-semibold"
+                    className="text-tertiary hover:text-on-tertiary-container font-label-sm text-left sm:text-right self-start sm:self-auto underline-offset-4 hover:underline cursor-pointer font-semibold shrink-0"
                     type="button"
                   >
                     Change Model
@@ -509,13 +509,13 @@ export default function CreateQuotation() {
               className="w-full h-full object-cover"
               src="/solar_field_cover.jpg"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-inverse-surface/85 via-inverse-surface/25 to-transparent flex items-end p-4">
-              <div className="flex items-center justify-between w-full text-white">
-                <div className="flex items-center gap-2 font-label-sm">
-                  <span className="material-symbols-outlined text-primary-container text-[18px]">verified</span>
-                  <span className="font-semibold">Standard Tier-1 Rooftop Assembly Package</span>
+            <div className="absolute inset-0 bg-gradient-to-t from-inverse-surface/85 via-inverse-surface/25 to-transparent flex items-end p-3 sm:p-4">
+              <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between w-full text-white gap-1">
+                <div className="flex items-center gap-1.5 font-label-sm">
+                  <span className="material-symbols-outlined text-primary-container text-[16px] sm:text-[18px] shrink-0">verified</span>
+                  <span className="font-semibold text-xs sm:text-sm">Standard Tier-1 Rooftop Assembly</span>
                 </div>
-                <span className="font-body-sm text-[12px] opacity-85">25 Years Performance Warranty</span>
+                <span className="text-[10px] sm:text-xs opacity-85 shrink-0">25 Yr Performance Warranty</span>
               </div>
             </div>
           </div>
@@ -523,27 +523,27 @@ export default function CreateQuotation() {
 
         {/* Right Column: Pricing & Subsidy Calculator (5 cols) */}
         <div className="lg:col-span-5 flex flex-col gap-6">
-          <section className="bg-surface-container-lowest rounded-xl p-5 md:p-6 shadow-sm border border-surface-container-high flex flex-col gap-4">
-            <div className="flex items-center justify-between pb-4 border-b border-surface-container-high/60">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined text-[20px]">calculate</span>
+          <section className="bg-surface-container-lowest rounded-xl p-4 sm:p-5 md:p-6 shadow-sm border border-surface-container-high flex flex-col gap-4">
+            <div className="flex items-start justify-between pb-4 border-b border-surface-container-high/60 gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+                  <span className="material-symbols-outlined text-[18px] sm:text-[20px]">calculate</span>
                 </div>
-                <div>
-                  <h2 className="font-headline-md text-headline-md font-bold text-on-secondary-fixed">Pricing &amp; Subsidy</h2>
-                  <p className="font-body-sm text-body-sm text-secondary">PM Surya Ghar DBT computation</p>
+                <div className="min-w-0">
+                  <h2 className="text-sm sm:text-base font-bold text-on-secondary-fixed leading-tight">Pricing &amp; Subsidy</h2>
+                  <p className="text-xs text-secondary hidden sm:block">PM Surya Ghar DBT computation</p>
                 </div>
               </div>
-              <span className="font-label-xs text-secondary-fixed-dim uppercase tracking-wider font-semibold">Step 1.3</span>
+              <span className="text-[10px] text-secondary-fixed-dim uppercase tracking-wider font-semibold shrink-0">Step 1.3</span>
             </div>
 
             {/* Input Field for Rate per kW */}
             <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
                 <label className="font-label-sm text-label-sm text-on-surface font-semibold" htmlFor="ratePerKw">
                   Rate per kW (₹)
                 </label>
-                <span className="font-label-xs text-secondary">Market Benchmark: ₹62k - ₹68k</span>
+                <span className="text-[11px] text-secondary shrink-0">Benchmark: ₹62k–₹68k</span>
               </div>
               <div className="relative">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-headline-sm text-headline-sm text-secondary select-none">₹</span>
@@ -571,69 +571,69 @@ export default function CreateQuotation() {
               </div>
 
               {/* Line 1: Base System Cost */}
-              <div className="flex items-center justify-between pt-1">
-                <div className="flex flex-col">
-                  <span className="font-label-sm text-label-sm text-secondary font-medium">Base Hardware &amp; EPC Cost</span>
-                  <span className="font-body-sm text-[11px] text-secondary/70">
+              <div className="flex items-center justify-between pt-1 gap-2">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs text-secondary font-medium">Base Hardware &amp; EPC Cost</span>
+                  <span className="text-[10px] text-secondary/70">
                     {kw} kW × {formatINR(ratePerKw)}
                   </span>
                 </div>
-                <span className="font-headline-sm text-headline-sm text-on-secondary-fixed font-bold tabular-nums whitespace-nowrap">
+                <span className="text-sm font-bold tabular-nums whitespace-nowrap text-on-secondary-fixed shrink-0">
                   {formatINR(baseProjectCost)}
                 </span>
               </div>
 
               {/* Line 2: Dealer Margin Added */}
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-label-sm text-label-sm text-on-surface font-semibold">Dealer Commercial Margin</span>
-                    <span className="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.2 rounded font-label-xs font-semibold">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-xs text-on-surface font-semibold">Dealer Margin</span>
+                    <span className="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0">
                       {marginMode === 'percent' ? `${dealerMarginRate}%` : `${effectiveMarginPercent}%`}
                     </span>
                   </div>
-                  <span className="font-body-sm text-[11px] text-secondary">Added to proposal</span>
+                  <span className="text-[10px] text-secondary">Added to proposal</span>
                 </div>
-                <span className="font-headline-sm text-headline-sm text-emerald-700 font-bold tabular-nums whitespace-nowrap">
+                <span className="text-sm text-emerald-700 font-bold tabular-nums whitespace-nowrap shrink-0">
                   + {formatINR(dealerMarginINR)}
                 </span>
               </div>
 
               {/* Line 3: Total Project Cost */}
-              <div className="flex items-center justify-between py-1 border-t border-dashed border-primary/20">
-                <div className="flex flex-col">
-                  <span className="font-label-sm text-label-sm text-on-surface font-bold">Total Project Cost</span>
-                  <span className="font-body-sm text-[11px] text-secondary">Customer quote before subsidy</span>
+              <div className="flex items-center justify-between gap-2 py-1 border-t border-dashed border-primary/20">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs text-on-surface font-bold">Total Project Cost</span>
+                  <span className="text-[10px] text-secondary">Customer quote before subsidy</span>
                 </div>
-                <span className="font-headline-sm text-headline-sm text-on-secondary-fixed font-black tabular-nums whitespace-nowrap">
+                <span className="text-sm text-on-secondary-fixed font-black tabular-nums whitespace-nowrap shrink-0">
                   {formatINR(totalCost)}
                 </span>
               </div>
 
               {/* Line 4: Government Subsidy */}
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-label-sm text-label-sm text-on-surface font-semibold">Government Subsidy</span>
-                    <span className="bg-primary-container/20 text-on-primary-container text-[10px] px-1.5 py-0.2 rounded font-label-xs font-semibold">
-                      Automatic Central Subsidy
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-xs text-on-surface font-semibold">Govt. Subsidy</span>
+                    <span className="bg-primary-container/20 text-on-primary-container text-[9px] px-1.5 py-0.5 rounded font-semibold shrink-0">
+                      PM Surya Ghar
                     </span>
                   </div>
-                  <span className="font-body-sm text-[11px] text-secondary">PM Surya Ghar: Muft Bijli Yojana</span>
+                  <span className="text-[10px] text-secondary">Central DBT Reimbursement</span>
                 </div>
-                <span className="font-headline-sm text-headline-sm text-primary font-bold tabular-nums whitespace-nowrap">
+                <span className="text-sm text-primary font-bold tabular-nums whitespace-nowrap shrink-0">
                   - {formatINR(subsidy)}
                 </span>
               </div>
 
               {/* Line 5: Estimated Annual Savings */}
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                  <span className="font-label-sm text-label-sm text-secondary font-medium">Estimated Annual Savings</span>
-                  <span className="font-body-sm text-[11px] text-secondary">approx. {annualGenerationUnits.toLocaleString()} units / year generated</span>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs text-secondary font-medium">Est. Annual Savings</span>
+                  <span className="text-[10px] text-secondary">{annualGenerationUnits.toLocaleString()} units / yr</span>
                 </div>
-                <span className="font-label-md text-label-md text-on-surface font-bold tabular-nums whitespace-nowrap">
-                  {formatINR(annualSavings)} <span className="font-body-sm text-secondary font-normal">/ yr</span>
+                <span className="text-xs text-on-surface font-bold tabular-nums whitespace-nowrap shrink-0">
+                  {formatINR(annualSavings)} <span className="text-[10px] text-secondary font-normal">/ yr</span>
                 </span>
               </div>
 
@@ -665,30 +665,30 @@ export default function CreateQuotation() {
               <div className="w-full bg-surface-container h-2.5 rounded-full overflow-hidden flex">
                 <div className="bg-primary-container h-full rounded-full transition-all duration-300" style={{ width: `${paybackPercent}%` }}></div>
               </div>
-              <div className="flex items-center justify-between text-label-xs text-secondary">
-                <span>ROI Break-even: {breakEvenYear}</span>
-                <span>{25 - Math.ceil(parseFloat(paybackYears))}+ Years of Free Power Remaining</span>
+              <div className="flex items-center justify-between text-[10px] sm:text-label-xs text-secondary gap-2">
+                <span className="shrink-0">Break-even: {breakEvenYear}</span>
+                <span className="text-right">{25 - Math.ceil(parseFloat(paybackYears))}+ Yrs Free Power</span>
               </div>
             </div>
 
             {/* Interactive Dealer Commercials (Dual Mode: % or Fixed ₹ Amount) */}
-            <div className="p-4 bg-surface rounded-xl border border-surface-container-high flex flex-col gap-3.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-[20px]">account_balance_wallet</span>
-                  <span className="font-label-sm text-sm text-on-surface font-bold">Custom Dealer Margin</span>
+            <div className="p-3.5 sm:p-4 bg-surface rounded-xl border border-surface-container-high flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="material-symbols-outlined text-primary text-[18px] sm:text-[20px] shrink-0">account_balance_wallet</span>
+                  <span className="text-xs sm:text-sm text-on-surface font-bold">Custom Dealer Margin</span>
                 </div>
-                <span className="font-headline-sm text-headline-sm text-primary font-bold whitespace-nowrap" id="dealerMarginDisplay">
+                <span className="text-sm sm:text-base text-primary font-bold whitespace-nowrap shrink-0" id="dealerMarginDisplay">
                   {formatINR(dealerMarginINR)}
                 </span>
               </div>
 
               {/* Mode Toggle: % vs ₹ */}
-              <div className="flex items-center p-1 bg-surface-container-low rounded-lg border border-surface-container-high w-fit">
+              <div className="flex items-center p-1 bg-surface-container-low rounded-lg border border-surface-container-high self-start">
                 <button
                   type="button"
                   onClick={() => setMarginMode('percent')}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                  className={`flex items-center gap-1 px-2.5 sm:px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
                     marginMode === 'percent'
                       ? 'bg-primary-container text-on-primary shadow-xs'
                       : 'text-secondary hover:text-on-surface'
@@ -699,7 +699,7 @@ export default function CreateQuotation() {
                 <button
                   type="button"
                   onClick={() => setMarginMode('amount')}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                  className={`flex items-center gap-1 px-2.5 sm:px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
                     marginMode === 'amount'
                       ? 'bg-primary-container text-on-primary shadow-xs'
                       : 'text-secondary hover:text-on-surface'
@@ -711,25 +711,26 @@ export default function CreateQuotation() {
 
               {/* Preset Chips & Custom Input */}
               {marginMode === 'percent' ? (
-                <div className="flex flex-wrap items-center gap-2">
-                  {[5, 8, 10, 12, 15].map((pct) => (
-                    <button
-                      key={pct}
-                      type="button"
-                      onClick={() => setDealerMarginRate(pct)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                        dealerMarginRate === pct
-                          ? 'bg-primary-container text-on-primary shadow-xs'
-                          : 'bg-surface-container-lowest border border-surface-container-high text-secondary hover:text-on-surface'
-                      }`}
-                    >
-                      {pct}%
-                    </button>
-                  ))}
-
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {[5, 8, 10, 12, 15].map((pct) => (
+                      <button
+                        key={pct}
+                        type="button"
+                        onClick={() => setDealerMarginRate(pct)}
+                        className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                          dealerMarginRate === pct
+                            ? 'bg-primary-container text-on-primary shadow-xs'
+                            : 'bg-surface-container-lowest border border-surface-container-high text-secondary hover:text-on-surface'
+                        }`}
+                      >
+                        {pct}%
+                      </button>
+                    ))}
+                  </div>
                   {/* Custom % Input */}
-                  <div className="flex items-center gap-1.5 ml-auto">
-                    <span className="text-xs text-secondary font-medium">Custom %:</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-secondary font-medium shrink-0">Custom %:</span>
                     <div className="relative flex items-center">
                       <input
                         type="number"
@@ -745,25 +746,26 @@ export default function CreateQuotation() {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-wrap items-center gap-2">
-                  {[10000, 20000, 30000, 50000].map((amt) => (
-                    <button
-                      key={amt}
-                      type="button"
-                      onClick={() => setDealerMarginFixed(amt)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                        dealerMarginFixed === amt
-                          ? 'bg-primary-container text-on-primary shadow-xs'
-                          : 'bg-surface-container-lowest border border-surface-container-high text-secondary hover:text-on-surface'
-                      }`}
-                    >
-                      ₹{(amt / 1000)}k
-                    </button>
-                  ))}
-
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {[10000, 20000, 30000, 50000].map((amt) => (
+                      <button
+                        key={amt}
+                        type="button"
+                        onClick={() => setDealerMarginFixed(amt)}
+                        className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                          dealerMarginFixed === amt
+                            ? 'bg-primary-container text-on-primary shadow-xs'
+                            : 'bg-surface-container-lowest border border-surface-container-high text-secondary hover:text-on-surface'
+                        }`}
+                      >
+                        ₹{(amt / 1000)}k
+                      </button>
+                    ))}
+                  </div>
                   {/* Custom ₹ Input */}
-                  <div className="flex items-center gap-1.5 ml-auto">
-                    <span className="text-xs text-secondary font-medium">Custom ₹:</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-secondary font-medium shrink-0">Custom ₹:</span>
                     <div className="relative flex items-center">
                       <span className="absolute left-2 text-xs text-secondary font-bold pointer-events-none">₹</span>
                       <input
@@ -780,8 +782,8 @@ export default function CreateQuotation() {
                 </div>
               )}
 
-              <div className="text-[11px] text-secondary flex items-center justify-between pt-2 border-t border-surface-container-high">
-                <span className="whitespace-nowrap">
+              <div className="text-[11px] text-secondary flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-surface-container-high">
+                <span className="whitespace-normal sm:whitespace-nowrap">
                   Spread: <strong className="text-on-surface font-bold">{formatINR(Math.round(dealerMarginINR / kw))} / kW</strong> ({effectiveMarginPercent}%)
                 </span>
                 <span className="inline-flex items-center gap-1 text-primary font-medium text-[10px] bg-primary/10 px-2 py-0.5 rounded-full shrink-0">
@@ -791,53 +793,61 @@ export default function CreateQuotation() {
               </div>
             </div>
           </section>
-        </div>
-      </div>
 
-      {/* Sticky Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 md:left-64 right-0 h-16 sm:h-20 bg-surface-container-lowest border-t border-surface-container-high shadow-[0_-4px_16px_rgba(0,0,0,0.06)] z-40 flex items-center justify-between px-3 sm:px-4 md:px-8">
-        <button
-          onClick={handleReset}
-          className="h-9 sm:h-10 px-2.5 sm:px-4 rounded-lg bg-surface-container-lowest text-on-secondary-fixed hover:bg-surface-container-low font-label-md transition-colors flex items-center gap-1.5 sm:gap-2 border border-surface-container-high shadow-xs cursor-pointer shrink-0"
-          type="button"
-        >
-          <span className="material-symbols-outlined text-[18px]">refresh</span>
-          <span className="hidden sm:inline">Reset Form</span>
-          <span className="sm:hidden text-xs">Reset</span>
-        </button>
-
-        <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            onClick={handleSaveDraft}
-            disabled={isSubmitting}
-            className="h-9 sm:h-10 px-2.5 sm:px-4 md:px-5 rounded-lg bg-surface-container-lowest text-on-secondary-fixed hover:bg-surface-container-low font-label-md transition-colors border border-surface-container-high shadow-xs cursor-pointer text-xs sm:text-sm shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            type="button"
-          >
-            <span className="hidden sm:inline">{isSubmitting ? 'Saving...' : 'Save Draft'}</span>
-            <span className="sm:hidden">{isSubmitting ? '...' : 'Save'}</span>
-          </button>
-          <button
-            onClick={handlePreview}
-            disabled={isSubmitting}
-            className="h-9 sm:h-10 px-3 sm:px-5 md:px-6 rounded-lg bg-[#6CBF3D] hover:bg-[#4F9A2C] active:scale-[0.99] text-on-primary font-label-md transition-all shadow-md hover:shadow-lg flex items-center gap-1.5 sm:gap-2 cursor-pointer font-semibold text-xs sm:text-sm shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            type="button"
-          >
-            <span className="hidden sm:inline">Preview Quotation</span>
-            <span className="sm:hidden">Preview</span>
-            <span className="material-symbols-outlined text-[16px] sm:text-[18px]">arrow_forward</span>
-          </button>
+          {/* Action Submission Card (In-flow Form Card for Mobile & Desktop) */}
+          <div className="bg-surface-container-lowest rounded-xl p-4 sm:p-5 shadow-sm border border-surface-container-high flex flex-col gap-4 mt-2">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[10px] text-secondary uppercase tracking-wider font-semibold">Ready to proceed?</span>
+              <div className="flex flex-wrap items-baseline gap-1.5">
+                <span className="text-base sm:text-lg font-bold text-on-surface">Generate Customer Proposal</span>
+                <span className="text-xs text-primary font-bold">({kw} kW • {formatINR(finalPayable)})</span>
+              </div>
+              <p className="text-xs text-secondary">
+                Generate official 4-page branded PDF ready for preview &amp; WhatsApp sharing.
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={handleReset}
+                type="button"
+                className="h-10 px-2 rounded-lg bg-surface-container-lowest text-secondary hover:text-on-surface hover:bg-surface-container-low transition-colors border border-surface-container-high shadow-xs cursor-pointer text-xs font-semibold flex items-center justify-center gap-1"
+                title="Reset form"
+              >
+                <span className="material-symbols-outlined text-[16px]">refresh</span>
+                <span>Reset</span>
+              </button>
+              <button
+                onClick={handleSaveDraft}
+                disabled={isSubmitting}
+                type="button"
+                className="h-10 px-2 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container-low transition-colors border border-surface-container-high shadow-xs cursor-pointer text-xs font-semibold flex items-center justify-center gap-1 disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-[16px] text-secondary">bookmark_border</span>
+                <span className="truncate">{isSubmitting ? 'Saving...' : 'Save Draft'}</span>
+              </button>
+              <button
+                onClick={handlePreview}
+                disabled={isSubmitting}
+                type="button"
+                className="h-10 px-2 rounded-lg bg-[#6CBF3D] hover:bg-[#4F9A2C] active:scale-[0.99] text-white transition-all shadow-md flex items-center justify-center gap-1 cursor-pointer font-bold text-xs disabled:opacity-50"
+              >
+                <span className="truncate">Preview</span>
+                <span className="material-symbols-outlined text-[16px] shrink-0">arrow_forward</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Inverter Selection Modal */}
       {showInverterModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-surface-container-high animate-in fade-in zoom-in-95">
+          <div className="bg-surface-container-lowest rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-surface-container-high animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-surface-container-high">
               <h3 className="font-headline-sm text-lg font-bold text-on-surface">Select Inverter Model</h3>
               <button
                 onClick={() => setShowInverterModal(false)}
-                className="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary"
+                className="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary cursor-pointer"
               >
                 <span className="material-symbols-outlined text-xl">close</span>
               </button>
@@ -861,7 +871,7 @@ export default function CreateQuotation() {
                     <h4 className="font-label-md text-sm font-bold text-on-surface">{inv.name}</h4>
                     <p className="text-xs text-secondary mt-0.5">{inv.specs}</p>
                   </div>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-surface-container text-primary">
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-surface-container text-primary shrink-0 ml-2">
                     {inv.efficiency}
                   </span>
                 </div>
