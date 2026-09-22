@@ -20,7 +20,7 @@ export default function AppUpdateModal() {
       addNotification({
         id: RELEASE_NOTIF_ID, // stable, version-keyed ID
         title: `System Updated to ${CURRENT_APP_VERSION}`,
-        description: `${CURRENT_RELEASE_CHANGELOG.title} (${RELEASE_DATE}). Highlights: ${(CURRENT_RELEASE_CHANGELOG.categories?.features ?? []).join(' | ')}`,
+        description: `${CURRENT_RELEASE_CHANGELOG?.title || 'System Update'} (${RELEASE_DATE}). Highlights: ${(CURRENT_RELEASE_CHANGELOG?.highlights ?? CURRENT_RELEASE_CHANGELOG?.categories?.features ?? []).join(' | ')}`,
         type: 'success',
         icon: 'system_update',
         audience: 'all'

@@ -191,6 +191,13 @@ const safeSetItem = (key, value) => {
     return (Array.isArray(parsed) && parsed.length >= 500) ? parsed : INITIAL_DEALERS;
   });
 
+  // Real PDF BOS Reference Data
+  const [pdfBosMatrix, setPdfBosMatrix] = useState(() => {
+    if (!isDbUpToDate) return PDF_BOS_PRICE_MATRIX;
+    const parsed = safeJsonParse('sunvine_bos_price_matrix', PDF_BOS_PRICE_MATRIX);
+    return (Array.isArray(parsed) && parsed.length > 0) ? parsed : PDF_BOS_PRICE_MATRIX;
+  });
+
   // Quotations List (All in Gujarat)
   const [quotations, setQuotations] = useState(() => {
     if (!isDbUpToDate) return INITIAL_QUOTATIONS;
@@ -242,6 +249,10 @@ const safeSetItem = (key, value) => {
   useEffect(() => {
     safeSetItem('sunvine_pricing_presets', pricingPresets);
   }, [pricingPresets]);
+
+  useEffect(() => {
+    safeSetItem('sunvine_bos_price_matrix', pdfBosMatrix);
+  }, [pdfBosMatrix]);
 
   useEffect(() => {
     safeSetItem('sunvine_modules', modulesList);
@@ -527,7 +538,8 @@ const safeSetItem = (key, value) => {
         addNotification,
         dismissedPopupIds,
         dismissPopupNotification,
-        pdfBosMatrix: PDF_BOS_PRICE_MATRIX,
+        pdfBosMatrix,
+        setPdfBosMatrix,
         pdfBomSpecs: PDF_BOM_SPECIFICATIONS,
         officialProfile: SUNVINE_OFFICIAL_PROFILE
       }}
