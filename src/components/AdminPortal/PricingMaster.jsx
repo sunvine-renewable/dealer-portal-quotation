@@ -517,25 +517,25 @@ export default function PricingMaster() {
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse min-w-[760px]">
+                  <table className="w-full text-left border-collapse min-w-[960px]">
                     <thead>
                       <tr className="bg-inverse-surface text-surface-container-lowest text-label-sm font-semibold h-10 border-none">
-                        <th className="px-3 py-2 text-xs">KW</th>
-                        <th className="px-3 py-2 text-xs">Modules</th>
-                        <th className="px-3 py-2 text-xs">Inverter</th>
-                        <th className="px-3 py-2 text-xs text-right">Adani Bi-Fi</th>
-                        <th className="px-3 py-2 text-xs text-right">APS Bi-Fi</th>
-                        <th className="px-3 py-2 text-xs text-right">Rayzone</th>
-                        <th className="px-3 py-2 text-xs text-right">Waaree 585W TOPCon</th>
-                        <th className="px-3 py-2 text-xs text-right">APS TOPCon 600W</th>
-                        <th className="px-3 py-2 text-xs text-center">Actions</th>
+                        <th className="px-3 py-2 text-xs whitespace-nowrap">KW</th>
+                        <th className="px-3 py-2 text-xs whitespace-nowrap">Modules</th>
+                        <th className="px-3 py-2 text-xs whitespace-nowrap">Inverter</th>
+                        <th className="px-3 py-2 text-xs text-right whitespace-nowrap">Adani Bi-Fi</th>
+                        <th className="px-3 py-2 text-xs text-right whitespace-nowrap">APS Bi-Fi</th>
+                        <th className="px-3 py-2 text-xs text-right whitespace-nowrap">Rayzone</th>
+                        <th className="px-3 py-2 text-xs text-right whitespace-nowrap">Waaree 585W TOPCon</th>
+                        <th className="px-3 py-2 text-xs text-right whitespace-nowrap">APS TOPCon 600W</th>
+                        <th className="px-3 py-2 text-xs text-center whitespace-nowrap">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-surface-container-highest font-body-sm text-xs text-on-surface">
                       {localBosMatrix.map((row, idx) => (
                         <tr key={idx} className={`hover:bg-surface-container-low/60 transition-colors ${idx % 2 === 1 ? 'bg-surface-container-low/20' : ''}`}>
                           {/* Capacity KW */}
-                          <td className="px-3 py-2.5 font-bold font-mono text-inverse-surface">
+                          <td className="px-3 py-2.5 font-bold font-mono text-inverse-surface whitespace-nowrap">
                             {isInlineEditingMatrix ? (
                               <input
                                 type="number"
@@ -550,7 +550,7 @@ export default function PricingMaster() {
                           </td>
 
                           {/* No of Modules */}
-                          <td className="px-3 py-2.5 font-semibold text-primary font-mono">
+                          <td className="px-3 py-2.5 font-semibold text-primary font-mono whitespace-nowrap">
                             {isInlineEditingMatrix ? (
                               <input
                                 type="number"
@@ -564,7 +564,7 @@ export default function PricingMaster() {
                           </td>
 
                           {/* Inverter Capacity */}
-                          <td className="px-3 py-2.5 font-mono">
+                          <td className="px-3 py-2.5 font-mono whitespace-nowrap">
                             {isInlineEditingMatrix ? (
                               <input
                                 type="text"
@@ -578,7 +578,7 @@ export default function PricingMaster() {
                           </td>
 
                           {/* Adani Bi-Fi */}
-                          <td className="px-3 py-2.5 text-right font-mono font-semibold">
+                          <td className="px-3 py-2.5 text-right font-mono font-semibold whitespace-nowrap tabular-nums">
                             {isInlineEditingMatrix ? (
                               <input
                                 type="number"
@@ -587,12 +587,12 @@ export default function PricingMaster() {
                                 className="w-24 px-1.5 py-1 bg-surface-container-lowest border border-surface-container-highest rounded text-xs text-right font-mono"
                               />
                             ) : (
-                              `₹ ${Number(getAdaniPrice(row)).toLocaleString('en-IN')}`
+                              <span className="whitespace-nowrap">₹ {Number(getAdaniPrice(row)).toLocaleString('en-IN')}</span>
                             )}
                           </td>
 
                           {/* APS Bi-Fi */}
-                          <td className="px-3 py-2.5 text-right font-mono font-semibold">
+                          <td className="px-3 py-2.5 text-right font-mono font-semibold whitespace-nowrap tabular-nums">
                             {isInlineEditingMatrix ? (
                               <input
                                 type="number"
@@ -601,12 +601,12 @@ export default function PricingMaster() {
                                 className="w-24 px-1.5 py-1 bg-surface-container-lowest border border-surface-container-highest rounded text-xs text-right font-mono"
                               />
                             ) : (
-                              `₹ ${Number(getApsBiFiPrice(row)).toLocaleString('en-IN')}`
+                              <span className="whitespace-nowrap">₹ {Number(getApsBiFiPrice(row)).toLocaleString('en-IN')}</span>
                             )}
                           </td>
 
                           {/* Rayzone */}
-                          <td className="px-3 py-2.5 text-right font-mono font-semibold">
+                          <td className="px-3 py-2.5 text-right font-mono font-semibold whitespace-nowrap tabular-nums">
                             {isInlineEditingMatrix ? (
                               <input
                                 type="number"
@@ -615,12 +615,12 @@ export default function PricingMaster() {
                                 className="w-24 px-1.5 py-1 bg-surface-container-lowest border border-surface-container-highest rounded text-xs text-right font-mono"
                               />
                             ) : (
-                              `₹ ${Number(getRayzonePrice(row)).toLocaleString('en-IN')}`
+                              <span className="whitespace-nowrap">₹ {Number(getRayzonePrice(row)).toLocaleString('en-IN')}</span>
                             )}
                           </td>
 
                           {/* Waaree 585W TOPCon */}
-                          <td className="px-3 py-2.5 text-right font-mono font-bold text-primary">
+                          <td className="px-3 py-2.5 text-right font-mono font-bold text-primary whitespace-nowrap tabular-nums">
                             {isInlineEditingMatrix ? (
                               <input
                                 type="number"
@@ -629,12 +629,12 @@ export default function PricingMaster() {
                                 className="w-24 px-1.5 py-1 bg-surface-container-lowest border border-surface-container-highest rounded text-xs text-right font-mono text-primary font-bold"
                               />
                             ) : (
-                              `₹ ${Number(getWaareePrice(row)).toLocaleString('en-IN')}`
+                              <span className="whitespace-nowrap">₹ {Number(getWaareePrice(row)).toLocaleString('en-IN')}</span>
                             )}
                           </td>
 
                           {/* APS TOPCon 600W */}
-                          <td className="px-3 py-2.5 text-right font-mono font-bold text-[#256676]">
+                          <td className="px-3 py-2.5 text-right font-mono font-bold text-[#256676] whitespace-nowrap tabular-nums">
                             {isInlineEditingMatrix ? (
                               <input
                                 type="number"
@@ -643,7 +643,7 @@ export default function PricingMaster() {
                                 className="w-24 px-1.5 py-1 bg-surface-container-lowest border border-surface-container-highest rounded text-xs text-right font-mono text-[#256676] font-bold"
                               />
                             ) : (
-                              `₹ ${Number(getApsTopconPrice(row)).toLocaleString('en-IN')}`
+                              <span className="whitespace-nowrap">₹ {Number(getApsTopconPrice(row)).toLocaleString('en-IN')}</span>
                             )}
                           </td>
 
@@ -1109,16 +1109,16 @@ export default function PricingMaster() {
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse min-w-[680px]">
+                  <table className="w-full text-left border-collapse min-w-[760px]">
                     <thead>
                       <tr className="bg-inverse-surface text-surface-container-lowest text-label-sm font-semibold h-10 border-none">
-                        <th className="px-3 py-2 text-xs">Brand &amp; Make</th>
-                        <th className="px-3 py-2 text-xs">Model Name</th>
-                        <th className="px-3 py-2 text-xs">Cell Technology</th>
-                        <th className="px-3 py-2 text-xs text-center">Wattage (Wp)</th>
-                        <th className="px-3 py-2 text-xs text-center">Efficiency</th>
-                        <th className="px-3 py-2 text-right">Benchmark Wp Rate</th>
-                        <th className="px-3 py-2 text-right">Warranty</th>
+                        <th className="px-3 py-2 text-xs whitespace-nowrap">Brand &amp; Make</th>
+                        <th className="px-3 py-2 text-xs whitespace-nowrap">Model Name</th>
+                        <th className="px-3 py-2 text-xs whitespace-nowrap">Cell Technology</th>
+                        <th className="px-3 py-2 text-xs text-center whitespace-nowrap">Wattage (Wp)</th>
+                        <th className="px-3 py-2 text-xs text-center whitespace-nowrap">Efficiency</th>
+                        <th className="px-3 py-2 text-right whitespace-nowrap">Benchmark Wp Rate</th>
+                        <th className="px-3 py-2 text-right whitespace-nowrap">Warranty</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-surface-container-highest font-body-sm text-xs text-on-surface">
@@ -1130,13 +1130,13 @@ export default function PricingMaster() {
                         { brand: 'Rayzone', model: '550W Bifacial TOPCon', cellTech: 'TOPCon Bifacial', wattage: 550, efficiency: '21.5%', ratePerWp: '₹ 18.90/Wp', warranty: '25 Yrs' }
                       ]).map((mod, idx) => (
                         <tr key={idx} className="hover:bg-surface-container-low/60 transition-colors">
-                          <td className="px-3 py-2.5 font-bold text-inverse-surface">{mod.brand}</td>
-                          <td className="px-3 py-2.5 font-medium text-primary">{mod.model}</td>
-                          <td className="px-3 py-2.5 text-secondary">{mod.cellTech}</td>
-                          <td className="px-3 py-2.5 text-center font-mono font-bold text-on-surface">{mod.wattage} W</td>
-                          <td className="px-3 py-2.5 text-center font-mono">{mod.efficiency}</td>
-                          <td className="px-3 py-2.5 text-right font-mono font-semibold text-inverse-surface">{mod.ratePerWp}</td>
-                          <td className="px-3 py-2.5 text-right text-secondary">{mod.warranty}</td>
+                          <td className="px-3 py-2.5 font-bold text-inverse-surface whitespace-nowrap">{mod.brand}</td>
+                          <td className="px-3 py-2.5 font-medium text-primary whitespace-nowrap">{mod.model}</td>
+                          <td className="px-3 py-2.5 text-secondary whitespace-nowrap">{mod.cellTech}</td>
+                          <td className="px-3 py-2.5 text-center font-mono font-bold text-on-surface whitespace-nowrap">{mod.wattage} W</td>
+                          <td className="px-3 py-2.5 text-center font-mono whitespace-nowrap">{mod.efficiency}</td>
+                          <td className="px-3 py-2.5 text-right font-mono font-semibold text-inverse-surface whitespace-nowrap tabular-nums">{mod.ratePerWp}</td>
+                          <td className="px-3 py-2.5 text-right text-secondary whitespace-nowrap">{mod.warranty}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1458,38 +1458,38 @@ export default function PricingMaster() {
               <div className="space-y-1.5 text-body-sm text-body-sm pt-2 border-t border-surface-container-highest/60">
                 <div className="flex justify-between text-secondary">
                   <span>Base Rate (5 kW × ₹{Number(rate3to10).toLocaleString()})</span>
-                  <span className="text-on-surface font-medium">₹ {(5 * Number(rate3to10)).toLocaleString()}</span>
+                  <span className="text-on-surface font-medium whitespace-nowrap">₹ {(5 * Number(rate3to10)).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-secondary">
                   <span>Discom &amp; Net Meter Fees</span>
-                  <span className="text-on-surface font-medium">+ ₹ 7,000</span>
+                  <span className="text-on-surface font-medium whitespace-nowrap">+ ₹ 7,000</span>
                 </div>
                 <div className="flex justify-between text-secondary">
                   <span>GST (13.8% composite EPC)</span>
-                  <span className="text-on-surface font-medium">+ ₹ {Math.round(5 * Number(rate3to10) * 0.138).toLocaleString()}</span>
+                  <span className="text-on-surface font-medium whitespace-nowrap">+ ₹ {Math.round(5 * Number(rate3to10) * 0.138).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-on-surface font-semibold pt-1 border-t border-surface-container-highest/50">
                   <span>Gross Project Cost</span>
-                  <span>₹ {Math.round(5 * Number(rate3to10) * 1.138 + 7000).toLocaleString()}</span>
+                  <span className="whitespace-nowrap">₹ {Math.round(5 * Number(rate3to10) * 1.138 + 7000).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-primary font-medium">
                   <span className="flex items-center gap-1">
                     <span className="material-symbols-outlined text-sm">energy_savings_leaf</span>
                     PM Surya Ghar DBT Subsidy
                   </span>
-                  <span>- ₹ 78,000</span>
+                  <span className="whitespace-nowrap">- ₹ 78,000</span>
                 </div>
               </div>
               <div className="mt-3 p-3 rounded-lg bg-primary-container/15 border border-primary-container/30 flex items-center justify-between">
                 <div>
                   <span className="font-label-xs text-label-xs text-primary uppercase font-bold tracking-wider block">Net Customer Investment</span>
-                  <span className="font-headline-md text-headline-md font-bold text-primary">
+                  <span className="font-headline-md text-headline-md font-bold text-primary whitespace-nowrap">
                     ₹ {Math.round(5 * Number(rate3to10) * 1.138 + 7000 - 78000).toLocaleString()}
                   </span>
                 </div>
                 <div className="text-right">
                   <span className="font-label-xs text-label-xs text-secondary block">Dealer Margin Room</span>
-                  <span className="font-label-md text-label-md font-bold text-on-surface">₹ 26,000 (~8%)</span>
+                  <span className="font-label-md text-label-md font-bold text-on-surface whitespace-nowrap">₹ 26,000 (~8%)</span>
                 </div>
               </div>
             </div>
@@ -1503,17 +1503,17 @@ export default function PricingMaster() {
               <div className="space-y-1.5 text-body-sm text-body-sm pt-2 border-t border-surface-container-highest/60">
                 <div className="flex justify-between text-secondary">
                   <span>Base Rate (280 kW × ₹{Number(rateCommercial).toLocaleString()})</span>
-                  <span className="text-on-surface font-medium">₹ {(280 * Number(rateCommercial)).toLocaleString()}</span>
+                  <span className="text-on-surface font-medium whitespace-nowrap">₹ {(280 * Number(rateCommercial)).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-on-surface font-semibold pt-1 border-t border-surface-container-highest/50">
                   <span>Gross Turnkey Estimate</span>
-                  <span className="text-headline-sm font-headline-sm font-bold text-on-surface">
+                  <span className="text-headline-sm font-headline-sm font-bold text-on-surface whitespace-nowrap">
                     ₹ {((280 * Number(rateCommercial)) / 100000).toFixed(2)} Lakhs
                   </span>
                 </div>
                 <div className="flex justify-between text-tertiary font-medium">
                   <span>Expected Annual Energy Savings</span>
-                  <span>₹ 19.4 Lakhs / yr</span>
+                  <span className="whitespace-nowrap">₹ 19.4 Lakhs / yr</span>
                 </div>
                 <div className="text-label-xs text-label-xs text-secondary text-right">
                   Payback Estimate: ~3.4 Years
