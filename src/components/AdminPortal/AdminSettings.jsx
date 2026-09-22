@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useApp } from '../../context/AppContext';
 
 export default function AdminSettings() {
+  const { addNotification } = useApp();
   const [activeTab, setActiveTab] = useState('governance');
   const [saved, setSaved] = useState(false);
   const [maintenance, setMaintenance] = useState(false);
@@ -22,6 +24,15 @@ export default function AdminSettings() {
   const handleSave = (e) => {
     e.preventDefault();
     setSaved(true);
+    if (addNotification) {
+      addNotification({
+        type: 'warning',
+        icon: 'shield',
+        title: 'Margin Governance & Policy Updated',
+        description: `Max dealer margin ceiling set to ₹${Number(settings.maxDealerMarginPerKW).toLocaleString('en-IN')}/kW. Quote expiry: ${settings.quoteExpiryDays} days.`,
+        targetTab: 'dealer_settings'
+      });
+    }
     setTimeout(() => setSaved(false), 3000);
   };
 

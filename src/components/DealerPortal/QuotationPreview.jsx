@@ -248,7 +248,7 @@ export default function QuotationPreview({ isPublicView = false }) {
       </div>
 
       {/* PDF Container with Responsive Scaling */}
-      <div className="mt-4 flex flex-col items-center justify-center overflow-x-auto max-w-full px-2">
+      <div className="mt-4 print:mt-0 print:m-0 print:p-0 flex flex-col items-center justify-center overflow-x-auto max-w-full px-2">
         <div
           className="pdf-scalable-viewport transition-transform flex flex-col items-center"
           style={{

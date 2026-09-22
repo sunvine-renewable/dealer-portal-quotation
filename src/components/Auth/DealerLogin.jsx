@@ -170,7 +170,7 @@ export default function DealerLogin() {
               </div>
             </div>
 
-            {/* Remember station checkbox */}
+            {/* Remember Me checkbox */}
             <div className="flex items-center justify-between pt-0.5">
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
@@ -179,9 +179,8 @@ export default function DealerLogin() {
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                 />
-                <span className="font-body-sm text-xs text-on-surface">Remember my station</span>
+                <span className="font-body-sm text-xs text-on-surface">Remember Me</span>
               </label>
-              <span className="font-label-xs text-[11px] text-secondary bg-surface-container px-2 py-0.5 rounded">v2.4.8</span>
             </div>
 
             {/* Submit Primary Button */}
@@ -453,9 +452,8 @@ export default function DealerLogin() {
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
                     />
-                    <span className="font-body-xs text-secondary text-xs">Remember my station</span>
+                    <span className="font-body-xs text-secondary text-xs">Remember Me</span>
                   </label>
-                  <span className="font-label-xs text-secondary-fixed-dim text-[11px]">Encrypted Session</span>
                 </div>
 
                 {/* Primary Submit Button */}

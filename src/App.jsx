@@ -3,6 +3,10 @@ import { AppProvider, useApp } from './context/AppContext';
 import SplashScreen from './components/SplashScreen';
 import Navigation from './components/Navigation';
 import AppUpdateModal from './components/Shared/AppUpdateModal';
+import UpdateNotificationPopup from './components/Shared/UpdateNotificationPopup';
+import ErrorBoundary from './components/Shared/ErrorBoundary';
+import { ToastProvider } from './components/Shared/Toast';
+import NetworkStatusBanner from './components/Shared/NetworkStatusBanner';
 
 // Authentication Views
 import DealerLogin from './components/Auth/DealerLogin';
@@ -53,8 +57,8 @@ function MainApp() {
   if (!isAuthenticated) {
     return (
       <>
-        {!splashFinished && <SplashScreen onFinish={handleSplashFinish} />}
         {authView === 'admin_login' ? <AdminLogin /> : <DealerLogin />}
+        {!splashFinished && <SplashScreen onFinish={handleSplashFinish} />}
       </>
     );
   }
@@ -104,27 +108,37 @@ function MainApp() {
 
   return (
     <div className="min-h-screen bg-[#F6F8F7] text-[#0F1B2E] font-sans antialiased">
-      {/* 1-Second Splash on first arrival */}
-      {!splashFinished && <SplashScreen onFinish={handleSplashFinish} />}
-
       {/* Navigation Layout */}
       <Navigation />
 
+      {/* Real-Time Update Notification Popup */}
+      <UpdateNotificationPopup />
+
       {/* Main Content Area */}
-      <main className="md:pl-64 pt-16 pb-24 md:pb-8 transition-all w-full">
-        <div className="p-3 sm:p-4 md:p-8 w-full max-w-[1600px] mx-auto">
+      <main className="md:pl-64 pt-16 pb-24 md:pb-8 transition-all w-full min-w-0 max-w-full overflow-x-hidden">
+        <div className="p-3 sm:p-4 lg:p-6 xl:p-8 w-full max-w-[1600px] mx-auto min-w-0">
           {renderView()}
         </div>
       </main>
+
+      {/* Real-time Network Offline / Restored Status Banner */}
+      <NetworkStatusBanner />
+
+      {/* 1-Second Splash on first arrival */}
+      {!splashFinished && <SplashScreen onFinish={handleSplashFinish} />}
     </div>
   );
 }
 
 export default function App() {
   return (
-    <AppProvider>
-      <MainApp />
-      <AppUpdateModal />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <ToastProvider>
+          <MainApp />
+          <AppUpdateModal />
+        </ToastProvider>
+      </AppProvider>
+    </ErrorBoundary>
   );
 }

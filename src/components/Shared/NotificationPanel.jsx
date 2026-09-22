@@ -124,18 +124,39 @@ export default function NotificationPanel({
     }
   };
 
+  const formatTime = (notif) => {
+    if (notif.timestamp) return notif.timestamp;
+    if (!notif.createdAt) return 'Recently';
+    try {
+      const diffMs = Date.now() - new Date(notif.createdAt).getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours}h ago`;
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays}d ago`;
+    } catch (e) {
+      return 'Recently';
+    }
+  };
+
   const getTargetTabLabel = (targetTab) => {
     switch (targetTab) {
       case 'my_quotes':
         return 'View Quotations';
+      case 'all_quotes':
+        return 'View All Proposals';
       case 'pricing_master':
-        return 'View DISCOM Tariff';
+        return 'View Tariff & Presets';
+      case 'dealers_mgmt':
+        return 'View Partner Network';
       case 'dealer_settings':
         return 'View Margin Settings';
       case 'profile':
         return 'View Profile & KYC';
       case 'hardware_master':
-        return 'View Catalog & SLD';
+        return 'View Hardware Catalog';
       case 'dashboard':
       default:
         return 'Open Details';
@@ -327,7 +348,7 @@ export default function NotificationPanel({
                         {notif.title}
                       </h4>
                       <span className="text-[10px] sm:text-[11px] text-secondary font-medium whitespace-nowrap shrink-0 mt-0.5">
-                        {notif.timestamp}
+                        {formatTime(notif)}
                       </span>
                     </div>
 

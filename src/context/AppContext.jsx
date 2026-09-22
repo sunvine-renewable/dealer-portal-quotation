@@ -1,12 +1,17 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import {
   DEFAULT_PRICING_MASTER,
   DEFAULT_MODULES,
   DEFAULT_INVERTERS,
   INITIAL_DEALERS,
   INITIAL_QUOTATIONS,
-  DEFAULT_NOTIFICATIONS
+  DEFAULT_NOTIFICATIONS,
+  PDF_BOS_PRICE_MATRIX,
+  PDF_BOM_SPECIFICATIONS,
+  SUNVINE_OFFICIAL_PROFILE
 } from '../data/defaultPresets';
+
+const DB_VERSION = 'sunvine_gujarat_ledger_200_v1';
 
 const AppContext = createContext();
 
@@ -91,53 +96,92 @@ export const AppProvider = ({ children }) => {
     }
   }, [isAuthenticated, activeTab]);
   
-  // Current Dealer Profile
+// Safe storage parser and serializer
+const safeJsonParse = (key, fallback) => {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const item = localStorage.getItem(key);
+    if (!item || item === 'undefined' || item === 'null') return fallback;
+    const parsed = JSON.parse(item);
+    return parsed ?? fallback;
+  } catch (err) {
+    console.warn(`[Sunvine Storage] Resetting corrupted key: ${key}`);
+    try {
+      localStorage.removeItem(key);
+    } catch (_) {}
+    return fallback;
+  }
+};
+
+const safeSetItem = (key, value) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+  } catch (err) {
+    console.warn(`[Sunvine Storage] Storage write suppressed for: ${key}`, err);
+  }
+};
+
+  const isDbUpToDate = typeof window !== 'undefined' && localStorage.getItem('sunvine_db_version') === DB_VERSION;
+
+  // Current Dealer Profile (Gujarat default)
   const [currentDealer, setCurrentDealer] = useState(() => {
-    const saved = localStorage.getItem('sunvine_current_dealer');
-    return saved ? JSON.parse(saved) : INITIAL_DEALERS[0];
+    if (!isDbUpToDate) return INITIAL_DEALERS[0];
+    const parsed = safeJsonParse('sunvine_current_dealer', INITIAL_DEALERS[0]);
+    return parsed || INITIAL_DEALERS[0];
   });
 
-  // Master Pricing Presets (Configurable by Admin)
+  // Master Pricing Presets (Configurable by Admin & synced with PDF)
   const [pricingMaster, setPricingMaster] = useState(() => {
-    const saved = localStorage.getItem('sunvine_pricing_master');
-    return saved ? JSON.parse(saved) : DEFAULT_PRICING_MASTER;
+    if (!isDbUpToDate) return DEFAULT_PRICING_MASTER;
+    return safeJsonParse('sunvine_pricing_master', DEFAULT_PRICING_MASTER);
   });
 
-  // Solar Hardware Catalogs
+  // Benchmark Quotation Presets (Admin & Dealer Sync)
+  const [pricingPresets, setPricingPresets] = useState(() => {
+    if (!isDbUpToDate) return DEFAULT_PRICING_MASTER.quotationPresets;
+    return safeJsonParse('sunvine_pricing_presets', DEFAULT_PRICING_MASTER.quotationPresets);
+  });
+
+  // Commission Margins & Protective Caps by Dealer Tier
+  const [tierMargins, setTierMargins] = useState(() => {
+    if (!isDbUpToDate) return DEFAULT_PRICING_MASTER.tierMargins;
+    return safeJsonParse('sunvine_tier_margins', DEFAULT_PRICING_MASTER.tierMargins);
+  });
+
+  useEffect(() => {
+    safeSetItem('sunvine_tier_margins', tierMargins);
+  }, [tierMargins]);
+
+  // Solar Hardware Catalogs (from PDF)
   const [modulesList, setModulesList] = useState(() => {
-    const saved = localStorage.getItem('sunvine_modules');
-    return saved ? JSON.parse(saved) : DEFAULT_MODULES;
+    if (!isDbUpToDate) return DEFAULT_MODULES;
+    return safeJsonParse('sunvine_modules', DEFAULT_MODULES);
   });
 
   const [invertersList, setInvertersList] = useState(() => {
-    const saved = localStorage.getItem('sunvine_inverters');
-    return saved ? JSON.parse(saved) : DEFAULT_INVERTERS;
+    if (!isDbUpToDate) return DEFAULT_INVERTERS;
+    return safeJsonParse('sunvine_inverters', DEFAULT_INVERTERS);
   });
 
-  // Dealers Directory
+  // Dealers Directory (550 Gujarat Dealers Only)
   const [dealers, setDealers] = useState(() => {
-    const saved = localStorage.getItem('sunvine_dealers');
-    return saved ? JSON.parse(saved) : INITIAL_DEALERS;
+    if (!isDbUpToDate) return INITIAL_DEALERS;
+    const parsed = safeJsonParse('sunvine_dealers', INITIAL_DEALERS);
+    return (Array.isArray(parsed) && parsed.length >= 500) ? parsed : INITIAL_DEALERS;
   });
 
-  // Quotations List
+  // Quotations List (All in Gujarat)
   const [quotations, setQuotations] = useState(() => {
-    const saved = localStorage.getItem('sunvine_quotations');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length >= 3) {
-          return parsed;
-        }
-      } catch (e) {}
-    }
-    return INITIAL_QUOTATIONS;
+    if (!isDbUpToDate) return INITIAL_QUOTATIONS;
+    const parsed = safeJsonParse('sunvine_quotations', INITIAL_QUOTATIONS);
+    return (Array.isArray(parsed) && parsed.length >= 3) ? parsed : INITIAL_QUOTATIONS;
   });
 
   // Active quotation loaded in 4-Page Preview
   const [previewQuotation, setPreviewQuotation] = useState(() => {
-    const saved = localStorage.getItem('sunvine_preview_quotation');
-    return saved ? JSON.parse(saved) : INITIAL_QUOTATIONS[0];
+    if (!isDbUpToDate) return INITIAL_QUOTATIONS[0];
+    return safeJsonParse('sunvine_preview_quotation', INITIAL_QUOTATIONS[0]);
   });
 
   // Active quotation loaded for Editing in CreateQuotation
@@ -145,63 +189,64 @@ export const AppProvider = ({ children }) => {
 
   // System & Compliance Notifications
   const [notifications, setNotifications] = useState(() => {
-    const saved = localStorage.getItem('sunvine_notifications');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
-      } catch (e) {}
-    }
-    return DEFAULT_NOTIFICATIONS;
+    if (!isDbUpToDate) return DEFAULT_NOTIFICATIONS;
+    const parsed = safeJsonParse('sunvine_notifications', DEFAULT_NOTIFICATIONS);
+    return (Array.isArray(parsed) && parsed.length > 0) ? parsed : DEFAULT_NOTIFICATIONS;
   });
+
+  useEffect(() => {
+    safeSetItem('sunvine_db_version', DB_VERSION);
+  }, []);
 
   // Synchronize state with localStorage
   useEffect(() => {
-    localStorage.setItem('sunvine_auth', isAuthenticated ? 'true' : 'false');
+    safeSetItem('sunvine_auth', isAuthenticated ? 'true' : 'false');
   }, [isAuthenticated]);
 
   useEffect(() => {
-    localStorage.setItem('sunvine_role', role);
+    safeSetItem('sunvine_role', role);
   }, [role]);
 
   useEffect(() => {
-    localStorage.setItem('sunvine_tab', activeTab);
+    safeSetItem('sunvine_tab', activeTab);
   }, [activeTab]);
 
   useEffect(() => {
-    localStorage.setItem('sunvine_current_dealer', JSON.stringify(currentDealer));
+    safeSetItem('sunvine_current_dealer', currentDealer);
   }, [currentDealer]);
 
   useEffect(() => {
-    localStorage.setItem('sunvine_pricing_master', JSON.stringify(pricingMaster));
+    safeSetItem('sunvine_pricing_master', pricingMaster);
   }, [pricingMaster]);
 
   useEffect(() => {
-    localStorage.setItem('sunvine_modules', JSON.stringify(modulesList));
+    safeSetItem('sunvine_pricing_presets', pricingPresets);
+  }, [pricingPresets]);
+
+  useEffect(() => {
+    safeSetItem('sunvine_modules', modulesList);
   }, [modulesList]);
 
   useEffect(() => {
-    localStorage.setItem('sunvine_inverters', JSON.stringify(invertersList));
+    safeSetItem('sunvine_inverters', invertersList);
   }, [invertersList]);
 
   useEffect(() => {
-    localStorage.setItem('sunvine_dealers', JSON.stringify(dealers));
+    safeSetItem('sunvine_dealers', dealers);
   }, [dealers]);
 
   useEffect(() => {
-    localStorage.setItem('sunvine_quotations', JSON.stringify(quotations));
+    safeSetItem('sunvine_quotations', quotations);
   }, [quotations]);
 
   useEffect(() => {
     if (previewQuotation) {
-      localStorage.setItem('sunvine_preview_quotation', JSON.stringify(previewQuotation));
+      safeSetItem('sunvine_preview_quotation', previewQuotation);
     }
   }, [previewQuotation]);
 
   useEffect(() => {
-    localStorage.setItem('sunvine_notifications', JSON.stringify(notifications));
+    safeSetItem('sunvine_notifications', notifications);
   }, [notifications]);
 
   // Auth Actions
@@ -276,15 +321,115 @@ export const AppProvider = ({ children }) => {
     setPricingMaster(newMaster);
   };
 
-  // Notification Actions
-  const unreadNotificationsCount = notifications.filter(n => !n.read).length;
+  const updatePricingPresets = (newPresets) => {
+    const timeStr = new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).format(new Date());
+    const updated = {
+      ...pricingPresets,
+      ...newPresets,
+      lastSynced: `Today, ${timeStr} by ${role === 'admin' ? 'Super Admin Desk' : 'Ops'}`
+    };
+    setPricingPresets(updated);
+    addNotification({
+      title: 'Quotation Presets Updated',
+      description: `Base Rate: ₹${Number(updated.baseRatePerKw).toLocaleString('en-IN')}/kW | Min Margin: ₹${Number(updated.minMarginPerKw).toLocaleString('en-IN')}/kW.`,
+      category: 'pricing',
+      icon: 'tune'
+    });
+  };
+
+  const updateTierMargins = (newTiers) => {
+    const updated = { ...tierMargins, ...newTiers };
+    setTierMargins(updated);
+    addNotification({
+      title: 'Dealer Tier Margins Updated',
+      description: `Default margin thresholds updated for Diamond, Platinum, Gold & Silver dealer tiers.`,
+      category: 'pricing',
+      icon: 'price_check',
+      audience: 'all'
+    });
+  };
+
+  // Persistent read state IDs keyed by role
+  const [readNotifIds, setReadNotifIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`sunvine_read_notifs_${role}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  // Keep readNotifIds in sync if role changes
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`sunvine_read_notifs_${role}`);
+      setReadNotifIds(saved ? JSON.parse(saved) : []);
+    } catch (e) {
+      setReadNotifIds([]);
+    }
+  }, [role]);
+
+  // Persistent dismissed popup IDs keyed by role
+  const [dismissedPopupIds, setDismissedPopupIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`sunvine_dismissed_popups_${role}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`sunvine_dismissed_popups_${role}`);
+      setDismissedPopupIds(saved ? JSON.parse(saved) : []);
+    } catch (e) {
+      setDismissedPopupIds([]);
+    }
+  }, [role]);
+
+  const persistReadIds = (ids) => {
+    setReadNotifIds(ids);
+    safeSetItem(`sunvine_read_notifs_${role}`, ids);
+  };
+
+  const dismissPopupNotification = (id) => {
+    setDismissedPopupIds(prev => {
+      if (prev.includes(id)) return prev;
+      const updated = [...prev, id];
+      safeSetItem(`sunvine_dismissed_popups_${role}`, updated);
+      return updated;
+    });
+  };
+
+  // Role-partitioned visible notifications with real-time persistent read status
+  const visibleNotifications = useMemo(() => {
+    return notifications
+      .filter(n => {
+        const aud = n.audience || 'all';
+        if (aud === 'all') return true;
+        return aud === role;
+      })
+      .map(n => ({
+        ...n,
+        read: readNotifIds.includes(n.id)
+      }));
+  }, [notifications, role, readNotifIds]);
+
+  const unreadNotificationsCount = useMemo(() => {
+    return visibleNotifications.filter(n => !n.read).length;
+  }, [visibleNotifications]);
 
   const markNotificationAsRead = (id) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    if (!readNotifIds.includes(id)) {
+      persistReadIds([...readNotifIds, id]);
+    }
   };
 
   const markAllNotificationsAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    const allVisibleIds = visibleNotifications.map(n => n.id);
+    const merged = Array.from(new Set([...readNotifIds, ...allVisibleIds]));
+    persistReadIds(merged);
   };
 
   const deleteNotification = (id) => {
@@ -292,14 +437,19 @@ export const AppProvider = ({ children }) => {
   };
 
   const clearAllNotifications = () => {
-    setNotifications([]);
+    setNotifications(prev => prev.filter(n => {
+      const aud = n.audience || 'all';
+      if (aud === 'all') return false;
+      return aud !== role;
+    }));
   };
 
   const addNotification = (notif) => {
     const newNotif = {
       id: `notif-${Date.now()}`,
-      timestamp: 'Just now',
-      read: false,
+      createdAt: new Date().toISOString(),
+      audience: notif.audience || (role === 'admin' ? 'admin' : 'dealer'),
+      type: notif.type || 'info',
       ...notif
     };
     setNotifications(prev => [newNotif, ...prev]);
@@ -322,6 +472,10 @@ export const AppProvider = ({ children }) => {
         updateDealerProfile,
         pricingMaster,
         updatePricingMaster,
+        pricingPresets,
+        updatePricingPresets,
+        tierMargins,
+        updateTierMargins,
         modulesList,
         setModulesList,
         invertersList,
@@ -339,13 +493,18 @@ export const AppProvider = ({ children }) => {
         updateQuotationStatus,
         previewQuotation,
         setPreviewQuotation,
-        notifications,
+        notifications: visibleNotifications,
         unreadNotificationsCount,
         markNotificationAsRead,
         markAllNotificationsAsRead,
         deleteNotification,
         clearAllNotifications,
-        addNotification
+        addNotification,
+        dismissedPopupIds,
+        dismissPopupNotification,
+        pdfBosMatrix: PDF_BOS_PRICE_MATRIX,
+        pdfBomSpecs: PDF_BOM_SPECIFICATIONS,
+        officialProfile: SUNVINE_OFFICIAL_PROFILE
       }}
     >
       {children}

@@ -21,7 +21,7 @@ export default function SplashScreen({ onFinish }) {
 
   return (
     <div
-      className={`fixed inset-0 w-screen h-screen z-50 flex flex-col justify-between items-center bg-[#0F1B2E] text-white overflow-hidden selection:bg-[#6CBF3D] selection:text-[#0F1B2E] transition-opacity duration-300 ${
+      className={`fixed inset-0 w-screen h-screen z-[99999] flex flex-col justify-between items-center bg-[#0F1B2E] text-white overflow-hidden selection:bg-[#6CBF3D] selection:text-[#0F1B2E] transition-opacity duration-300 ${
         fadeState === 'out' ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >

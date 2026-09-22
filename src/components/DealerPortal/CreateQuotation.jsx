@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { quotationService } from '../../services/quotationService';
+import { useToast } from '../Shared/Toast';
 
 const formatINR = (val) => {
   if (val === undefined || val === null || isNaN(val)) return '₹\u00A00';
@@ -15,27 +16,47 @@ export default function CreateQuotation() {
     editingQuotation, 
     clearEditingQuotation, 
     setActiveTab, 
-    setPreviewQuotation 
+    setPreviewQuotation,
+    addNotification,
+    pricingPresets,
+    tierMargins
   } = useApp();
 
-  // Step 1.1 Customer Details
-  const [custName, setCustName] = useState('Anand Sharma');
-  const [custPhone, setCustPhone] = useState('+91 98234 56789');
-  const [custLocation, setCustLocation] = useState('Pune, 411038');
+  const { addToast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Derive dealer tier margin configuration
+  const dealerTierKey = (currentDealer?.tier || '').toLowerCase().includes('diamond') ? 'diamond' :
+                        (currentDealer?.tier || '').toLowerCase().includes('platinum') ? 'platinum' :
+                        (currentDealer?.tier || '').toLowerCase().includes('silver') ? 'silver' : 'gold';
+  const tierConfig = tierMargins?.[dealerTierKey] || { defaultMarginPerKw: 4500, maxMarginCapPerKw: 6000 };
+
+  // Step 1.1 Customer Details (Empty by default for dealer input)
+  const [custName, setCustName] = useState('');
+  const [custPhone, setCustPhone] = useState('');
+  const [custLocation, setCustLocation] = useState('');
 
   // Step 1.2 System Details
   const [systemCapacity, setSystemCapacity] = useState('5');
   const [panelBrand, setPanelBrand] = useState('Sunvine Monocrystalline Half-Cut 550W (Tier 1)');
   const [inverterModel, setInverterModel] = useState('Sunvine Solar Hybrid Inverter 5kW 3-Phase');
   const [showInverterModal, setShowInverterModal] = useState(false);
-  const [showSldModal, setShowSldModal] = useState(false);
 
-  // Step 1.3 Pricing & Subsidy
-  const [ratePerKw, setRatePerKw] = useState(65000);
-  const [marginMode, setMarginMode] = useState('percent'); // 'percent' | 'amount'
+  // Step 1.3 Pricing & Subsidy (Linked to Admin Pricing Presets & Dealer Tier Margins)
+  const [ratePerKw, setRatePerKw] = useState(() => pricingPresets?.baseRatePerKw || 59800);
+  const [marginMode, setMarginMode] = useState('amount'); // default to fixed amount matching tier
   const [dealerMarginRate, setDealerMarginRate] = useState(8); // 8%
-  const [dealerMarginFixed, setDealerMarginFixed] = useState(25000); // ₹ 25,000
+  const [dealerMarginFixed, setDealerMarginFixed] = useState(() => tierConfig.defaultMarginPerKw * 5);
   const [saveStatus, setSaveStatus] = useState('');
+
+  useEffect(() => {
+    if (!editingQuotation && pricingPresets?.baseRatePerKw) {
+      setRatePerKw(pricingPresets.baseRatePerKw);
+    }
+    if (!editingQuotation && tierConfig?.defaultMarginPerKw) {
+      setDealerMarginFixed(tierConfig.defaultMarginPerKw * (parseFloat(systemCapacity) || 5));
+    }
+  }, [pricingPresets?.baseRatePerKw, tierConfig?.defaultMarginPerKw, editingQuotation, systemCapacity]);
 
   // Auto-populate when editing an existing quote
   useEffect(() => {
@@ -43,7 +64,7 @@ export default function CreateQuotation() {
       if (editingQuotation.customerName) setCustName(editingQuotation.customerName);
       if (editingQuotation.customerPhone) setCustPhone(editingQuotation.customerPhone);
       if (editingQuotation.location || editingQuotation.city) {
-        setCustLocation(editingQuotation.location || `${editingQuotation.city || 'Pune'}, Maharashtra`);
+        setCustLocation(editingQuotation.location || `${editingQuotation.city || 'Rajkot'}, Gujarat`);
       }
       const rawKw = parseFloat(editingQuotation.systemCapacityKW || editingQuotation.capacity || 5);
       if (!isNaN(rawKw)) setSystemCapacity(String(rawKw));
@@ -88,11 +109,12 @@ export default function CreateQuotation() {
   // Total Customer Quoted Project Cost (Base Cost + Dealer Margin)
   const totalCost = baseProjectCost + dealerMarginINR;
 
-  // PM Surya Ghar Central DBT Subsidy Formula
+  // PM Surya Ghar Central DBT Subsidy Formula (Linked to Admin Presets)
   const calculateSubsidy = (capacity) => {
-    if (capacity <= 1) return 30000;
-    if (capacity <= 2) return 60000;
-    return 78000; // Cap at 78,000 for 3kW+
+    const maxSubsidy = pricingPresets?.subsidyCap || 78000;
+    if (capacity <= 1) return Math.min(30000, maxSubsidy);
+    if (capacity <= 2) return Math.min(60000, maxSubsidy);
+    return maxSubsidy; // Cap at subsidyCap (default ₹78,000 for 3kW+)
   };
 
   const subsidy = calculateSubsidy(kw);
@@ -112,17 +134,26 @@ export default function CreateQuotation() {
 
   const handleReset = () => {
     if (clearEditingQuotation) clearEditingQuotation();
-    setCustName('Anand Sharma');
-    setCustPhone('+91 98234 56789');
-    setCustLocation('Pune, 411038');
+    setCustName('');
+    setCustPhone('');
+    setCustLocation('');
     setSystemCapacity('5');
-    setRatePerKw(65000);
+    setRatePerKw(pricingPresets?.baseRatePerKw || 59800);
     setMarginMode('percent');
     setDealerMarginRate(8);
     setDealerMarginFixed(25000);
   };
 
   const handleSaveDraft = async () => {
+    if (!custName.trim()) {
+      addToast({
+        title: 'Customer Name Required',
+        message: 'Please enter the customer name before saving the draft.',
+        type: 'warning'
+      });
+      return;
+    }
+
     const isEdit = Boolean(editingQuotation?.id);
     const quotePayload = {
       id: isEdit ? editingQuotation.id : `SV-2026-Q${Math.floor(100 + Math.random() * 900)}`,
@@ -130,8 +161,8 @@ export default function CreateQuotation() {
       customerName: custName,
       customerPhone: custPhone,
       location: custLocation,
-      city: custLocation.split(',')[0]?.trim() || 'Pune',
-      state: 'Maharashtra',
+      city: custLocation.split(',')[0]?.trim() || 'Rajkot',
+      state: 'Gujarat',
       systemCapacityKW: kw,
       panelType: panelBrand,
       solarModule: panelBrand,
@@ -151,18 +182,43 @@ export default function CreateQuotation() {
       dealerName: currentDealer?.firmName || 'Rajesh Solar Solutions'
     };
 
+    setIsSubmitting(true);
     setSaveStatus('Saving quotation...');
-    if (isEdit && updateQuotation) {
-      updateQuotation(quotePayload);
-    } else if (addQuotation) {
-      addQuotation(quotePayload);
+    try {
+      if (isEdit && updateQuotation) {
+        updateQuotation(quotePayload);
+      } else if (addQuotation) {
+        addQuotation(quotePayload);
+      }
+      await quotationService.saveQuotation(quotePayload);
+      setSaveStatus(isEdit ? 'Quotation updated successfully!' : 'Draft saved successfully to cloud!');
+      addToast({
+        title: isEdit ? 'Quotation Updated' : 'Draft Saved',
+        message: `Quotation #${quotePayload.id} for ${custName} saved successfully.`,
+        type: 'success'
+      });
+      setTimeout(() => setSaveStatus(''), 3000);
+    } catch (e) {
+      addToast({
+        title: 'Save Failed',
+        message: 'Could not save quotation to storage.',
+        type: 'error'
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    await quotationService.saveQuotation(quotePayload);
-    setSaveStatus(isEdit ? 'Quotation updated successfully!' : 'Draft saved successfully to cloud!');
-    setTimeout(() => setSaveStatus(''), 3000);
   };
 
   const handlePreview = () => {
+    if (!custName.trim()) {
+      addToast({
+        title: 'Customer Name Required',
+        message: 'Please specify the customer name before generating proposal preview.',
+        type: 'warning'
+      });
+      return;
+    }
+
     const isEdit = Boolean(editingQuotation?.id);
     const quotePayload = {
       id: isEdit ? editingQuotation.id : `SV-2026-Q${Math.floor(100 + Math.random() * 900)}`,
@@ -170,8 +226,8 @@ export default function CreateQuotation() {
       customerName: custName,
       customerPhone: custPhone,
       location: custLocation,
-      city: custLocation.split(',')[0]?.trim() || 'Pune',
-      state: 'Maharashtra',
+      city: custLocation.split(',')[0]?.trim() || 'Rajkot',
+      state: 'Gujarat',
       systemCapacityKW: kw,
       solarModule: panelBrand,
       moduleCount: moduleCount,
@@ -203,8 +259,8 @@ export default function CreateQuotation() {
   return (
     <div className="flex flex-col w-full pb-28">
       {/* Top Navigation Bar & Progress Track (Exact Stitch Stepper) */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md mb-6">
-        <div className="flex flex-col gap-1">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col gap-1 min-w-0">
           <button
             onClick={() => setActiveTab('dashboard')}
             className="inline-flex items-center gap-1.5 text-secondary hover:text-on-surface font-label-sm transition-colors w-fit group"
@@ -232,18 +288,18 @@ export default function CreateQuotation() {
         </div>
 
         {/* Stepper Indicator */}
-        <div className="flex items-center bg-surface-container-lowest p-2 rounded-xl shadow-sm self-start md:self-auto border border-surface-container-high">
-          <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary font-label-sm">
-            <span className="w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-label-xs font-bold">1</span>
+        <div className="flex items-center bg-surface-container-lowest p-1.5 sm:p-2 rounded-xl shadow-sm self-start lg:self-auto border border-surface-container-high max-w-full overflow-x-auto">
+          <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg bg-primary/10 text-primary font-label-sm whitespace-nowrap">
+            <span className="w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-label-xs font-bold shrink-0">1</span>
             <span>Details &amp; Pricing</span>
             <span className="bg-primary-container/20 text-on-primary-container text-[10px] px-1.5 py-0.5 rounded font-label-xs uppercase tracking-wider font-semibold">Active</span>
           </div>
-          <div className="w-8 h-0.5 bg-surface-container-high mx-1"></div>
+          <div className="w-4 sm:w-8 h-0.5 bg-surface-container-high mx-1 shrink-0"></div>
           <button
             onClick={handlePreview}
-            className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-secondary hover:text-on-surface font-label-sm transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg text-secondary hover:text-on-surface font-label-sm transition-colors cursor-pointer whitespace-nowrap"
           >
-            <span className="w-5 h-5 rounded-full bg-surface-container-high text-secondary flex items-center justify-center text-label-xs font-bold">2</span>
+            <span className="w-5 h-5 rounded-full bg-surface-container-high text-secondary flex items-center justify-center text-label-xs font-bold shrink-0">2</span>
             <span>Preview &amp; Send</span>
           </button>
         </div>
@@ -301,12 +357,18 @@ export default function CreateQuotation() {
                 <div className="relative">
                   <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary text-[20px] pointer-events-none">phone</span>
                   <input
-                    className="w-full h-10 pl-10 pr-3 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md outline-none shadow-sm border border-surface-container-high focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all"
+                    className="w-full h-10 pl-10 pr-3 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md outline-none shadow-sm border border-surface-container-high focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all font-mono"
                     id="custPhone"
-                    placeholder="+91 98234 56789"
+                    placeholder="10-digit mobile number"
                     type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={10}
                     value={custPhone}
-                    onChange={(e) => setCustPhone(e.target.value)}
+                    onChange={(e) => {
+                      const numericOnly = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setCustPhone(numericOnly);
+                    }}
                   />
                 </div>
               </div>
@@ -320,7 +382,7 @@ export default function CreateQuotation() {
                   <input
                     className="w-full h-10 pl-10 pr-3 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md outline-none shadow-sm border border-surface-container-high focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all"
                     id="custLocation"
-                    placeholder="e.g. Pune, 411038"
+                    placeholder="e.g. Rajkot, 360004"
                     type="text"
                     value={custLocation}
                     onChange={(e) => setCustLocation(e.target.value)}
@@ -417,7 +479,7 @@ export default function CreateQuotation() {
                 </div>
               </div>
 
-              {/* Visual Hardware Diagram Tile + Single Line Diagram Button */}
+              {/* Visual Hardware Configuration Tile */}
               <div className="mt-1 rounded-lg bg-surface border border-surface-container-high p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-primary text-[28px]">energy_savings_leaf</span>
@@ -431,15 +493,7 @@ export default function CreateQuotation() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 self-start sm:self-auto">
-                  <button
-                    type="button"
-                    onClick={() => setShowSldModal(true)}
-                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-surface-container-lowest border border-surface-container-high text-on-surface hover:border-primary transition-colors font-medium shadow-2xs"
-                  >
-                    <span className="material-symbols-outlined text-[16px] text-primary">schema</span>
-                    <span>View Single Line Diagram</span>
-                  </button>
-                  <span className="hidden md:inline-flex items-center gap-1 font-label-xs text-primary bg-primary-fixed/40 px-2 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1 font-label-xs text-primary bg-primary-fixed/40 px-3 py-1 rounded-full font-semibold">
                     <span className="material-symbols-outlined text-[14px]">check_circle</span>
                     <span>MNRE Compliant</span>
                   </span>
@@ -741,237 +795,39 @@ export default function CreateQuotation() {
       </div>
 
       {/* Sticky Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 md:left-64 right-0 h-20 bg-surface-container-lowest border-t border-surface-container-high shadow-[0_-4px_16px_rgba(0,0,0,0.06)] z-40 flex items-center justify-between px-4 md:px-8">
+      <div className="fixed bottom-0 left-0 md:left-64 right-0 h-16 sm:h-20 bg-surface-container-lowest border-t border-surface-container-high shadow-[0_-4px_16px_rgba(0,0,0,0.06)] z-40 flex items-center justify-between px-3 sm:px-4 md:px-8">
         <button
           onClick={handleReset}
-          className="h-10 px-4 rounded-lg bg-surface-container-lowest text-on-secondary-fixed hover:bg-surface-container-low font-label-md transition-colors flex items-center gap-2 border border-surface-container-high shadow-xs cursor-pointer"
+          className="h-9 sm:h-10 px-2.5 sm:px-4 rounded-lg bg-surface-container-lowest text-on-secondary-fixed hover:bg-surface-container-low font-label-md transition-colors flex items-center gap-1.5 sm:gap-2 border border-surface-container-high shadow-xs cursor-pointer shrink-0"
           type="button"
         >
           <span className="material-symbols-outlined text-[18px]">refresh</span>
-          <span>Reset Form</span>
+          <span className="hidden sm:inline">Reset Form</span>
+          <span className="sm:hidden text-xs">Reset</span>
         </button>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={handleSaveDraft}
-            className="h-10 px-4 md:px-5 rounded-lg bg-surface-container-lowest text-on-secondary-fixed hover:bg-surface-container-low font-label-md transition-colors border border-surface-container-high shadow-xs cursor-pointer"
+            disabled={isSubmitting}
+            className="h-9 sm:h-10 px-2.5 sm:px-4 md:px-5 rounded-lg bg-surface-container-lowest text-on-secondary-fixed hover:bg-surface-container-low font-label-md transition-colors border border-surface-container-high shadow-xs cursor-pointer text-xs sm:text-sm shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
             type="button"
           >
-            Save Draft
+            <span className="hidden sm:inline">{isSubmitting ? 'Saving...' : 'Save Draft'}</span>
+            <span className="sm:hidden">{isSubmitting ? '...' : 'Save'}</span>
           </button>
           <button
             onClick={handlePreview}
-            className="h-10 px-5 md:px-6 rounded-lg bg-[#6CBF3D] hover:bg-[#4F9A2C] active:scale-[0.99] text-on-primary font-label-md transition-all shadow-md hover:shadow-lg flex items-center gap-2 cursor-pointer font-semibold"
+            disabled={isSubmitting}
+            className="h-9 sm:h-10 px-3 sm:px-5 md:px-6 rounded-lg bg-[#6CBF3D] hover:bg-[#4F9A2C] active:scale-[0.99] text-on-primary font-label-md transition-all shadow-md hover:shadow-lg flex items-center gap-1.5 sm:gap-2 cursor-pointer font-semibold text-xs sm:text-sm shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
             type="button"
           >
-            <span>Preview Quotation</span>
-            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+            <span className="hidden sm:inline">Preview Quotation</span>
+            <span className="sm:hidden">Preview</span>
+            <span className="material-symbols-outlined text-[16px] sm:text-[18px]">arrow_forward</span>
           </button>
         </div>
       </div>
-
-      {/* High-End Engineering Single Line Diagram (SLD) Interactive Modal */}
-      {showSldModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-          <div className="bg-surface-container-lowest rounded-2xl max-w-4xl w-full p-5 sm:p-7 shadow-2xl border border-surface-container-high animate-in fade-in zoom-in-95 my-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-surface-container-high">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined text-2xl">schema</span>
-                </div>
-                <div>
-                  <h3 className="font-headline-sm text-base sm:text-lg font-bold text-on-surface">
-                    Electrical Single Line Diagram (SLD)
-                  </h3>
-                  <p className="text-xs text-secondary font-mono">
-                    {kw} kW Grid-Tied PV System • DISCOM Net-Metered Architecture
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowSldModal(false)}
-                className="w-9 h-9 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary hover:text-on-surface transition-colors cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-xl">close</span>
-              </button>
-            </div>
-
-            {/* Technical Schematic CAD-Style Display */}
-            <div className="py-5">
-              <div className="w-full bg-[#0F1B2E] text-white p-5 sm:p-6 rounded-2xl border border-white/10 shadow-inner flex flex-col gap-6 overflow-x-auto">
-                {/* Top Schematics Flow */}
-                <div className="flex items-center justify-between min-w-[700px] gap-3 relative py-3">
-                  {/* Block 1: PV Array */}
-                  <div className="flex flex-col items-center gap-1.5 w-36 text-center">
-                    <div className="p-3 bg-white/5 border border-primary/40 rounded-xl flex flex-col items-center w-full shadow-lg group hover:border-primary transition-colors">
-                      <span className="material-symbols-outlined text-[#6CBF3D] text-[28px] mb-1">solar_power</span>
-                      <span className="text-xs font-bold text-white tracking-wide">{kw} kW Array</span>
-                      <span className="text-[10px] text-[#A5D6A7] font-mono">{moduleCount}× {panelWatt}W Modules</span>
-                      <span className="text-[9px] text-gray-400 mt-1 bg-black/40 px-1.5 py-0.5 rounded">Voc: 480V DC</span>
-                    </div>
-                    <span className="text-[9px] text-gray-400 uppercase tracking-wider font-semibold">Stage 1: DC Solar</span>
-                  </div>
-
-                  {/* DC Cable Wire Indicator */}
-                  <div className="flex-1 flex flex-col items-center relative">
-                    <span className="text-[9px] text-red-400 font-mono mb-0.5 whitespace-nowrap">DC Cable (4 mm²)</span>
-                    <div className="w-full h-1 bg-gradient-to-r from-red-500 via-red-500 to-amber-500 rounded relative">
-                      <span className="absolute -top-1 right-0 text-[10px] text-amber-400 font-bold">►</span>
-                    </div>
-                    <span className="text-[8px] text-gray-400 mt-0.5">Isc: 13.8A</span>
-                  </div>
-
-                  {/* Block 2: DCDB Box */}
-                  <div className="flex flex-col items-center gap-1.5 w-32 text-center">
-                    <div className="p-3 bg-white/5 border border-amber-500/40 rounded-xl flex flex-col items-center w-full shadow-lg">
-                      <span className="material-symbols-outlined text-amber-400 text-[26px] mb-1">shield</span>
-                      <span className="text-xs font-bold text-white">DCDB Box</span>
-                      <span className="text-[10px] text-amber-300 font-mono">600V DC SPD</span>
-                      <span className="text-[9px] text-gray-400 mt-1 bg-black/40 px-1.5 py-0.5 rounded">32A 2P Isolator</span>
-                    </div>
-                    <span className="text-[9px] text-gray-400 uppercase tracking-wider font-semibold">Surge Protect</span>
-                  </div>
-
-                  {/* Interconnect Wire */}
-                  <div className="w-8 h-1 bg-amber-500 rounded relative">
-                    <span className="absolute -top-1 right-0 text-[10px] text-amber-400 font-bold">►</span>
-                  </div>
-
-                  {/* Block 3: Solar Inverter */}
-                  <div className="flex flex-col items-center gap-1.5 w-40 text-center">
-                    <div className="p-3 bg-gradient-to-b from-[#6CBF3D]/20 to-primary/10 border-2 border-[#6CBF3D] rounded-xl flex flex-col items-center w-full shadow-xl">
-                      <div className="flex items-center gap-1 text-[#6CBF3D] mb-1">
-                        <span className="material-symbols-outlined text-[24px]">power</span>
-                        <span className="text-[11px] font-black font-mono">⚡ ⎓ ∿</span>
-                      </div>
-                      <span className="text-xs font-extrabold text-white">{kw} kW Inverter</span>
-                      <span className="text-[10px] text-[#C8E6C9] font-medium">Dual MPPT • 98.4%</span>
-                      <span className="text-[9px] text-white/90 mt-1 bg-primary/40 px-2 py-0.5 rounded-full font-bold">IP65 / WiFi</span>
-                    </div>
-                    <span className="text-[9px] text-[#A5D6A7] uppercase tracking-wider font-semibold">Stage 2: Inversion</span>
-                  </div>
-
-                  {/* AC Cable Wire Indicator */}
-                  <div className="flex-1 flex flex-col items-center relative">
-                    <span className="text-[9px] text-blue-400 font-mono mb-0.5 whitespace-nowrap">AC Cable (10 mm²)</span>
-                    <div className="w-full h-1 bg-gradient-to-r from-blue-500 to-cyan-400 rounded relative">
-                      <span className="absolute -top-1 right-0 text-[10px] text-cyan-400 font-bold">►</span>
-                    </div>
-                    <span className="text-[8px] text-gray-400 mt-0.5">415V 3-Phase</span>
-                  </div>
-
-                  {/* Block 4: ACDB Box */}
-                  <div className="flex flex-col items-center gap-1.5 w-32 text-center">
-                    <div className="p-3 bg-white/5 border border-cyan-500/40 rounded-xl flex flex-col items-center w-full shadow-lg">
-                      <span className="material-symbols-outlined text-cyan-400 text-[26px] mb-1">toggle_on</span>
-                      <span className="text-xs font-bold text-white">ACDB Box</span>
-                      <span className="text-[10px] text-cyan-300 font-mono">4-Pole 63A MCB</span>
-                      <span className="text-[9px] text-gray-400 mt-1 bg-black/40 px-1.5 py-0.5 rounded">30mA RCD ELCB</span>
-                    </div>
-                    <span className="text-[9px] text-gray-400 uppercase tracking-wider font-semibold">AC Breaker</span>
-                  </div>
-
-                  {/* Interconnect Wire */}
-                  <div className="w-8 h-1 bg-cyan-400 rounded relative">
-                    <span className="absolute -top-1 right-0 text-[10px] text-cyan-400 font-bold">►</span>
-                  </div>
-
-                  {/* Block 5: Bi-Directional Net Meter */}
-                  <div className="flex flex-col items-center gap-1.5 w-36 text-center">
-                    <div className="p-3 bg-white/5 border border-indigo-500/40 rounded-xl flex flex-col items-center w-full shadow-lg">
-                      <span className="material-symbols-outlined text-indigo-400 text-[26px] mb-1">speed</span>
-                      <span className="text-xs font-bold text-white">Net Meter</span>
-                      <span className="text-[10px] text-indigo-300 font-mono">Import / Export</span>
-                      <span className="text-[9px] text-gray-400 mt-1 bg-black/40 px-1.5 py-0.5 rounded">Class 0.5s DISCOM</span>
-                    </div>
-                    <span className="text-[9px] text-gray-400 uppercase tracking-wider font-semibold">Bi-Directional</span>
-                  </div>
-
-                  {/* Interconnect Wire */}
-                  <div className="w-8 h-1 bg-indigo-400 rounded relative">
-                    <span className="absolute -top-1 right-0 text-[10px] text-indigo-400 font-bold">►</span>
-                  </div>
-
-                  {/* Block 6: DISCOM Grid */}
-                  <div className="flex flex-col items-center gap-1.5 w-36 text-center">
-                    <div className="p-3 bg-[#6CBF3D]/20 border border-[#6CBF3D] rounded-xl flex flex-col items-center w-full shadow-lg">
-                      <span className="material-symbols-outlined text-[#6CBF3D] text-[28px] mb-1">electrical_services</span>
-                      <span className="text-xs font-bold text-white">DISCOM Grid</span>
-                      <span className="text-[10px] text-[#A5D6A7] font-mono">415V 50Hz</span>
-                      <span className="text-[9px] text-white/80 mt-1 bg-black/50 px-1.5 py-0.5 rounded">3-Phase + Neutral</span>
-                    </div>
-                    <span className="text-[9px] text-[#A5D6A7] uppercase tracking-wider font-semibold">Stage 3: Utility Grid</span>
-                  </div>
-                </div>
-
-                {/* Bottom Row: 3 Dedicated Earthing Pits (IS 3043 Compliant) */}
-                <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#6CBF3D] animate-ping"></span>
-                    <span className="text-xs font-bold text-white">IS 3043 Chemical Earthing System:</span>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-3 text-xs">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-emerald-500/30 rounded-lg">
-                      <span className="font-mono text-[#6CBF3D] font-bold">⏚ Pit 1</span>
-                      <span className="text-gray-300">PV Array Structure Ground</span>
-                    </div>
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-emerald-500/30 rounded-lg">
-                      <span className="font-mono text-[#6CBF3D] font-bold">⏚ Pit 2</span>
-                      <span className="text-gray-300">Inverter &amp; ACDB Enclosure Ground</span>
-                    </div>
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-emerald-500/30 rounded-lg">
-                      <span className="font-mono text-[#6CBF3D] font-bold">⏚ Pit 3</span>
-                      <span className="text-gray-300">Lightning Arrestor (LA Spike)</span>
-                    </div>
-                    <div className="px-2.5 py-1 bg-emerald-950/60 border border-emerald-400/40 text-emerald-300 rounded-md font-mono text-[11px] font-bold">
-                      Resistance &lt; 5.0 Ω
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Technical Specifications Summary Table */}
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                <div className="bg-surface-container-low p-3 rounded-xl border border-surface-container-high">
-                  <span className="text-[10px] text-secondary block font-semibold uppercase">Array DC Operating</span>
-                  <span className="font-bold text-on-surface text-sm">480V Voc • 13.8A Isc</span>
-                  <p className="text-[10px] text-secondary mt-0.5">Dual String Configuration</p>
-                </div>
-                <div className="bg-surface-container-low p-3 rounded-xl border border-surface-container-high">
-                  <span className="text-[10px] text-secondary block font-semibold uppercase">Inverter Protection</span>
-                  <span className="font-bold text-on-surface text-sm">IP65 Weatherproof</span>
-                  <p className="text-[10px] text-secondary mt-0.5">Anti-Islanding IEEE 1547</p>
-                </div>
-                <div className="bg-surface-container-low p-3 rounded-xl border border-surface-container-high">
-                  <span className="text-[10px] text-secondary block font-semibold uppercase">AC Output &amp; Harmonics</span>
-                  <span className="font-bold text-on-surface text-sm">415V AC / THD &lt; 3%</span>
-                  <p className="text-[10px] text-secondary mt-0.5">Pure Sine Wave 50Hz</p>
-                </div>
-                <div className="bg-surface-container-low p-3 rounded-xl border border-surface-container-high">
-                  <span className="text-[10px] text-secondary block font-semibold uppercase">Certification Standard</span>
-                  <span className="font-bold text-primary text-sm">MNRE / CE / IEC</span>
-                  <p className="text-[10px] text-secondary mt-0.5">PM Surya Ghar Certified</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Actions */}
-            <div className="flex items-center justify-between pt-3 border-t border-surface-container-high">
-              <span className="text-xs text-secondary font-medium hidden sm:inline">
-                Approved standard schematic for residential and C&amp;I rooftop installations.
-              </span>
-              <button
-                onClick={() => setShowSldModal(false)}
-                className="px-6 py-2.5 rounded-xl bg-primary-container text-on-primary font-bold text-xs hover:bg-[#4F9A2C] transition-all active:scale-95 shadow-md ml-auto cursor-pointer"
-              >
-                Close Diagram
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Inverter Selection Modal */}
       {showInverterModal && (

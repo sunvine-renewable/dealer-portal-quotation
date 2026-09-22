@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
+import { APP_VERSION } from '../../config/version';
 
 export default function DealerProfile() {
   const { currentDealer, updateDealerProfile } = useApp();
@@ -8,8 +9,8 @@ export default function DealerProfile() {
   const [dealerName, setDealerName] = useState(currentDealer?.contactPerson || 'Rajesh Kumar');
   const [companyName, setCompanyName] = useState(currentDealer?.firmName || 'Surya Solar Tech Private Limited');
   const [email, setEmail] = useState(currentDealer?.email || 'rajesh@suryasolartech.in');
-  const [gstin, setGstin] = useState(currentDealer?.gstin || '27AABCS1429B1Z8');
-  const [address, setAddress] = useState(currentDealer?.address || 'Shop No. 12, Aditya Commercial Complex, Baner Road, Pune, Maharashtra - 411045');
+  const [gstin, setGstin] = useState(currentDealer?.gstin || '24AFPFS7402A1Z7');
+  const [address, setAddress] = useState(currentDealer?.address || 'Shop No. 12, GIDC Industrial Estate, Metoda, Rajkot, Gujarat - 360021');
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -124,7 +125,7 @@ export default function DealerProfile() {
             title="Check for PWA updates & changelog"
           >
             <span className="material-symbols-outlined text-[15px] text-primary shrink-0">system_update</span>
-            <span className="whitespace-nowrap">App v1.3.0 • Check Updates</span>
+            <span className="whitespace-nowrap">App v{APP_VERSION} • Check Updates</span>
           </button>
         </div>
       </div>
@@ -173,11 +174,11 @@ export default function DealerProfile() {
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2 sm:mt-space-sm text-secondary font-label-sm text-xs sm:text-label-sm">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="material-symbols-outlined text-[18px] text-tertiary shrink-0">badge</span>
-                  <span className="text-on-surface font-semibold truncate">SV-DLR-MH-0842</span>
+                  <span className="text-on-surface font-semibold truncate">SV-DLR-GJ-0842</span>
                 </div>
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="material-symbols-outlined text-[18px] text-tertiary shrink-0">pin_drop</span>
-                  <span className="break-words">Territory: <strong className="text-on-surface font-semibold">Pune &amp; Western Maharashtra</strong></span>
+                  <span className="break-words">Territory: <strong className="text-on-surface font-semibold">Rajkot &amp; Saurashtra Circle (PGVCL)</strong></span>
                 </div>
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="material-symbols-outlined text-[18px] text-primary shrink-0">bolt</span>
@@ -335,7 +336,7 @@ export default function DealerProfile() {
               </div>
               <div className="p-space-sm rounded-lg bg-surface-container-low flex flex-col justify-between min-w-0">
                 <div className="min-w-0">
-                  <span className="font-label-xs text-secondary block truncate">MSEDCL Grid-Tie Empanelment</span>
+                  <span className="font-label-xs text-secondary block truncate">GEDA / PGVCL Grid-Tie Empanelment</span>
                   <span className="font-label-sm text-on-surface block mt-1 break-words font-semibold">Class-A Rooftop</span>
                 </div>
                 <span className="font-label-xs text-primary mt-2 flex items-center gap-1 shrink-0">
@@ -524,7 +525,7 @@ export default function DealerProfile() {
                 <div className="mt-space-md pt-space-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5 sm:gap-2 text-secondary font-label-xs border-t border-surface-container-high/60 min-w-0">
                   <span className="flex items-center gap-1.5 min-w-0">
                     <span className="w-2 h-2 rounded-full bg-primary-container shrink-0"></span>
-                    <span className="break-words">Central Operations: Rajkot &amp; Pune Hubs</span>
+                    <span className="break-words">Central Operations: Sunvine HQ, Rajkot, Gujarat</span>
                   </span>
                   <span className="font-semibold text-primary whitespace-nowrap shrink-0">Mon–Sat • 9 AM – 7 PM IST</span>
                 </div>

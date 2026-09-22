@@ -23,7 +23,7 @@ export default function MyQuotations() {
     subsidy: q.subsidyAmount ? `₹\u00A0${Number(q.subsidyAmount).toLocaleString('en-IN')} Subsidy` : (q.subsidy || 'Subsidy Eligible'),
     status: q.status || 'Active / Sent',
     statusClass: q.statusClass || 'bg-primary/15 text-primary',
-    location: q.location || (q.city ? `${q.city}, ${q.state || 'Maharashtra'}` : 'Pune, Maharashtra'),
+    location: q.location || (q.city ? `${q.city}, ${q.state || 'Gujarat'}` : 'Rajkot, Gujarat'),
     date: q.date || 'Today'
   }));
 

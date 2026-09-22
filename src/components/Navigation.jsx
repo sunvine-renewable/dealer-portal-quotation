@@ -61,7 +61,7 @@ export default function Navigation() {
             />
             <div className="flex flex-col">
               <span className="font-label-xs text-label-xs text-secondary-fixed-dim tracking-wider uppercase font-semibold">
-                {role === 'admin' ? 'Super Admin Portal' : 'Dealer Portal'}
+                {role === 'admin' ? 'Portal' : 'Dealer Portal'}
               </span>
             </div>
           </div>
@@ -100,17 +100,18 @@ export default function Navigation() {
       </aside>
 
       {/* Desktop Top Header (Exact Stitch Design) */}
-      <header className="no-print hidden md:flex fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest border-b border-surface-container-high z-40 items-center justify-between px-space-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+      <header className="no-print hidden md:flex fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest border-b border-surface-container-high z-40 items-center justify-between px-3 sm:px-4 lg:px-6 xl:px-space-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
         {/* Left Status Bar */}
-        <div className="flex items-center gap-space-md">
-          <div className="flex items-center gap-space-xs text-secondary font-label-sm">
-            <span className="material-symbols-outlined text-[18px]">solar_power</span>
-            <span>Channel Network • Dealer Operations</span>
+        <div className="flex items-center gap-space-md min-w-0 shrink">
+          <div className="flex items-center gap-space-xs text-secondary font-label-sm min-w-0">
+            <span className="material-symbols-outlined text-[18px] shrink-0">solar_power</span>
+            <span className="hidden xl:inline truncate">Channel Network • Dealer Operations</span>
+            <span className="xl:hidden text-xs truncate">Sunvine Network</span>
           </div>
         </div>
 
         {/* Right Status / Profile Controls */}
-        <div className="flex items-center gap-space-lg">
+        <div className="flex items-center gap-2 sm:gap-3 lg:gap-space-lg shrink-0">
           {/* Notification Bell with Active Indicator */}
           <div className="relative" ref={desktopNotificationRef}>
             <button
@@ -146,22 +147,22 @@ export default function Navigation() {
                 setDropdownOpen(!dropdownOpen);
                 setNotificationsOpen(false);
               }}
-              className="flex items-center gap-space-sm cursor-pointer select-none"
+              className="flex items-center gap-2 sm:gap-space-sm cursor-pointer select-none"
             >
               <img
-                src={currentDealer.avatar || '/dealer_avatar.jpg'}
+                src={currentDealer?.avatar || '/dealer_avatar.jpg'}
                 alt="Dealer Avatar"
-                className="w-8 h-8 rounded-full object-cover shadow-sm border border-surface-container-high"
+                className="w-8 h-8 rounded-full object-cover shadow-sm border border-surface-container-high shrink-0"
               />
-              <div className="flex flex-col text-left">
-                <span className="font-label-md text-label-md text-on-surface leading-tight">
-                  {role === 'admin' ? 'Super Admin Desk' : currentDealer.firmName || 'Rajesh Solar Solutions'}
+              <div className="hidden sm:flex flex-col text-left max-w-[90px] md:max-w-[120px] lg:max-w-[180px] truncate">
+                <span className="font-label-md text-label-md text-on-surface leading-tight truncate">
+                  {role === 'admin' ? 'Admin Desk' : currentDealer?.firmName || 'Rajesh Solar Solutions'}
                 </span>
-                <span className="font-label-xs text-label-xs text-secondary leading-tight">
+                <span className="font-label-xs text-label-xs text-secondary leading-tight truncate">
                   {role === 'admin' ? 'System Administrator' : 'Authorized Dealer'}
                 </span>
               </div>
-              <span className="material-symbols-outlined text-secondary text-[20px]">
+              <span className="material-symbols-outlined text-secondary text-[20px] shrink-0">
                 keyboard_arrow_down
               </span>
             </div>
@@ -171,10 +172,10 @@ export default function Navigation() {
               <div className="absolute right-0 mt-2 w-48 bg-surface-container-lowest rounded-xl shadow-lg border border-surface-container-high py-2 z-50 animate-in fade-in slide-in-from-top-1">
                 <div className="px-4 py-2 border-b border-surface-container-high">
                   <p className="font-label-md text-on-surface text-xs font-bold truncate">
-                    {role === 'admin' ? 'Super Admin' : currentDealer.contactPerson}
+                    {role === 'admin' ? 'Admin' : currentDealer?.contactPerson || 'Authorized Partner'}
                   </p>
                   <p className="font-body-sm text-secondary text-[11px] truncate">
-                    {role === 'admin' ? 'admin@sunvine.in' : currentDealer.email}
+                    {role === 'admin' ? 'admin@sunvine.in' : currentDealer?.email || 'dealer@sunvine.in'}
                   </p>
                 </div>
                 {role === 'dealer' && (
@@ -253,7 +254,7 @@ export default function Navigation() {
             <img
               alt="Profile"
               className="w-7 h-7 rounded-full object-cover"
-              src={currentDealer.avatar || '/dealer_avatar.jpg'}
+              src={currentDealer?.avatar || '/dealer_avatar.jpg'}
             />
           </div>
           <button
@@ -279,20 +280,20 @@ export default function Navigation() {
           MOBILE BOTTOM TAB BAR: Exact Stitch Design (26_78314a1fb43e40518984de1bee26f24b_3__Dealer_Dashboard__Mobile_.html)
           ======================================================== */}
       <nav className="no-print fixed bottom-0 left-0 right-0 w-full z-50 bg-surface/95 backdrop-blur-xl border-t border-surface-container-high shadow-[0_-2px_12px_rgba(0,0,0,0.05)] md:hidden pb-[max(0px,env(safe-area-inset-bottom))]">
-        <div className="flex items-center justify-around h-16 px-1">
+        <div className="flex items-center justify-around h-16 px-1 w-full max-w-full overflow-hidden">
           {menuItems.slice(0, 5).map((item) => {
             const isActive = activeTab === item.id;
             return (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex flex-col items-center justify-center flex-1 min-h-[44px] py-1 px-0.5 gap-0.5 rounded-lg transition-colors ${isActive ? 'text-primary font-semibold' : 'text-secondary hover:text-on-surface'
+                className={`flex flex-col items-center justify-center flex-1 min-h-[44px] py-1 px-0.5 gap-0.5 rounded-lg transition-colors overflow-hidden min-w-0 ${isActive ? 'text-primary font-semibold' : 'text-secondary hover:text-on-surface'
                   }`}
               >
-                <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>
+                <span className="material-symbols-outlined text-[20px] sm:text-[22px] shrink-0" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>
                   {item.icon}
                 </span>
-                <span className="text-[10px] font-medium leading-none text-center w-full">
+                <span className="text-[9px] sm:text-[10px] font-medium leading-none text-center w-full truncate">
                   {item.mobileLabel}
                 </span>
               </button>
