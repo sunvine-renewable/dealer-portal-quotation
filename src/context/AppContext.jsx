@@ -446,13 +446,18 @@ const safeSetItem = (key, value) => {
 
   const addNotification = (notif) => {
     const newNotif = {
-      id: `notif-${Date.now()}`,
+      id: notif.id || `notif-${Date.now()}`,
       createdAt: new Date().toISOString(),
       audience: notif.audience || (role === 'admin' ? 'admin' : 'dealer'),
       type: notif.type || 'info',
       ...notif
     };
-    setNotifications(prev => [newNotif, ...prev]);
+    // If a new or updated notification arrives, remove from dismissed IDs so popup shows
+    setDismissedPopupIds(prev => prev.filter(id => id !== newNotif.id));
+    setNotifications(prev => {
+      const filtered = prev.filter(n => n.id !== newNotif.id);
+      return [newNotif, ...filtered];
+    });
   };
 
   return (

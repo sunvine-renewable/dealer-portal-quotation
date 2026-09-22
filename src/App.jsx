@@ -98,7 +98,6 @@ function MainApp() {
       case 'my_quotes':
         return <MyQuotations />;
       case 'profile':
-        return <DealerProfile />;
       case 'dealer_settings':
         return <DealerSettings />;
       default:

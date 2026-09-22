@@ -515,7 +515,7 @@ export default function DealerDashboard() {
             Download Revised Rate Matrix
           </a>
           <span className="text-secondary">•</span>
-          <a className="text-secondary hover:text-on-surface cursor-pointer" onClick={() => setActiveTab('profile')}>
+          <a className="text-secondary hover:text-on-surface cursor-pointer" onClick={() => setActiveTab('dealer_settings')}>
             Contact EPC Territory Manager
           </a>
         </div>

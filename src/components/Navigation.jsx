@@ -31,7 +31,6 @@ export default function Navigation() {
     { id: 'dashboard', label: 'Dashboard', mobileLabel: 'Dashboard', icon: 'home' },
     { id: 'create_quote', label: 'New Quotation', mobileLabel: 'New Quote', icon: 'note_add' },
     { id: 'my_quotes', label: 'My Quotations', mobileLabel: 'My Quotes', icon: 'folder_open' },
-    { id: 'profile', label: 'Profile', mobileLabel: 'Profile', icon: 'person' },
     { id: 'dealer_settings', label: 'Settings', mobileLabel: 'Settings', icon: 'settings' },
   ];
 
@@ -87,16 +86,6 @@ export default function Navigation() {
           </nav>
         </div>
 
-        {/* Bottom Logout Item */}
-        <div className="p-space-md border-t border-white/10">
-          <button
-            onClick={logout}
-            className="w-full flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-secondary-fixed-dim hover:bg-white/5 hover:text-on-secondary transition-colors font-body-md cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[20px]">logout</span>
-            <span>Logout</span>
-          </button>
-        </div>
       </aside>
 
       {/* Desktop Top Header (Exact Stitch Design) */}
@@ -181,13 +170,13 @@ export default function Navigation() {
                 {role === 'dealer' && (
                   <button
                     onClick={() => {
-                      setActiveTab('profile');
+                      setActiveTab('dealer_settings');
                       setDropdownOpen(false);
                     }}
                     className="w-full flex items-center gap-2 px-4 py-2 text-xs font-medium text-on-surface hover:bg-surface-container-low hover:text-primary cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-[16px]">account_circle</span>
-                    <span>View Profile</span>
+                    <span className="material-symbols-outlined text-[16px]">settings</span>
+                    <span>Account Settings</span>
                   </button>
                 )}
                 <button
@@ -248,7 +237,7 @@ export default function Navigation() {
           </div>
 
           <div
-            onClick={() => setActiveTab(role === 'admin' ? 'admin_settings' : 'profile')}
+            onClick={() => setActiveTab(role === 'admin' ? 'admin_settings' : 'dealer_settings')}
             className="relative flex items-center justify-center p-0.5 rounded-full ring-1 ring-primary/40 cursor-pointer"
           >
             <img
