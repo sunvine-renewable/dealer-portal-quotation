@@ -169,7 +169,7 @@ export default function MyQuotations() {
           </thead>
           <tbody className="font-body-md text-body-md divide-y divide-surface-container">
             {filteredQuotes.map((q, idx) => (
-              <tr key={idx} className={`transition-colors ${idx % 2 === 0 ? 'bg-surface-container-lowest hover:bg-surface-container-low' : 'bg-surface-container-low hover:bg-surface-container'}`}>
+              <tr key={idx} className="bg-surface-container-lowest hover:bg-surface-container-low/80 transition-colors">
                 <td className="px-space-lg py-3.5">
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">

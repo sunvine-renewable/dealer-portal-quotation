@@ -444,7 +444,7 @@ export default function DealerDashboard() {
             </thead>
             <tbody className="font-body-md text-body-md divide-y divide-surface-container">
               {recentQuotes.map((q, idx) => (
-                <tr key={idx} className={`transition-colors ${idx % 2 === 0 ? 'bg-surface-container-lowest hover:bg-surface-container-low' : 'bg-surface-container-low hover:bg-surface-container'}`}>
+                <tr key={idx} className="bg-surface-container-lowest hover:bg-surface-container-low/80 transition-colors">
                   <td className="px-space-lg py-3.5">
                     <div className="flex flex-col">
                       <span className="font-semibold text-on-surface">{q.customerName}</span>
@@ -515,7 +515,7 @@ export default function DealerDashboard() {
             Download Revised Rate Matrix
           </a>
           <span className="text-secondary">•</span>
-          <a className="text-secondary hover:text-on-surface cursor-pointer" onClick={() => setActiveTab('profile')}>
+          <a className="text-secondary hover:text-on-surface cursor-pointer" onClick={() => setActiveTab('dealer_settings')}>
             Contact EPC Territory Manager
           </a>
         </div>

@@ -658,7 +658,7 @@ export default function AdminDashboard() {
                       const statusStr = q.status || 'Approved';
 
                       return (
-                        <tr key={q.id || idx} className={`hover:bg-surface-container-low transition-colors duration-150 ${idx % 2 === 1 ? 'bg-surface' : 'bg-surface-container-lowest'}`}>
+                        <tr key={q.id || idx} className="bg-surface-container-lowest hover:bg-surface-container-low transition-colors duration-150">
                           <td className="px-4 py-3.5 font-label-md font-semibold text-primary">{quoteId}</td>
                           <td className="px-4 py-3.5 text-secondary whitespace-nowrap">{q.displayDate || q.date}</td>
                           <td className="px-4 py-3.5">

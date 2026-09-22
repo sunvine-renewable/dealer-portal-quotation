@@ -19,12 +19,12 @@ export default function DealerProfile() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [toastMessage, setToastMessage] = useState('');
+  const [toast, setToast] = useState({ message: '', type: 'success' });
 
-  const triggerToast = (msg) => {
-    setToastMessage(msg);
+  const triggerToast = (message, type = 'success') => {
+    setToast({ message, type });
     setTimeout(() => {
-      setToastMessage('');
+      setToast({ message: '', type: 'success' });
     }, 3500);
   };
 
@@ -39,23 +39,45 @@ export default function DealerProfile() {
         address: address,
       });
     }
-    triggerToast('Profile details updated successfully');
+    triggerToast('Profile details updated successfully', 'success');
   };
+
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   const handleUpdatePassword = (e) => {
     e.preventDefault();
+    if (!currentPassword) {
+      triggerToast('Please enter your current password', 'error');
+      return;
+    }
     if (!newPassword) {
-      triggerToast('Please enter a new password');
+      triggerToast('Please enter a new password', 'error');
+      return;
+    }
+    if (!ruleLength || !ruleCasing || !ruleSymbol) {
+      triggerToast('Please satisfy all password requirements', 'error');
+      return;
+    }
+    if (!confirmPassword) {
+      triggerToast('Please confirm your new password', 'error');
       return;
     }
     if (newPassword !== confirmPassword) {
-      triggerToast('Passwords do not match');
+      triggerToast('Passwords do not match', 'error');
       return;
     }
-    triggerToast('Password updated successfully');
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
+
+    setIsUpdatingPassword(true);
+    setTimeout(() => {
+      setIsUpdatingPassword(false);
+      triggerToast('Password updated successfully', 'success');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setShowCurrentPassword(false);
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
+    }, 450);
   };
 
   const handleAvatarClick = () => {
@@ -67,12 +89,12 @@ export default function DealerProfile() {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      triggerToast('Please select a valid image file');
+      triggerToast('Please select a valid image file', 'error');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      triggerToast('Image size should be less than 5MB');
+      triggerToast('Image size should be less than 5MB', 'error');
       return;
     }
 
@@ -82,46 +104,58 @@ export default function DealerProfile() {
       if (updateDealerProfile) {
         updateDealerProfile({ avatar: base64 });
       }
-      triggerToast('Profile photo updated successfully!');
+      triggerToast('Profile photo updated successfully!', 'success');
     };
     reader.readAsDataURL(file);
   };
 
   const ruleLength = newPassword.length >= 8;
   const ruleCasing = /[a-z]/.test(newPassword) && /[A-Z]/.test(newPassword);
-  const ruleSymbol = /[0-9!@#$%^&*(),.?":{}|<>]/.test(newPassword);
+  const ruleSymbol = /[0-9]/.test(newPassword) || /[^A-Za-z0-9]/.test(newPassword);
 
   return (
     <div className="flex flex-col w-full min-w-0">
       {/* Toast Notification */}
       <div
-        className={`fixed bottom-20 md:bottom-6 right-4 md:right-6 left-4 sm:left-auto max-w-sm z-50 transition-all duration-300 pointer-events-none flex items-center gap-2 px-4 py-3 rounded-lg bg-on-secondary-fixed text-on-secondary shadow-xl font-label-sm ${
-          toastMessage ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+        className={`fixed bottom-20 md:bottom-6 right-4 md:right-6 left-4 sm:left-auto max-w-sm z-50 transition-all duration-300 pointer-events-none flex items-center gap-2.5 px-4 py-3 rounded-lg shadow-xl font-label-sm ${
+          toast.type === 'error'
+            ? 'bg-neutral-900 border border-red-500/50 text-white'
+            : 'bg-on-secondary-fixed text-on-secondary'
+        } ${
+          toast.message ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
         }`}
       >
-        <span className="material-symbols-outlined text-[20px] text-primary-fixed shrink-0">check_circle</span>
-        <span className="break-words">{toastMessage}</span>
+        <span
+          className={`material-symbols-outlined text-[20px] shrink-0 ${
+            toast.type === 'error' ? 'text-red-400' : 'text-primary-fixed'
+          }`}
+        >
+          {toast.type === 'error' ? 'cancel' : 'check_circle'}
+        </span>
+        <span className="break-words">{toast.message}</span>
       </div>
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-space-sm mb-4 sm:mb-space-lg">
-        <div className="min-w-0">
-          <div className="flex items-center gap-space-xs text-secondary font-label-xs uppercase tracking-wider mb-space-xs">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 w-full">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 text-secondary font-label-xs uppercase tracking-wider mb-1">
             <span className="material-symbols-outlined text-[16px] text-primary shrink-0">verified_user</span>
             <span className="truncate">Account • Partner Credentials</span>
           </div>
-          <h1 className="font-headline-xl text-2xl sm:text-headline-xl text-on-surface break-words">My Profile</h1>
-          <p className="font-body-md text-secondary mt-1 break-words">Manage your dealer credentials, business information, and account security.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight">My Profile</h1>
+          <p className="text-xs sm:text-sm text-secondary mt-1 leading-relaxed">
+            Manage your dealer credentials, business information, and account security.
+          </p>
         </div>
-        <div className="flex items-center gap-2 sm:gap-space-sm flex-wrap shrink-0 mt-2 md:mt-0">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary-container/15 text-primary font-label-xs">
-            <span className="w-2 h-2 rounded-full bg-primary-container animate-pulse shrink-0"></span>
+        <div className="flex items-center gap-2 flex-wrap shrink-0 mt-1 lg:mt-0">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary-container/15 text-primary text-xs font-semibold">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0"></span>
             <span className="whitespace-nowrap">Active Node • MH-WEST-04</span>
           </span>
           <button
             type="button"
             onClick={() => window.dispatchEvent(new CustomEvent('sunvine_trigger_update_modal'))}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-primary/15 text-secondary hover:text-primary font-label-xs transition-colors cursor-pointer border border-surface-container-high min-h-[36px]"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-primary/15 text-secondary hover:text-primary text-xs font-semibold transition-colors cursor-pointer border border-surface-container-high min-h-[36px]"
             title="Check for PWA updates & changelog"
           >
             <span className="material-symbols-outlined text-[15px] text-primary shrink-0">system_update</span>
@@ -131,11 +165,11 @@ export default function DealerProfile() {
       </div>
 
       {/* Profile Overview Card */}
-      <div className="relative w-full rounded-xl bg-surface-container-lowest shadow-sm p-4 sm:p-space-lg mb-6 sm:mb-space-xl overflow-hidden">
+      <div className="relative w-full rounded-xl bg-surface-container-lowest shadow-sm p-4 sm:p-6 mb-6 overflow-hidden border border-surface-container-high">
         <div className="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-primary-container/10 blur-3xl pointer-events-none"></div>
         <div className="absolute right-32 -bottom-20 w-64 h-64 rounded-full bg-tertiary-container/15 blur-2xl pointer-events-none"></div>
-        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-lg">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-space-lg w-full lg:w-auto min-w-0">
+        <div className="relative z-10 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 sm:gap-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full xl:w-auto min-w-0 flex-1">
             <div className="relative group shrink-0">
               <input
                 type="file"
@@ -145,55 +179,55 @@ export default function DealerProfile() {
                 className="hidden"
                 id="profile-avatar-upload"
               />
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-surface-container-high shadow-md border-2 border-surface-container-lowest shrink-0">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-surface-container-high shadow-md border-2 border-surface-container-lowest shrink-0">
                 <img
                   alt={`${dealerName} Profile`}
                   className="w-full h-full object-cover"
-                  src={currentDealer?.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCPrXHZs-qW_IfxFB32q6OMBxh9-Q8lbGsGBMHtdkNUgY_4yuNIKjzl9IouO3S3aNB09wnjzip9MP60dQxzL4kQPmGopeAc3FhmzSe-rn5i-NJoa8LROkq6pxtArBvBH1gOf32o8gNlXRFqVCbs_ran3kYrMxI68PMiaTNELo-PNmGam_oiuZjvHaBAalOT1KVsAA0nMIY8TkaF5V5g5bstz4lf60C_guBjH_ZJgQWwByqwwd7bZd8y'}
+                  src={currentDealer?.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCPrXHZs-qW_IfxFB32q6OMBxh9-Q8lbGsGBMHtdkNUgY_4yuNIKjzl9IouO3S3aNB09wnjzip9MP60dQxzL4kQPmGopeAc3FhmzSe-rn5i-NJoa8LROkq6xtArBvBH1gOf32o8gNlXRFqVCbs_ran3kYrMxI68PMiaTNELo-PNmGam_oiuZjvHaBAalOT1KVsAA0nMIY8TkaF5V5g5bstz4lf60C_guBjH_ZJgQWwByqwwd7bZd8y'}
                 />
               </div>
               <button
-                className="absolute -bottom-2 -right-2 w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-on-secondary-fixed text-on-secondary flex items-center justify-center shadow-md hover:bg-primary transition-all cursor-pointer group-hover:scale-105 active:scale-95 z-20 touch-manipulation"
+                className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-on-secondary-fixed text-on-secondary flex items-center justify-center shadow-md hover:bg-primary transition-all cursor-pointer group-hover:scale-105 active:scale-95 z-20 touch-manipulation"
                 title="Change Avatar (Upload Photo)"
                 type="button"
                 onClick={handleAvatarClick}
                 aria-label="Upload profile avatar"
               >
-                <span className="material-symbols-outlined text-[16px]">photo_camera</span>
+                <span className="material-symbols-outlined text-[15px]">photo_camera</span>
               </button>
             </div>
             <div className="flex flex-col min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2 sm:gap-space-sm mb-1">
-                <h2 className="font-headline-lg text-xl sm:text-headline-lg text-on-surface break-words">{dealerName}</h2>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary-container/15 text-primary font-label-xs whitespace-nowrap">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <h2 className="text-lg sm:text-xl font-bold text-on-surface">{dealerName}</h2>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary-container/15 text-primary text-xs font-semibold whitespace-nowrap">
                   <span className="material-symbols-outlined text-[14px] shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                   <span>Authorized Tier-1 EPC Dealer</span>
                 </span>
               </div>
-              <div className="font-body-lg text-secondary font-medium break-words">{companyName}</div>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2 sm:mt-space-sm text-secondary font-label-sm text-xs sm:text-label-sm">
+              <div className="text-sm sm:text-base text-secondary font-medium">{companyName}</div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 text-secondary text-xs sm:text-sm">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="material-symbols-outlined text-[18px] text-tertiary shrink-0">badge</span>
+                  <span className="material-symbols-outlined text-[16px] text-tertiary shrink-0">badge</span>
                   <span className="text-on-surface font-semibold truncate">SV-DLR-GJ-0842</span>
                 </div>
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="material-symbols-outlined text-[18px] text-tertiary shrink-0">pin_drop</span>
-                  <span className="break-words">Territory: <strong className="text-on-surface font-semibold">Rajkot &amp; Saurashtra Circle (PGVCL)</strong></span>
+                  <span className="material-symbols-outlined text-[16px] text-tertiary shrink-0">pin_drop</span>
+                  <span>Territory: <strong className="text-on-surface font-semibold">Rajkot &amp; Saurashtra Circle (PGVCL)</strong></span>
                 </div>
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="material-symbols-outlined text-[18px] text-primary shrink-0">bolt</span>
-                  <span className="break-words">Allocated Quota: <strong className="text-on-surface font-semibold">1.2 MW / Qtr</strong></span>
+                  <span className="material-symbols-outlined text-[16px] text-primary shrink-0">bolt</span>
+                  <span>Allocated Quota: <strong className="text-on-surface font-semibold">1.2 MW / Qtr</strong></span>
                 </div>
               </div>
             </div>
           </div>
-          <div className="w-full lg:w-auto flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-center border-t lg:border-t-0 border-surface-container-high/60 pt-3 lg:pt-0 mt-2 lg:mt-0 gap-3 shrink-0">
-            <div className="text-left lg:text-right">
-              <span className="font-label-xs text-secondary uppercase tracking-wider block">Channel Standing</span>
-              <span className="font-headline-md text-base sm:text-headline-md text-primary font-bold">Top 5% Partner</span>
+          <div className="w-full xl:w-auto flex flex-row xl:flex-col items-center xl:items-end justify-between xl:justify-center border-t xl:border-t-0 border-surface-container-high/60 pt-3 xl:pt-0 mt-2 xl:mt-0 gap-3 shrink-0">
+            <div className="text-left xl:text-right">
+              <span className="text-[11px] text-secondary uppercase tracking-wider block font-semibold">Channel Standing</span>
+              <span className="text-base sm:text-lg text-primary font-bold">Top 5% Partner</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="px-3 py-1.5 rounded-lg bg-surface-container-low text-secondary font-label-xs flex items-center gap-1 whitespace-nowrap">
+              <div className="px-3 py-1.5 rounded-lg bg-surface-container-low text-secondary text-xs font-semibold flex items-center gap-1 whitespace-nowrap">
                 <span className="material-symbols-outlined text-[16px] text-primary shrink-0">military_tech</span>
                 <span>Gold Tier EPC</span>
               </div>
@@ -203,17 +237,16 @@ export default function DealerProfile() {
       </div>
 
       {/* Form and Side Info Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-space-xl">
-        {/* Left Column (7 cols) */}
-        <div className="lg:col-span-7 flex flex-col gap-6 lg:gap-space-lg min-w-0">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        {/* Left Column */}
+        <div className="xl:col-span-7 flex flex-col gap-6 min-w-0">
           {/* Personal & Business Details */}
-          <div className="bg-surface-container-lowest rounded-xl shadow-sm p-4 sm:p-space-lg">
-            <div className="mb-4 sm:mb-space-lg">
-              <div className="flex items-center gap-space-xs mb-1">
+          <div className="bg-surface-container-lowest rounded-xl shadow-sm p-4 sm:p-6 border border-surface-container-high">
+            <div className="mb-4 sm:mb-6">
+              <div className="flex items-center gap-2 mb-1">
                 <span className="material-symbols-outlined text-primary text-[22px] shrink-0">corporate_fare</span>
-                <h2 className="font-headline-md text-lg sm:text-headline-md text-on-secondary-fixed break-words">Personal &amp; Business Details</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-on-surface">Personal &amp; Business Details</h2>
               </div>
-              <p className="font-body-sm text-secondary break-words">Information reflected on your customer estimation decks and quotations.</p>
             </div>
             <form className="flex flex-col gap-space-md" onSubmit={handleSaveProfile}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
@@ -315,13 +348,13 @@ export default function DealerProfile() {
           </div>
 
           {/* Certifications & Licenses */}
-          <div className="bg-surface-container-lowest rounded-xl shadow-sm p-4 sm:p-space-lg">
-            <div className="flex items-center justify-between mb-space-md gap-2 flex-wrap">
-              <div className="flex items-center gap-space-xs min-w-0">
+          <div className="bg-surface-container-lowest rounded-xl shadow-sm p-4 sm:p-6 border border-surface-container-high">
+            <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
+              <div className="flex items-center gap-2 min-w-0">
                 <span className="material-symbols-outlined text-tertiary text-[20px] shrink-0">verified</span>
-                <h3 className="font-headline-sm text-headline-sm text-on-secondary-fixed break-words">Dealer Certifications &amp; Licenses</h3>
+                <h3 className="text-base sm:text-lg font-bold text-on-secondary-fixed">Dealer Certifications &amp; Licenses</h3>
               </div>
-              <span className="text-primary font-label-xs font-semibold whitespace-nowrap">All Active</span>
+              <span className="text-primary text-xs font-semibold whitespace-nowrap">All Active</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-sm">
               <div className="p-space-sm rounded-lg bg-surface-container-low flex flex-col justify-between min-w-0">
@@ -358,16 +391,16 @@ export default function DealerProfile() {
           </div>
         </div>
 
-        {/* Right Column (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col gap-6 lg:gap-space-lg min-w-0">
+        {/* Right Column */}
+        <div className="xl:col-span-5 flex flex-col gap-6 min-w-0">
           {/* Security & Password */}
-          <div className="bg-surface-container-lowest rounded-xl shadow-sm p-4 sm:p-space-lg">
-            <div className="mb-4 sm:mb-space-lg">
-              <div className="flex items-center gap-space-xs mb-1">
+          <div className="bg-surface-container-lowest rounded-xl shadow-sm p-4 sm:p-6 border border-surface-container-high">
+            <div className="mb-4 sm:mb-6">
+              <div className="flex items-center gap-2 mb-1">
                 <span className="material-symbols-outlined text-primary text-[22px] shrink-0">security</span>
-                <h2 className="font-headline-md text-lg sm:text-headline-md text-on-secondary-fixed break-words">Security &amp; Password Management</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-on-secondary-fixed">Security &amp; Password Management</h2>
               </div>
-              <p className="font-body-sm text-secondary break-words">Keep your Sunvine portal login credentials and quotes protected.</p>
+              <p className="text-xs sm:text-sm text-secondary">Keep your Sunvine portal login credentials and quotes protected.</p>
             </div>
             <form className="flex flex-col gap-space-md" onSubmit={handleUpdatePassword}>
               <div className="flex flex-col gap-1.5 min-w-0">
@@ -397,7 +430,13 @@ export default function DealerProfile() {
                 <label className="font-label-sm text-on-surface" htmlFor="new-password">New Password</label>
                 <div className="relative">
                   <input
-                    className="w-full h-11 sm:h-10 px-3 pr-11 bg-surface-container-low rounded-lg font-body-md text-base sm:text-body-md text-on-surface focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container outline-none transition-all"
+                    className={`w-full h-11 sm:h-10 px-3 pr-11 bg-surface-container-low rounded-lg font-body-md text-base sm:text-body-md text-on-surface focus:bg-surface-container-lowest outline-none transition-all ${
+                      newPassword.length > 0
+                        ? ruleLength && ruleCasing && ruleSymbol
+                          ? 'border border-primary focus:ring-2 focus:ring-primary/20'
+                          : 'border border-amber-500/50 focus:ring-2 focus:ring-amber-500/20'
+                        : 'border border-transparent focus:ring-2 focus:ring-primary-container'
+                    }`}
                     id="new-password"
                     placeholder="Enter new secure password"
                     type={showNewPassword ? "text" : "password"}
@@ -416,11 +455,85 @@ export default function DealerProfile() {
                   </button>
                 </div>
               </div>
+
+              {/* Animated Password Requirements */}
+              <div
+                className={`grid transition-all duration-300 ease-in-out ${
+                  newPassword.length > 0
+                    ? 'grid-rows-[1fr] opacity-100 translate-y-0'
+                    : 'grid-rows-[0fr] opacity-0 -translate-y-2 pointer-events-none'
+                }`}
+              >
+                <div className="overflow-hidden">
+                  <div className="p-space-sm rounded-lg bg-surface-container-low border border-surface-container-high/60 flex flex-col gap-2 min-w-0 transition-all">
+                    <div className="flex items-center justify-between">
+                      <span className="font-label-xs text-secondary uppercase tracking-wider font-semibold">Password Requirements</span>
+                      <span className="text-[11px] font-semibold text-secondary">
+                        {[ruleLength, ruleCasing, ruleSymbol].filter(Boolean).length}/3 Met
+                      </span>
+                    </div>
+
+                    {/* Progress Indicator Bar */}
+                    <div className="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-500 rounded-full ${
+                          [ruleLength, ruleCasing, ruleSymbol].filter(Boolean).length === 3
+                            ? 'bg-primary w-full'
+                            : [ruleLength, ruleCasing, ruleSymbol].filter(Boolean).length === 2
+                            ? 'bg-amber-500 w-2/3'
+                            : [ruleLength, ruleCasing, ruleSymbol].filter(Boolean).length === 1
+                            ? 'bg-orange-500 w-1/3'
+                            : 'w-0'
+                        }`}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-1.5 text-label-xs font-label-xs pt-0.5">
+                      <div className={`flex items-start sm:items-center gap-1.5 transition-all duration-300 ${ruleLength ? 'text-primary font-medium translate-x-0.5' : 'text-secondary'}`}>
+                        <span
+                          className={`material-symbols-outlined text-[16px] shrink-0 mt-0.5 sm:mt-0 transition-all duration-300 ${ruleLength ? 'scale-110 text-primary' : 'scale-95 text-secondary/60'}`}
+                          style={{ fontVariationSettings: ruleLength ? "'FILL' 1" : "'FILL' 0" }}
+                        >
+                          {ruleLength ? 'check_circle' : 'radio_button_unchecked'}
+                        </span>
+                        <span className="break-words leading-tight transition-colors duration-300">Minimum 8+ characters</span>
+                      </div>
+                      <div className={`flex items-start sm:items-center gap-1.5 transition-all duration-300 ${ruleCasing ? 'text-primary font-medium translate-x-0.5' : 'text-secondary'}`}>
+                        <span
+                          className={`material-symbols-outlined text-[16px] shrink-0 mt-0.5 sm:mt-0 transition-all duration-300 ${ruleCasing ? 'scale-110 text-primary' : 'scale-95 text-secondary/60'}`}
+                          style={{ fontVariationSettings: ruleCasing ? "'FILL' 1" : "'FILL' 0" }}
+                        >
+                          {ruleCasing ? 'check_circle' : 'radio_button_unchecked'}
+                        </span>
+                        <span className="break-words leading-tight transition-colors duration-300">Uppercase &amp; lowercase letters</span>
+                      </div>
+                      <div className={`flex items-start sm:items-center gap-1.5 transition-all duration-300 ${ruleSymbol ? 'text-primary font-medium translate-x-0.5' : 'text-secondary'}`}>
+                        <span
+                          className={`material-symbols-outlined text-[16px] shrink-0 mt-0.5 sm:mt-0 transition-all duration-300 ${ruleSymbol ? 'scale-110 text-primary' : 'scale-95 text-secondary/60'}`}
+                          style={{ fontVariationSettings: ruleSymbol ? "'FILL' 1" : "'FILL' 0" }}
+                        >
+                          {ruleSymbol ? 'check_circle' : 'radio_button_unchecked'}
+                        </span>
+                        <span className="break-words leading-tight transition-colors duration-300">At least one number or special symbol (@, #, $)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex flex-col gap-1.5 min-w-0">
                 <label className="font-label-sm text-on-surface" htmlFor="confirm-password">Confirm New Password</label>
                 <div className="relative">
                   <input
-                    className="w-full h-11 sm:h-10 px-3 pr-11 bg-surface-container-low rounded-lg font-body-md text-base sm:text-body-md text-on-surface focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container outline-none transition-all"
+                    className={`w-full h-11 sm:h-10 px-3 pr-11 bg-surface-container-low rounded-lg font-body-md text-base sm:text-body-md text-on-surface focus:bg-surface-container-lowest outline-none transition-all ${
+                      confirmPassword.length > 0
+                        ? newPassword.length === 0
+                          ? 'border border-surface-container-high focus:ring-2 focus:ring-secondary/20'
+                          : confirmPassword === newPassword
+                          ? 'border border-primary focus:ring-2 focus:ring-primary/20 bg-primary/5'
+                          : 'border border-error focus:ring-2 focus:ring-error/20 bg-error-container/10'
+                        : 'border border-transparent focus:ring-2 focus:ring-primary-container'
+                    }`}
                     id="confirm-password"
                     placeholder="Re-enter new secure password"
                     type={showConfirmPassword ? "text" : "password"}
@@ -438,52 +551,59 @@ export default function DealerProfile() {
                     </span>
                   </button>
                 </div>
-              </div>
-              <div className="p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-1.5 min-w-0">
-                <span className="font-label-xs text-secondary uppercase tracking-wider">Password Requirements</span>
-                <div className="grid grid-cols-1 gap-1 text-label-xs font-label-xs">
-                  <div className={`flex items-start sm:items-center gap-1.5 ${ruleLength ? 'text-primary' : 'text-secondary'}`}>
-                    <span className="material-symbols-outlined text-[16px] shrink-0 mt-0.5 sm:mt-0" style={{ fontVariationSettings: ruleLength ? "'FILL' 1" : "'FILL' 0" }}>
-                      {ruleLength ? 'check_circle' : 'radio_button_unchecked'}
-                    </span>
-                    <span className="break-words leading-tight">Minimum 8+ characters</span>
+                {confirmPassword.length > 0 && (
+                  <div className="flex items-center gap-1.5 mt-0.5 transition-all text-xs">
+                    {newPassword.length === 0 ? (
+                      <span className="text-secondary flex items-center gap-1 font-medium">
+                        <span className="material-symbols-outlined text-[16px]">info</span>
+                        Please enter new password first
+                      </span>
+                    ) : confirmPassword === newPassword ? (
+                      <span className="text-primary flex items-center gap-1 font-medium">
+                        <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                        Passwords match
+                      </span>
+                    ) : (
+                      <span className="text-error flex items-center gap-1 font-medium">
+                        <span className="material-symbols-outlined text-[16px]">cancel</span>
+                        Passwords do not match
+                      </span>
+                    )}
                   </div>
-                  <div className={`flex items-start sm:items-center gap-1.5 ${ruleCasing ? 'text-primary' : 'text-secondary'}`}>
-                    <span className="material-symbols-outlined text-[16px] shrink-0 mt-0.5 sm:mt-0" style={{ fontVariationSettings: ruleCasing ? "'FILL' 1" : "'FILL' 0" }}>
-                      {ruleCasing ? 'check_circle' : 'radio_button_unchecked'}
-                    </span>
-                    <span className="break-words leading-tight">Uppercase &amp; lowercase letters</span>
-                  </div>
-                  <div className={`flex items-start sm:items-center gap-1.5 ${ruleSymbol ? 'text-primary' : 'text-secondary'}`}>
-                    <span className="material-symbols-outlined text-[16px] shrink-0 mt-0.5 sm:mt-0" style={{ fontVariationSettings: ruleSymbol ? "'FILL' 1" : "'FILL' 0" }}>
-                      {ruleSymbol ? 'check_circle' : 'radio_button_unchecked'}
-                    </span>
-                    <span className="break-words leading-tight">At least one number or special symbol (@, #, $)</span>
-                  </div>
-                </div>
+                )}
               </div>
               <div className="pt-space-xs">
                 <button
-                  className="w-full h-11 sm:h-10 bg-primary-container hover:bg-primary text-on-primary rounded-lg font-label-md transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full h-11 sm:h-10 bg-primary-container hover:bg-primary text-on-primary rounded-lg font-label-md transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                   type="submit"
+                  disabled={isUpdatingPassword}
                 >
-                  <span className="material-symbols-outlined text-[18px]">key</span>
-                  <span>Update Password</span>
+                  {isUpdatingPassword ? (
+                    <>
+                      <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                      <span>Updating Password...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-[18px]">key</span>
+                      <span>Update Password</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
           </div>
 
           {/* Partner Support */}
-          <div className="bg-surface-container-lowest rounded-xl shadow-sm p-4 sm:p-space-lg relative overflow-hidden">
+          <div className="bg-surface-container-lowest rounded-xl shadow-sm p-4 sm:p-6 border border-surface-container-high relative overflow-hidden">
             <div className="w-1.5 h-full bg-primary absolute left-0 top-0"></div>
-            <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-space-sm min-w-0">
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 min-w-0">
               <div className="w-10 h-10 rounded-lg bg-tertiary-container/30 text-on-tertiary-container flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-[22px]">contact_support</span>
               </div>
               <div className="flex flex-col w-full min-w-0">
-                <h3 className="font-headline-sm text-headline-sm text-on-surface break-words">Sunvine Official Dealer Support</h3>
-                <p className="font-body-sm text-secondary mt-1 break-words">Direct priority channel for equipment dispatch, regional DISCOM approvals &amp; warranty assistance.</p>
+                <h3 className="text-base sm:text-lg font-bold text-on-surface">Sunvine Official Dealer Support</h3>
+                <p className="text-xs sm:text-sm text-secondary mt-1">Direct priority channel for equipment dispatch, regional DISCOM approvals &amp; warranty assistance.</p>
                 <div className="mt-space-md flex flex-col gap-2.5 font-body-sm min-w-0">
                   <div className="flex flex-wrap sm:flex-nowrap items-baseline sm:items-center gap-x-2 gap-y-0.5 min-w-0">
                     <div className="flex items-center gap-1.5 text-secondary shrink-0">
