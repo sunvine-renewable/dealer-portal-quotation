@@ -16,7 +16,7 @@ export default function AppUpdateModal() {
       if (addNotification) {
         addNotification({
           title: `System Updated to ${CURRENT_APP_VERSION}`,
-          description: `${CURRENT_RELEASE_CHANGELOG.title} (${RELEASE_DATE}). Highlights: ${CURRENT_RELEASE_CHANGELOG.highlights.join(' | ')}`,
+          description: `${CURRENT_RELEASE_CHANGELOG.title} (${RELEASE_DATE}). Highlights: ${(CURRENT_RELEASE_CHANGELOG.categories?.features ?? []).join(' | ')}`,
           type: 'success',
           icon: 'system_update',
           audience: 'all'
