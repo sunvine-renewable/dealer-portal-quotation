@@ -163,33 +163,33 @@ export default function DealerSettings() {
       />
 
       {/* Top Breadcrumbs & Action Bar */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-2 text-secondary font-label-sm text-label-sm">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 w-full">
+        <div className="flex flex-col gap-1.5 min-w-0">
+          <div className="flex items-center gap-2 text-secondary font-label-sm text-label-sm flex-wrap">
             <span>Dealer Console</span>
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
             <span>Settings</span>
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-on-surface font-semibold">Account, Profile &amp; Configurations</span>
+            <span className="text-on-surface font-semibold truncate">Account &amp; Configurations</span>
           </div>
-          <div className="flex items-center gap-3">
-            <h1 className="font-headline-xl text-headline-xl text-on-surface tracking-tight">Dealer Settings &amp; Profile</h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-xs text-label-xs flex items-center gap-1">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <h1 className="font-headline-xl text-2xl sm:text-headline-xl text-on-surface tracking-tight">Dealer Settings</h1>
+            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-xs text-label-xs flex items-center gap-1 shrink-0">
               <span className="material-symbols-outlined text-[14px]">verified</span>
-              Tier-1 EPC Partner
+              Tier-1 Partner
             </span>
           </div>
-          <p className="font-body-md text-body-md text-secondary max-w-3xl">
+          <p className="font-body-md text-xs sm:text-body-md text-secondary max-w-3xl">
             Manage your authorized EPC agency profile, security credentials, quotation calculation rules, and cross-channel notifications.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3 shrink-0 self-start md:self-auto">
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
           <button
             onClick={() => setSaved(false)}
             type="button"
-            className="px-4 py-2 bg-surface-container-lowest text-on-surface hover:bg-surface-container-low transition-colors duration-150 font-label-md text-label-md rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 sm:px-4 py-2 bg-surface-container-lowest text-on-surface hover:bg-surface-container-low transition-colors duration-150 font-label-md text-xs sm:text-label-md rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer whitespace-nowrap border border-surface-container-high"
           >
             <span className="material-symbols-outlined text-[18px]">undo</span>
             <span>Discard</span>
@@ -197,12 +197,12 @@ export default function DealerSettings() {
           <button
             onClick={handleSave}
             type="button"
-            className="px-5 py-2 bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md rounded-lg transition-colors duration-150 shadow-sm flex items-center gap-2 active:scale-95 cursor-pointer"
+            className="px-4 sm:px-5 py-2 bg-primary-container hover:bg-primary text-on-primary font-label-md text-xs sm:text-label-md rounded-lg transition-colors duration-150 shadow-sm flex items-center gap-2 active:scale-95 cursor-pointer whitespace-nowrap"
           >
             <span className="material-symbols-outlined text-[18px]">
               {saved ? 'check_circle' : 'save'}
             </span>
-            <span>{saved ? 'Preferences Saved' : 'Save Changes'}</span>
+            <span>{saved ? 'Saved' : 'Save Changes'}</span>
           </button>
         </div>
       </div>
